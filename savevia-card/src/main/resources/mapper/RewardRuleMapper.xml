@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.card.mapper.RewardRuleMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="RewardRuleResultMap" type="com.savevia.card.entity.RewardRule">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="card_id" property="cardId" jdbcType="BIGINT"/>
+        <result column="category" property="category" jdbcType="VARCHAR"/>
+        <result column="reward_rate" property="rewardRate" jdbcType="DECIMAL"/>
+        <result column="monthly_cap_amount" property="monthlyCapAmount" jdbcType="DECIMAL"/>
+        <result column="mcc_codes" property="mccCodes" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 列定义 -->
+    <sql id="Base_Column_List">
+        id, card_id, category, reward_rate, monthly_cap_amount, mcc_codes, description
+    </sql>
+
+    <!-- 根据卡片ID查询 -->
+    <select id="selectByCardId" parameterType="java.lang.Long" resultMap="RewardRuleResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM reward_rules
+        WHERE card_id = #{cardId}
+    </select>
+
+    <!-- 根据卡片ID列表批量查询 -->
+    <select id="selectByCardIds" resultMap="RewardRuleResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM reward_rules
+        WHERE card_id IN
+        <foreach collection="cardIds" item="cardId" open="(" separator="," close=")">
+            #{cardId}
+        </foreach>
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.savevia.card.entity.RewardRule"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reward_rules (
+            card_id, category, reward_rate, monthly_cap_amount, mcc_codes, description
+        ) VALUES (
+            #{cardId}, #{category}, #{rewardRate}, #{monthlyCapAmount}, #{mccCodes}, #{description}
+        )
+    </insert>
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        INSERT INTO reward_rules (
+            card_id, category, reward_rate, monthly_cap_amount, mcc_codes, description
+        ) VALUES
+        <foreach collection="rules" item="rule" separator=",">
+            (#{rule.cardId}, #{rule.category}, #{rule.rewardRate},
+             #{rule.monthlyCapAmount}, #{rule.mccCodes}, #{rule.description})
+        </foreach>
+    </insert>
+
+    <!-- 删除卡片的所有规则 -->
+    <delete id="deleteByCardId" parameterType="java.lang.Long">
+        DELETE FROM reward_rules WHERE card_id = #{cardId}
+    </delete>
+
+</mapper>

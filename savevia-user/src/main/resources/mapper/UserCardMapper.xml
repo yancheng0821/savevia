@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.UserCardMapper">
+
+    <!-- Get card IDs for a user -->
+    <select id="selectCardIdsByUserId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        SELECT card_id FROM user_cards WHERE user_id = #{userId}
+    </select>
+
+    <!-- Check if user has a specific card -->
+    <select id="countByUserIdAndCardId" resultType="int">
+        SELECT COUNT(*) FROM user_cards
+        WHERE user_id = #{userId} AND card_id = #{cardId}
+    </select>
+
+    <!-- Insert a single user card -->
+    <insert id="insert" parameterType="com.savevia.user.entity.UserCard"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_cards (user_id, card_id, acquired_date, created_at)
+        VALUES (#{userId}, #{cardId}, #{acquiredDate}, UTC_TIMESTAMP())
+    </insert>
+
+    <!-- Delete specific card from user -->
+    <delete id="deleteByUserIdAndCardId">
+        DELETE FROM user_cards WHERE user_id = #{userId} AND card_id = #{cardId}
+    </delete>
+
+    <!-- Delete all cards for a user -->
+    <delete id="deleteAllByUserId" parameterType="java.lang.Long">
+        DELETE FROM user_cards WHERE user_id = #{userId}
+    </delete>
+
+    <!-- Batch insert cards -->
+    <insert id="batchInsert">
+        INSERT INTO user_cards (user_id, card_id, created_at)
+        VALUES
+        <foreach collection="cardIds" item="cardId" separator=",">
+            (#{userId}, #{cardId}, UTC_TIMESTAMP())
+        </foreach>
+    </insert>
+
+</mapper>

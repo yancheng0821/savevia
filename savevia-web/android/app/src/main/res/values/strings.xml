@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SaveVia</string>
+    <string name="title_activity_main">SaveVia</string>
+    <string name="package_name">com.savevia.app</string>
+    <string name="custom_url_scheme">com.savevia.app</string>
+    <!-- Google Sign-In Web Client ID (for token verification) -->
+    <string name="server_client_id">890444343202-ju6uie2f6vuk53ccbeoqa4eitrmtslhr.apps.googleusercontent.com</string>
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.optimizer.mapper.SavedResultMapper">
+
+    <resultMap id="BaseResultMap" type="com.savevia.optimizer.entity.SavedResult">
+        <id column="id" property="id"/>
+        <result column="share_id" property="shareId"/>
+        <result column="user_id" property="userId"/>
+        <result column="result_json" property="resultJson"/>
+        <result column="net_annual_savings" property="netAnnualSavings"/>
+        <result column="annual_reward" property="annualReward"/>
+        <result column="total_annual_fees" property="totalAnnualFees"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="expires_at" property="expiresAt"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO saved_results (share_id, user_id, result_json, net_annual_savings, annual_reward, total_annual_fees, created_at, expires_at)
+        VALUES (#{shareId}, #{userId}, #{resultJson}, #{netAnnualSavings}, #{annualReward}, #{totalAnnualFees}, NOW(), #{expiresAt})
+    </insert>
+
+    <select id="selectByShareId" resultMap="BaseResultMap">
+        SELECT * FROM saved_results
+        WHERE share_id = #{shareId}
+        AND (expires_at IS NULL OR expires_at > NOW())
+    </select>
+
+    <select id="selectByUserIdLatest" resultMap="BaseResultMap">
+        SELECT * FROM saved_results
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
+    <insert id="insertUserResult" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO saved_results (share_id, user_id, result_json, net_annual_savings, annual_reward, total_annual_fees, created_at, expires_at)
+        VALUES (#{shareId}, #{userId}, #{resultJson}, #{netAnnualSavings}, #{annualReward}, #{totalAnnualFees}, NOW(), NULL)
+    </insert>
+
+    <update id="updateUserResult">
+        UPDATE saved_results
+        SET result_json = #{resultJson},
+            net_annual_savings = #{netAnnualSavings},
+            annual_reward = #{annualReward},
+            total_annual_fees = #{totalAnnualFees}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateShareId">
+        UPDATE saved_results
+        SET share_id = #{shareId}, expires_at = DATE_ADD(NOW(), INTERVAL 30 DAY)
+        WHERE id = #{id}
+    </update>
+
+</mapper>

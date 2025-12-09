@@ -1,0 +1,42 @@
+<svg width="220" height="64" viewBox="0 0 220 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Card -->
+  <rect x="6" y="6" width="42" height="26" rx="5" transform="rotate(6 6 6)" fill="url(#grad1)"/>
+
+  <!-- Middle Card -->
+  <rect x="3" y="16" width="42" height="26" rx="5" transform="rotate(-3 3 16)" fill="url(#grad2)"/>
+
+  <!-- Front Card -->
+  <rect x="6" y="24" width="42" height="26" rx="5" fill="url(#grad3)"/>
+
+  <!-- CASHBACK label -->
+  <text x="11" y="32" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="4" font-weight="500" letter-spacing="0.3">CASHBACK</text>
+
+  <!-- 5% rate -->
+  <text x="11" y="38" fill="white" font-family="Inter, Arial, sans-serif" font-size="5" font-weight="700">5%</text>
+
+  <!-- Card number -->
+  <text x="11" y="48" fill="rgba(255,255,255,0.8)" font-family="Inter, Arial, sans-serif" font-size="3.5">•••• •••• •••• 4242</text>
+
+  <!-- SaveVia Text with gradient -->
+  <text x="60" y="42" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="-1" fill="url(#textGradient)">SaveVia</text>
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dbeafe"/>
+      <stop offset="100%" style="stop-color:#ede9fe"/>
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef3c7"/>
+      <stop offset="100%" style="stop-color:#fce7f3"/>
+    </linearGradient>
+    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#111827"/>
+      <stop offset="100%" style="stop-color:#374151"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#0d9488"/>
+    </linearGradient>
+  </defs>
+</svg>

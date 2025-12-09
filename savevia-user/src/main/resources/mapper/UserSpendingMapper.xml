@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.UserSpendingMapper">
+
+    <resultMap id="BaseResultMap" type="com.savevia.user.entity.UserSpending">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="category" property="category"/>
+        <result column="amount" property="amount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT id, user_id, category, amount, created_at, updated_at
+        FROM user_spending
+        WHERE user_id = #{userId}
+    </select>
+
+    <delete id="deleteByUserId">
+        DELETE FROM user_spending WHERE user_id = #{userId}
+    </delete>
+
+    <insert id="batchInsert">
+        INSERT INTO user_spending (user_id, category, amount, created_at, updated_at)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.category}, #{item.amount}, NOW(), NOW())
+        </foreach>
+    </insert>
+
+</mapper>

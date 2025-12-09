@@ -1,0 +1,84 @@
+server:
+  port: 8080
+  netty:
+    max-initial-line-length: 65536
+    max-chunk-size: 65536
+
+spring:
+  codec:
+    max-in-memory-size: 10MB
+  application:
+    name: savevia-gateway
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://192.168.1.196:5173"
+              - "capacitor://localhost"
+              - "http://localhost"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        # User Service
+        - id: user-service
+          uri: lb://savevia-user
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/users/**
+          filters:
+            - StripPrefix=0
+
+        # Card Service
+        - id: card-service
+          uri: lb://savevia-card
+          predicates:
+            - Path=/api/v1/cards/**
+          filters:
+            - StripPrefix=0
+
+        # Optimizer Service
+        - id: optimizer-service
+          uri: lb://savevia-optimizer
+          predicates:
+            - Path=/api/v1/optimize/**
+          filters:
+            - StripPrefix=0
+
+        # Static uploads (avatars, etc.)
+        - id: uploads
+          uri: lb://savevia-user
+          predicates:
+            - Path=/uploads/**
+          filters:
+            - StripPrefix=0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: savevia-jwt-secret-key-2024-must-be-at-least-256-bits-long
+  expiration: 86400000
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FFFCF5</color>
+    <color name="colorPrimaryDark">#FFFCF5</color>
+    <color name="colorAccent">#059669</color>
+    <!-- Status bar colors -->
+    <color name="statusBarColor">#FFFCF5</color>
+    <color name="navigationBarColor">#FFFCF5</color>
+</resources>

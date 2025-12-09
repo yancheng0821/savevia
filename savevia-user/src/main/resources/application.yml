@@ -1,0 +1,72 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: savevia-user
+  datasource:
+    url: jdbc:mysql://localhost:3306/savevia?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    username: savevia
+    password: savevia123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# MyBatis 配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.savevia.user.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    default-time-zone: UTC
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret: savevia-jwt-secret-key-2024-must-be-at-least-256-bits-long
+  expiration: 86400000
+
+google:
+  client-id: 890444343202-ju6uie2f6vuk53ccbeoqa4eitrmtslhr.apps.googleusercontent.com
+
+apple:
+  client-id: ${APPLE_CLIENT_ID:com.savevia.app}
+
+file:
+  upload-dir: ./uploads
+
+spring.servlet.multipart:
+  max-file-size: 5MB
+  max-request-size: 10MB
+
+# Mail configuration
+spring.mail:
+  host: ${MAIL_HOST:smtp.gmail.com}
+  port: ${MAIL_PORT:587}
+  username: ${MAIL_USERNAME:notification@vamerchant.app}
+  password: ${MAIL_PASSWORD:Aa18853228368!!}
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+
+# Application URLs
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
+logging:
+  file:
+    path: ./logs
+  level:
+    com.savevia.user: DEBUG
+    com.savevia.user.mapper: DEBUG

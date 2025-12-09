@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.card.mapper.CreditCardMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CreditCardResultMap" type="com.savevia.card.entity.CreditCard">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="bank" property="bank" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="card_type" property="cardType" jdbcType="VARCHAR"/>
+        <result column="annual_fee" property="annualFee" jdbcType="DECIMAL"/>
+        <result column="base_reward_rate" property="baseRewardRate" jdbcType="DECIMAL"/>
+        <result column="signup_bonus_json" property="signupBonusJson" jdbcType="VARCHAR"/>
+        <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
+        <result column="apply_url" property="applyUrl" jdbcType="VARCHAR"/>
+        <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 列定义 -->
+    <sql id="Base_Column_List">
+        id, bank, name, card_type, annual_fee, base_reward_rate, signup_bonus_json,
+        image_url, apply_url, is_active, created_at, updated_at
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="CreditCardResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM credit_cards
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询所有有效的信用卡 -->
+    <select id="selectAllActive" resultMap="CreditCardResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM credit_cards
+        WHERE is_active = true
+        ORDER BY bank, name
+    </select>
+
+    <!-- 根据银行查询 -->
+    <select id="selectByBank" parameterType="java.lang.String" resultMap="CreditCardResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM credit_cards
+        WHERE bank = #{bank} AND is_active = true
+        ORDER BY name
+    </select>
+
+    <!-- 根据ID列表批量查询 -->
+    <select id="selectByIds" resultMap="CreditCardResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM credit_cards
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND is_active = true
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.savevia.card.entity.CreditCard"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO credit_cards (
+            bank, name, card_type, annual_fee, base_reward_rate, signup_bonus_json,
+            image_url, apply_url, is_active, created_at, updated_at
+        ) VALUES (
+            #{bank}, #{name}, #{cardType}, #{annualFee}, #{baseRewardRate}, #{signupBonusJson},
+            #{imageUrl}, #{applyUrl}, #{isActive}, UTC_TIMESTAMP(), UTC_TIMESTAMP()
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.savevia.card.entity.CreditCard">
+        UPDATE credit_cards
+        <set>
+            <if test="bank != null">bank = #{bank},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="cardType != null">card_type = #{cardType},</if>
+            <if test="annualFee != null">annual_fee = #{annualFee},</if>
+            <if test="baseRewardRate != null">base_reward_rate = #{baseRewardRate},</if>
+            <if test="signupBonusJson != null">signup_bonus_json = #{signupBonusJson},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="applyUrl != null">apply_url = #{applyUrl},</if>
+            <if test="isActive != null">is_active = #{isActive},</if>
+            updated_at = UTC_TIMESTAMP()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 软删除 -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE credit_cards SET is_active = false, updated_at = UTC_TIMESTAMP() WHERE id = #{id}
+    </update>
+
+</mapper>

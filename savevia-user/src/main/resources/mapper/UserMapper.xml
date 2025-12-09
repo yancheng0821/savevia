@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.UserMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="UserResultMap" type="com.savevia.user.entity.User">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="password_hash" property="passwordHash" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="google_id" property="googleId" jdbcType="VARCHAR"/>
+        <result column="apple_id" property="appleId" jdbcType="VARCHAR"/>
+        <result column="avatar_url" property="avatarUrl" jdbcType="VARCHAR"/>
+        <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
+        <result column="email_verified" property="emailVerified" jdbcType="BOOLEAN"/>
+        <result column="email_verification_token" property="emailVerificationToken" jdbcType="VARCHAR"/>
+        <result column="email_verification_expires_at" property="emailVerificationExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="password_reset_token" property="passwordResetToken" jdbcType="VARCHAR"/>
+        <result column="password_reset_expires_at" property="passwordResetExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 列定义 -->
+    <sql id="Base_Column_List">
+        id, email, password_hash, name, google_id, apple_id, avatar_url, is_active,
+        email_verified, email_verification_token, email_verification_expires_at,
+        password_reset_token, password_reset_expires_at, created_at, updated_at
+    </sql>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据邮箱查询 -->
+    <select id="selectByEmail" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE email = #{email} AND is_active = true
+    </select>
+
+    <!-- 根据Google ID查询 -->
+    <select id="selectByGoogleId" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE google_id = #{googleId} AND is_active = true
+    </select>
+
+    <!-- 检查邮箱是否存在 -->
+    <select id="countByEmail" parameterType="java.lang.String" resultType="int">
+        SELECT COUNT(*) FROM users WHERE email = #{email}
+    </select>
+
+    <!-- 根据 Apple ID 查询 -->
+    <select id="selectByAppleId" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE apple_id = #{appleId} AND is_active = true
+    </select>
+
+    <!-- 根据邮箱验证 token 查询 -->
+    <select id="selectByEmailVerificationToken" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE email_verification_token = #{token} AND is_active = true
+    </select>
+
+    <!-- 根据密码重置 token 查询 -->
+    <select id="selectByPasswordResetToken" parameterType="java.lang.String" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE password_reset_token = #{token} AND is_active = true
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.savevia.user.entity.User"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (
+            email, password_hash, name, google_id, apple_id, avatar_url, is_active,
+            email_verified, email_verification_token, email_verification_expires_at,
+            created_at, updated_at
+        ) VALUES (
+            #{email}, #{passwordHash}, #{name}, #{googleId}, #{appleId}, #{avatarUrl}, #{isActive},
+            #{emailVerified}, #{emailVerificationToken}, #{emailVerificationExpiresAt},
+            #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.savevia.user.entity.User">
+        UPDATE users
+        <set>
+            <if test="email != null">email = #{email},</if>
+            <if test="passwordHash != null">password_hash = #{passwordHash},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="googleId != null">google_id = #{googleId},</if>
+            <if test="appleId != null">apple_id = #{appleId},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="isActive != null">is_active = #{isActive},</if>
+            <if test="emailVerified != null">email_verified = #{emailVerified},</if>
+            <if test="emailVerificationToken != null">email_verification_token = #{emailVerificationToken},</if>
+            <if test="emailVerificationExpiresAt != null">email_verification_expires_at = #{emailVerificationExpiresAt},</if>
+            <if test="passwordResetToken != null">password_reset_token = #{passwordResetToken},</if>
+            <if test="passwordResetExpiresAt != null">password_reset_expires_at = #{passwordResetExpiresAt},</if>
+            updated_at = UTC_TIMESTAMP()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 清除密码重置 token -->
+    <update id="clearPasswordResetToken" parameterType="java.lang.Long">
+        UPDATE users SET password_reset_token = NULL, password_reset_expires_at = NULL, updated_at = UTC_TIMESTAMP()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 清除邮箱验证 token -->
+    <update id="clearEmailVerificationToken" parameterType="java.lang.Long">
+        UPDATE users SET email_verification_token = NULL, email_verification_expires_at = NULL, email_verified = true, updated_at = UTC_TIMESTAMP()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 软删除 -->
+    <update id="deleteById" parameterType="java.lang.Long">
+        UPDATE users SET is_active = false, updated_at = UTC_TIMESTAMP() WHERE id = #{id}
+    </update>
+
+</mapper>
