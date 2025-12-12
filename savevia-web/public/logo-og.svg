@@ -1,0 +1,77 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#fffcf5"/>
+
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="200" fill="#dbeafe" opacity="0.3"/>
+  <circle cx="1100" cy="530" r="180" fill="#fef3c7" opacity="0.3"/>
+  <circle cx="1000" cy="80" r="120" fill="#ede9fe" opacity="0.2"/>
+
+  <!-- Card Stack - Centered and larger -->
+  <!-- Background Card -->
+  <rect x="380" y="140" width="200" height="126" rx="16" transform="rotate(8 380 140)" fill="url(#ogGrad1)"/>
+
+  <!-- Middle Card -->
+  <rect x="360" y="190" width="200" height="126" rx="16" transform="rotate(-4 360 190)" fill="url(#ogGrad2)"/>
+
+  <!-- Front Card -->
+  <rect x="400" y="230" width="200" height="126" rx="16" fill="url(#ogGrad3)"/>
+
+  <!-- Chip on front card -->
+  <rect x="420" y="250" width="35" height="26" rx="4" fill="url(#chipGradient)"/>
+  <line x1="420" y1="260" x2="455" y2="260" stroke="#c9a227" stroke-width="1" opacity="0.5"/>
+  <line x1="420" y1="268" x2="455" y2="268" stroke="#c9a227" stroke-width="1" opacity="0.5"/>
+  <line x1="437.5" y1="250" x2="437.5" y2="276" stroke="#c9a227" stroke-width="1" opacity="0.5"/>
+
+  <!-- CASHBACK label on front card -->
+  <text x="420" y="300" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" letter-spacing="1">CASHBACK</text>
+
+  <!-- 5% rate on front card -->
+  <text x="420" y="330" fill="white" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">5%</text>
+
+  <!-- Card number on front card -->
+  <text x="420" y="348" fill="rgba(255,255,255,0.8)" font-family="Inter, Arial, sans-serif" font-size="12">•••• •••• •••• 4242</text>
+
+  <!-- Sparkle on front card -->
+  <path d="M585 245 L588 254 L597 257 L588 260 L585 269 L582 260 L573 257 L582 254 Z" fill="white" opacity="0.7"/>
+
+  <!-- SaveVia Text -->
+  <text x="620" y="310" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="700" letter-spacing="-2" fill="url(#ogTextGradient)">SaveVia</text>
+
+  <!-- Tagline -->
+  <text x="600" y="420" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="500" fill="#6b7280" text-anchor="middle">
+    <tspan x="600">Maximize Your Credit Card Cashback</tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="470" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="400" fill="#9ca3af" text-anchor="middle">
+    <tspan x="600">Canadian Credit Card Optimizer</tspan>
+  </text>
+
+  <!-- URL at bottom -->
+  <text x="600" y="580" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="500" fill="#d1d5db" text-anchor="middle">savevia.app</text>
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="ogGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dbeafe"/>
+      <stop offset="100%" style="stop-color:#ede9fe"/>
+    </linearGradient>
+    <linearGradient id="ogGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef3c7"/>
+      <stop offset="100%" style="stop-color:#fce7f3"/>
+    </linearGradient>
+    <linearGradient id="ogGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#111827"/>
+      <stop offset="100%" style="stop-color:#374151"/>
+    </linearGradient>
+    <linearGradient id="ogTextGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#0d9488"/>
+    </linearGradient>
+    <linearGradient id="chipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -5,14 +5,14 @@ spring:
   application:
     name: savevia-user
   datasource:
-    url: jdbc:mysql://localhost:3306/savevia?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
-    username: savevia
-    password: savevia123
+    url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE:savevia}?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
+    username: ${MYSQL_USER:savevia}
+    password: ${MYSQL_PASSWORD:savevia123}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 # MyBatis 配置
 mybatis:
@@ -26,22 +26,31 @@ mybatis:
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+      defaultZone: http://${EUREKA_USER:eureka}:${EUREKA_PASSWORD:eureka123}@localhost:8761/eureka/
   instance:
     prefer-ip-address: true
 
 jwt:
-  secret: savevia-jwt-secret-key-2024-must-be-at-least-256-bits-long
+  secret: ${JWT_SECRET:savevia-jwt-secret-key-2024-must-be-at-least-256-bits-long}
   expiration: 86400000
 
 google:
-  client-id: 890444343202-ju6uie2f6vuk53ccbeoqa4eitrmtslhr.apps.googleusercontent.com
+  client-id: ${GOOGLE_CLIENT_ID:890444343202-ju6uie2f6vuk53ccbeoqa4eitrmtslhr.apps.googleusercontent.com}
+  client-secret: ${GOOGLE_CLIENT_SECRET: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}
+  ios-client-id: ${GOOGLE_IOS_CLIENT_ID:890444343202-npol552p21etjqs53homftgo6430g4qo.apps.googleusercontent.com}
+  play:
+    package-name: ${GOOGLE_PLAY_PACKAGE_NAME:com.savevia.app}
+    service-account-key: ${GOOGLE_PLAY_SERVICE_ACCOUNT_KEY:}
 
 apple:
   client-id: ${APPLE_CLIENT_ID:com.savevia.app}
+  iap:
+    shared-secret: ${APPLE_IAP_SHARED_SECRET:}
+    sandbox: ${APPLE_IAP_SANDBOX:true}
 
 file:
   upload-dir: ./uploads
+  storage-type: local
 
 spring.servlet.multipart:
   max-file-size: 5MB
@@ -51,8 +60,8 @@ spring.servlet.multipart:
 spring.mail:
   host: ${MAIL_HOST:smtp.gmail.com}
   port: ${MAIL_PORT:587}
-  username: ${MAIL_USERNAME:notification@vamerchant.app}
-  password: ${MAIL_PASSWORD:Aa18853228368!!}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
   properties:
     mail:
       smtp:
@@ -64,9 +73,25 @@ spring.mail:
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
 
+# AI Usage Limits
+ai:
+  usage:
+    monthly-limit: ${AI_MONTHLY_LIMIT:100}
+
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+  health:
+    mail:
+      enabled: false
+
 logging:
-  file:
-    path: ./logs
   level:
     com.savevia.user: DEBUG
     com.savevia.user.mapper: DEBUG

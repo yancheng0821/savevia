@@ -1,21 +1,24 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Background Card -->
-  <rect x="6" y="5" width="20" height="12" rx="3" transform="rotate(6 6 5)" fill="url(#f1)"/>
+  <rect x="5" y="3" width="20" height="13" rx="2" transform="rotate(8 5 3)" fill="url(#f1)"/>
 
   <!-- Middle Card -->
-  <rect x="5" y="10" width="20" height="12" rx="3" transform="rotate(-3 5 10)" fill="url(#f2)"/>
+  <rect x="4" y="7" width="20" height="13" rx="2" transform="rotate(-4 4 7)" fill="url(#f2)"/>
 
   <!-- Front Card -->
-  <rect x="6" y="14" width="20" height="12" rx="3" fill="url(#f3)"/>
+  <rect x="6" y="10" width="20" height="13" rx="2" fill="url(#f3)"/>
+
+  <!-- Chip -->
+  <rect x="8" y="12" width="4" height="3" rx="0.5" fill="url(#chipGradient)"/>
 
   <!-- CASHBACK label -->
-  <text x="8" y="18" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="2" font-weight="500">CASHBACK</text>
+  <text x="8" y="17.5" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="1.8" font-weight="600" letter-spacing="0.1">CASHBACK</text>
 
-  <!-- 5% rate -->
-  <text x="8" y="22" fill="white" font-family="Inter, Arial, sans-serif" font-size="3" font-weight="700">5%</text>
+  <!-- 5% -->
+  <text x="8" y="21" fill="white" font-family="Inter, Arial, sans-serif" font-size="3.5" font-weight="700">5%</text>
 
-  <!-- Card number -->
-  <text x="8" y="25" fill="rgba(255,255,255,0.8)" font-family="Inter, Arial, sans-serif" font-size="1.5">•••• •••• •••• 4242</text>
+  <!-- Sparkle - top right -->
+  <path d="M23 12 L23.5 13.5 L25 14 L23.5 14.5 L23 16 L22.5 14.5 L21 14 L22.5 13.5 Z" fill="white" opacity="0.7"/>
 
   <defs>
     <linearGradient id="f1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -27,8 +30,12 @@
       <stop offset="100%" style="stop-color:#fce7f3"/>
     </linearGradient>
     <linearGradient id="f3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#111827"/>
+      <stop offset="0%" style="stop-color:#1f2937"/>
       <stop offset="100%" style="stop-color:#374151"/>
+    </linearGradient>
+    <linearGradient id="chipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
     </linearGradient>
   </defs>
 </svg>

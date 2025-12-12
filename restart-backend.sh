@@ -5,8 +5,19 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Load environment variables from .env file
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    echo "Loading environment variables from .env..."
+    set -a
+    source "$SCRIPT_DIR/.env"
+    set +a
+else
+    echo "Warning: .env file not found. Using default values."
+fi
+
 # Service startup order
-SERVICE_ORDER="eureka gateway card optimizer user"
+# Gateway should start LAST so all services are registered with Eureka first
+SERVICE_ORDER="eureka card optimizer user gateway"
 
 # Get service directory
 get_service_dir() {
@@ -57,11 +68,40 @@ stop_service() {
     local port=$(get_service_port $service)
 
     echo "Stopping $service (port $port)..."
-    # Kill Java process on port
-    lsof -ti:$port | xargs kill -9 2>/dev/null
-    # Also kill any maven process for this service
-    pkill -9 -f "spring-boot:run.*$dir" 2>/dev/null
-    sleep 2
+
+    # First, kill the Java process running on the port
+    local pid=$(lsof -ti:$port 2>/dev/null)
+    if [ -n "$pid" ]; then
+        echo "  Killing process $pid on port $port..."
+        kill -9 $pid 2>/dev/null
+    fi
+
+    # Kill any maven spring-boot:run process for this specific service
+    local maven_pid=$(pgrep -f "multiModuleProjectDirectory.*$dir.*spring-boot:run" 2>/dev/null)
+    if [ -n "$maven_pid" ]; then
+        echo "  Killing maven process $maven_pid..."
+        kill -9 $maven_pid 2>/dev/null
+    fi
+
+    # Kill any java -jar process for this service
+    local jar_pid=$(pgrep -f "java.*$dir.*jar" 2>/dev/null)
+    if [ -n "$jar_pid" ]; then
+        echo "  Killing jar process $jar_pid..."
+        kill -9 $jar_pid 2>/dev/null
+    fi
+
+    # Wait for port to be released
+    local waited=0
+    while lsof -ti:$port > /dev/null 2>&1 && [ $waited -lt 10 ]; do
+        sleep 1
+        waited=$((waited + 1))
+    done
+
+    if lsof -ti:$port > /dev/null 2>&1; then
+        echo "  Warning: Port $port still in use after 10s"
+    else
+        echo "  $service stopped."
+    fi
 }
 
 start_service() {
@@ -82,7 +122,7 @@ start_service() {
 
     # Always rebuild to pick up code changes
     echo "Building $service..."
-    mvn clean compile -DskipTests
+    mvn clean package -DskipTests -q
     local build_result=$?
 
     if [ $build_result -ne 0 ]; then
@@ -91,31 +131,94 @@ start_service() {
     fi
     echo "Build successful!"
 
-    # Run the service
-    mvn spring-boot:run &
+    # Run the packaged jar with nohup to prevent it from being affected by subsequent commands
+    local jar_file=$(ls target/*.jar 2>/dev/null | grep -v original | head -1)
+    if [ -z "$jar_file" ]; then
+        echo "ERROR: No jar file found in target/"
+        return 1
+    fi
+    echo "Running $jar_file..."
 
-    # Wait for service to start
+    # Create logs directory if not exists
+    mkdir -p "$SCRIPT_DIR/logs"
+
+    # Use nohup and redirect output to log file
+    nohup java -jar "$jar_file" > "$SCRIPT_DIR/logs/$service.log" 2>&1 &
+    local pid=$!
+    echo "Started with PID: $pid"
+
+    # Wait for service to start (check port)
     echo "Waiting for $service to start on port $port..."
-    local max_wait=60
+    local max_wait=90
     local waited=0
     while ! lsof -ti:$port > /dev/null 2>&1; do
         sleep 2
         waited=$((waited + 2))
         if [ $waited -ge $max_wait ]; then
-            echo "Warning: $service may not have started properly"
-            break
+            echo "ERROR: $service failed to start within ${max_wait}s"
+            echo "Check log: $SCRIPT_DIR/logs/$service.log"
+            tail -20 "$SCRIPT_DIR/logs/$service.log" 2>/dev/null
+            return 1
+        fi
+        # Check if process is still running
+        if ! kill -0 $pid 2>/dev/null; then
+            echo "ERROR: $service process died unexpectedly"
+            echo "Check log: $SCRIPT_DIR/logs/$service.log"
+            tail -30 "$SCRIPT_DIR/logs/$service.log" 2>/dev/null
+            return 1
         fi
     done
 
-    if lsof -ti:$port > /dev/null 2>&1; then
-        echo "$service started successfully on port $port"
+    # Additional health check for services with actuator
+    if [ "$service" = "eureka" ]; then
+        echo "Verifying Eureka is healthy..."
+        local health_waited=0
+        while [ $health_waited -lt 30 ]; do
+            if curl -s http://localhost:8761/actuator/health 2>/dev/null | grep -q '"status":"UP"'; then
+                echo "Eureka health check passed!"
+                break
+            fi
+            sleep 2
+            health_waited=$((health_waited + 2))
+        done
     fi
+
+    echo "$service started successfully on port $port (PID: $pid)"
 }
 
 restart_service() {
     local service=$1
+
+    # Check gateway status before restart
+    echo "=== Pre-restart check ==="
+    local gw_pid=$(lsof -ti:8080 2>/dev/null)
+    if [ -n "$gw_pid" ]; then
+        echo "  Gateway is running (PID: $gw_pid)"
+    else
+        echo "  Gateway is NOT running"
+    fi
+
     stop_service $service
+
+    # Check gateway status after stop
+    echo "=== Post-stop check ==="
+    gw_pid=$(lsof -ti:8080 2>/dev/null)
+    if [ -n "$gw_pid" ]; then
+        echo "  Gateway still running (PID: $gw_pid)"
+    else
+        echo "  WARNING: Gateway stopped unexpectedly!"
+    fi
+
     start_service $service
+
+    # Check gateway status after start
+    echo "=== Post-start check ==="
+    gw_pid=$(lsof -ti:8080 2>/dev/null)
+    if [ -n "$gw_pid" ]; then
+        echo "  Gateway is running (PID: $gw_pid)"
+    else
+        echo "  WARNING: Gateway is NOT running!"
+    fi
 }
 
 show_running_services() {
@@ -143,20 +246,36 @@ kill_all_services() {
 
 start_all_services() {
     echo "Starting all services in order..."
+    echo "Order: $SERVICE_ORDER"
     echo ""
 
     for service in $SERVICE_ORDER; do
         restart_service $service
+        local result=$?
         echo ""
 
-        # Extra wait for eureka to be fully ready
+        if [ $result -ne 0 ]; then
+            echo "ERROR: Failed to start $service. Stopping."
+            return 1
+        fi
+
+        # Extra wait after eureka to ensure it's accepting registrations
         if [ "$service" = "eureka" ]; then
-            echo "Waiting for Eureka to be fully ready..."
+            echo "Waiting for Eureka to be fully ready for registrations..."
+            sleep 15
+        fi
+
+        # Wait for services to register with Eureka before starting Gateway
+        if [ "$service" = "user" ]; then
+            echo "Waiting for all services to register with Eureka..."
             sleep 10
         fi
     done
 
-    echo "All services started!"
+    echo ""
+    echo "=========================================="
+    echo "  All services started successfully!"
+    echo "=========================================="
     show_running_services
 }
 

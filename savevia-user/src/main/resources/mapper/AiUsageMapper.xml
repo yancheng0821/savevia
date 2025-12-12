@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.AiUsageMapper">
+    <resultMap id="BaseResultMap" type="com.savevia.user.entity.AiUsage">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="year_month" property="yearMonth"/>
+        <result column="usage_count" property="usageCount"/>
+        <result column="monthly_limit" property="monthlyLimit"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <select id="findByUserIdAndYearMonth" resultMap="BaseResultMap">
+        SELECT * FROM ai_usage
+        WHERE user_id = #{userId} AND `year_month` = #{yearMonth}
+    </select>
+
+    <update id="incrementUsage">
+        UPDATE ai_usage
+        SET usage_count = usage_count + 1, updated_at = NOW()
+        WHERE user_id = #{userId} AND `year_month` = #{yearMonth}
+    </update>
+
+    <update id="updateMonthlyLimit">
+        UPDATE ai_usage
+        SET monthly_limit = #{limit}, updated_at = NOW()
+        WHERE user_id = #{userId} AND `year_month` = #{yearMonth}
+    </update>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_usage (user_id, `year_month`, usage_count, monthly_limit, created_at, updated_at)
+        VALUES (#{userId}, #{yearMonth}, #{usageCount}, #{monthlyLimit}, NOW(), NOW())
+    </insert>
+</mapper>

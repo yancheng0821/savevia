@@ -31,7 +31,7 @@ public class AuthController {
 
     @PostMapping("/apple")
     public Result<LoginResponse> appleLogin(@Valid @RequestBody AppleLoginRequest request) {
-        return Result.success(authService.loginWithApple(request.getIdentityToken(), request.getFullName()));
+        return Result.success(authService.loginWithApple(request.getIdentityToken(), request.getFullName(), request.getEmail()));
     }
 
     @PutMapping("/avatar")
@@ -84,5 +84,19 @@ public class AuthController {
     public Result<Void> verifyEmail(@RequestParam String token) {
         authService.verifyEmail(token);
         return Result.success("Email verified successfully", null);
+    }
+
+    @PutMapping("/subscription")
+    public Result<UserDTO> updateSubscription(
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody UpdateSubscriptionRequest request) {
+        return Result.success("Subscription updated",
+                authService.updateSubscription(userId, request.getSubscriptionType(),
+                        request.getExpiresAt(), request.getPlatform(), request.getProductId()));
+    }
+
+    @GetMapping("/subscription")
+    public Result<UserDTO> getSubscription(@RequestHeader("X-User-Id") Long userId) {
+        return Result.success(authService.getSubscriptionStatus(userId));
     }
 }

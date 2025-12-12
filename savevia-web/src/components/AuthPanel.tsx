@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MailOutlined, LockOutlined, UserOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons'
+import { MailOutlined, LockOutlined, UserOutlined, EyeOutlined, EyeInvisibleOutlined, CheckOutlined } from '@ant-design/icons'
 import { Modal, message } from 'antd'
 import { Capacitor } from '@capacitor/core'
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
+import { GoogleAuth } from '@southdevs/capacitor-google-auth'
 import { useGoogleLogin } from '@react-oauth/google'
 import { useAuthStore } from '../stores/useAuthStore'
+import LegalModal, { type LegalType } from './LegalModal'
 
 type AuthMode = 'login' | 'register'
 
@@ -69,6 +70,8 @@ function AuthPanel() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [legalModal, setLegalModal] = useState<LegalType | null>(null)
 
   // Load Apple Sign In JS SDK for web
   useEffect(() => {
@@ -113,11 +116,28 @@ function AuthPanel() {
   const handleGoogleLogin = async () => {
     if (isNativeApp) {
       try {
-        const result = await GoogleAuth.signIn()
-        if (result.authentication?.idToken) {
-          await loginWithGoogle(result.authentication.idToken)
+        // Sign out first to force account picker
+        try {
+          await GoogleAuth.signOut()
+        } catch (e) {
+          // Ignore signOut errors - user might not be signed in
+        }
+
+        const result = await GoogleAuth.signIn({ scopes: ['profile', 'email'] })
+        console.log('Google login: sending credential to backend...')
+
+        // Priority: idToken > accessToken > serverAuthCode
+        const credential = result.authentication?.idToken
+          || result.authentication?.accessToken
+          || result.serverAuthCode
+
+        if (credential) {
+          await loginWithGoogle(credential)
           message.success(t('auth.loginSuccess'))
           handleClose()
+        } else {
+          console.error('Google login: no valid credential found in result', result)
+          message.error(t('errors.unexpectedError'))
         }
       } catch (error: any) {
         if (error.message !== 'The user canceled the sign-in flow.') {
@@ -138,12 +158,14 @@ function AuthPanel() {
           redirectURI: window.location.origin,
           scopes: 'email name',
         })
+        console.log('Apple Sign In response:', JSON.stringify(result.response))
         const identityToken = result.response?.identityToken
+        const email = result.response?.email
         const fullName = result.response?.givenName && result.response?.familyName
           ? `${result.response.givenName} ${result.response.familyName}`.trim()
-          : undefined
+          : (result.response?.givenName || result.response?.familyName || undefined)
         if (identityToken) {
-          await loginWithApple(identityToken, fullName)
+          await loginWithApple(identityToken, fullName, email)
           message.success(t('auth.loginSuccess'))
           handleClose()
         }
@@ -176,6 +198,11 @@ function AuthPanel() {
         message.error(t(pwdError))
         return
       }
+      // Check terms agreement
+      if (!agreedToTerms) {
+        message.error(t('auth.pleaseAgreeTerms'))
+        return
+      }
     }
 
     try {
@@ -199,6 +226,7 @@ function AuthPanel() {
     setPassword('')
     setName('')
     setShowPassword(false)
+    setAgreedToTerms(false)
   }
 
   if (!isPanelOpen) return null
@@ -217,8 +245,8 @@ function AuthPanel() {
           <h2>{authMode === 'login' ? t('auth.welcomeBack') : t('auth.joinUs')}</h2>
           <p>
             {authMode === 'login'
-              ? <>Sign in to continue to <span className="sv-logo-gradient">SaveVia</span></>
-              : <>Create an account to get started with <span className="sv-logo-gradient">SaveVia</span></>
+              ? <>{t('auth.signInSubtitle')} <span className="sv-logo-gradient">SaveVia</span></>
+              : <>{t('auth.signUpSubtitle')} <span className="sv-logo-gradient">SaveVia</span></>
             }
           </p>
 
@@ -238,6 +266,12 @@ function AuthPanel() {
               </button>
             )}
           </div>
+          <p className="auth-modal-social-terms">
+            {t('auth.socialLoginTerms')}{' '}
+            <button type="button" onClick={() => setLegalModal('terms')}>{t('me.termsOfService')}</button>
+            {' '}{t('auth.and')}{' '}
+            <button type="button" onClick={() => setLegalModal('privacy')}>{t('me.privacyPolicy')}</button>
+          </p>
 
           <div className="auth-modal-divider">
             <span>{t('auth.or')}</span>
@@ -293,7 +327,24 @@ function AuthPanel() {
               </div>
             </div>
 
-            <button type="submit" className="auth-modal-submit" disabled={isLoading}>
+            {authMode === 'register' && (
+              <div className="auth-modal-terms">
+                <div
+                  className={`auth-modal-checkbox ${agreedToTerms ? 'checked' : ''}`}
+                  onClick={() => setAgreedToTerms(!agreedToTerms)}
+                >
+                  {agreedToTerms && <CheckOutlined />}
+                </div>
+                <span className="auth-modal-terms-text">
+                  {t('auth.agreeToTerms')}{' '}
+                  <button type="button" onClick={() => setLegalModal('terms')}>{t('me.termsOfService')}</button>
+                  {' '}{t('auth.and')}{' '}
+                  <button type="button" onClick={() => setLegalModal('privacy')}>{t('me.privacyPolicy')}</button>
+                </span>
+              </div>
+            )}
+
+            <button type="submit" className="auth-modal-submit" disabled={isLoading || (authMode === 'register' && !agreedToTerms)}>
               {isLoading ? t('common.loading') : (authMode === 'login' ? t('auth.signIn') : t('auth.signUp'))}
             </button>
           </form>
@@ -306,6 +357,11 @@ function AuthPanel() {
           </p>
         </div>
       </Modal>
+
+      {/* Legal Modal */}
+      {legalModal && (
+        <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />
+      )}
 
       <style>{`
         /* Auth Modal Styles - same as MePage */
@@ -418,15 +474,24 @@ function AuthPanel() {
           padding: 12px 42px 12px 42px;
           border: 1px solid #e5e7eb;
           border-radius: 10px;
-          font-size: 14px;
+          font-size: 16px; /* Prevent iOS zoom on focus */
           outline: none;
-          transition: all 0.2s;
           box-sizing: border-box;
+          -webkit-appearance: none;
+          -webkit-tap-highlight-color: transparent;
+          /* No transitions on iOS to prevent keyboard input lag */
         }
 
         .auth-modal-input input:focus {
           border-color: #667eea;
           box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Only apply transitions on non-touch devices */
+        @media (hover: hover) and (pointer: fine) {
+          .auth-modal-input input {
+            transition: border-color 0.2s, box-shadow 0.2s;
+          }
         }
 
         .password-toggle {
@@ -498,6 +563,84 @@ function AuthPanel() {
           -webkit-text-fill-color: transparent;
           background-clip: text;
           font-weight: 600;
+        }
+
+        /* Terms Checkbox */
+        .auth-modal-terms {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          margin-top: 4px;
+        }
+
+        .auth-modal-checkbox {
+          width: 20px;
+          height: 20px;
+          border: 2px solid #d1d5db;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+
+        .auth-modal-checkbox:hover {
+          border-color: #9ca3af;
+        }
+
+        .auth-modal-checkbox.checked {
+          background: #059669;
+          border-color: #059669;
+          color: white;
+        }
+
+        .auth-modal-checkbox .anticon {
+          font-size: 12px;
+        }
+
+        .auth-modal-terms-text {
+          font-size: 13px;
+          color: #6b7280;
+          line-height: 1.5;
+        }
+
+        .auth-modal-terms-text button {
+          background: none;
+          border: none;
+          padding: 0;
+          color: #059669;
+          font-weight: 500;
+          cursor: pointer;
+          text-decoration: underline;
+        }
+
+        .auth-modal-terms-text button:hover {
+          color: #047857;
+        }
+
+        .auth-modal-social-terms {
+          font-size: 11px;
+          color: #9ca3af;
+          text-align: center;
+          margin: 8px 0 0;
+          line-height: 1.5;
+        }
+
+        .auth-modal-social-terms button {
+          background: none;
+          border: none;
+          padding: 0;
+          color: #6b7280;
+          font-size: 11px;
+          cursor: pointer;
+          text-decoration: underline;
+        }
+
+        .auth-modal-social-terms button:hover {
+          color: #374151;
         }
       `}</style>
     </>

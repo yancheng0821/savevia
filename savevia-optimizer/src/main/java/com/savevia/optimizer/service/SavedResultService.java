@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +52,7 @@ public class SavedResultService {
             savedResult.setNetAnnualSavings(result.getNetAnnualSavings());
             savedResult.setAnnualReward(result.getAnnualReward());
             savedResult.setTotalAnnualFees(result.getTotalAnnualFees());
-            savedResult.setExpiresAt(LocalDateTime.now().plusDays(30));
+            savedResult.setExpiresAt(LocalDateTime.now(ZoneOffset.UTC).plusDays(30));
 
             savedResultMapper.insert(savedResult);
 

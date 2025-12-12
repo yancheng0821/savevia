@@ -116,43 +116,63 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponse loginWithApple(String identityToken, String fullName) {
+    public LoginResponse loginWithApple(String identityToken, String fullName, String requestEmail) {
         // Verify Apple token
         AppleAuthService.AppleUserInfo appleUser = appleAuthService.verifyToken(identityToken);
+        // Prefer email from request (Apple response.email) over token email
+        // Apple provides email in response only on first authorization
+        String appleEmail = (requestEmail != null && !requestEmail.isBlank())
+                ? requestEmail
+                : appleUser.email();
+
+        log.info("Apple login - appleId: {}, tokenEmail: {}, requestEmail: {}, finalEmail: {}, fullName: {}",
+                 appleUser.appleId(), appleUser.email(), requestEmail, appleEmail, fullName);
 
         // Check if user exists by Apple ID
         User user = userMapper.selectByAppleId(appleUser.appleId())
                 .orElseGet(() -> {
                     // Check if email already exists (user registered with email/password or Google)
-                    return userMapper.selectByEmail(appleUser.email().toLowerCase())
-                            .map(existingUser -> {
-                                // Link Apple account to existing user
-                                existingUser.setAppleId(appleUser.appleId());
-                                userMapper.update(existingUser);
-                                log.info("Linked Apple account to existing user: {}", existingUser.getEmail());
-                                return existingUser;
-                            })
-                            .orElseGet(() -> {
-                                // Create new user
-                                LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-                                // Use full name from Apple or email prefix as fallback
-                                String userName = (fullName != null && !fullName.isBlank())
-                                        ? fullName
-                                        : appleUser.email().split("@")[0];
+                    if (appleEmail != null && !appleEmail.isBlank()) {
+                        var existingByEmail = userMapper.selectByEmail(appleEmail.toLowerCase());
+                        if (existingByEmail.isPresent()) {
+                            User existingUser = existingByEmail.get();
+                            // Link Apple account to existing user
+                            existingUser.setAppleId(appleUser.appleId());
+                            userMapper.update(existingUser);
+                            log.info("Linked Apple account to existing user: {}", existingUser.getEmail());
+                            return existingUser;
+                        }
+                    }
 
-                                User newUser = User.builder()
-                                        .email(appleUser.email().toLowerCase())
-                                        .name(userName)
-                                        .appleId(appleUser.appleId())
-                                        .emailVerified(appleUser.emailVerified())
-                                        .isActive(true)
-                                        .createdAt(now)
-                                        .updatedAt(now)
-                                        .build();
-                                userMapper.insert(newUser);
-                                log.info("Created new user via Apple: {}", newUser.getEmail());
-                                return newUser;
-                            });
+                    // Create new user
+                    LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+                    // Use full name from Apple, or email prefix, or appleId as fallback
+                    String userName;
+                    if (fullName != null && !fullName.isBlank()) {
+                        userName = fullName;
+                    } else if (appleEmail != null && !appleEmail.isBlank()) {
+                        userName = appleEmail.split("@")[0];
+                    } else {
+                        userName = "Apple User";
+                    }
+
+                    // For email, use provided email or generate a placeholder
+                    String userEmail = (appleEmail != null && !appleEmail.isBlank())
+                            ? appleEmail.toLowerCase()
+                            : appleUser.appleId() + "@privaterelay.appleid.com";
+
+                    User newUser = User.builder()
+                            .email(userEmail)
+                            .name(userName)
+                            .appleId(appleUser.appleId())
+                            .emailVerified(appleUser.emailVerified())
+                            .isActive(true)
+                            .createdAt(now)
+                            .updatedAt(now)
+                            .build();
+                    userMapper.insert(newUser);
+                    log.info("Created new user via Apple: {} (email: {})", userName, userEmail);
+                    return newUser;
                 });
 
         // Generate JWT token
@@ -353,7 +373,50 @@ public class AuthService {
         log.info("Email verified for user: {}", user.getEmail());
     }
 
+    /**
+     * Update user subscription status (called after successful IAP purchase)
+     */
+    @Transactional
+    public UserDTO updateSubscription(Long userId, String subscriptionType, String expiresAt,
+                                      String platform, String productId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        user.setSubscriptionType(subscriptionType);
+        if (expiresAt != null && !expiresAt.isBlank()) {
+            user.setSubscriptionExpiresAt(LocalDateTime.parse(expiresAt.replace("Z", "")));
+        }
+        user.setSubscriptionPlatform(platform);
+        user.setSubscriptionProductId(productId);
+        user.setUpdatedAt(LocalDateTime.now(ZoneOffset.UTC));
+        userMapper.update(user);
+
+        log.info("Subscription updated for user {}: type={}, platform={}, productId={}",
+                user.getEmail(), subscriptionType, platform, productId);
+
+        return toDTO(user);
+    }
+
+    /**
+     * Get user subscription status
+     */
+    public UserDTO getSubscriptionStatus(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+        return toDTO(user);
+    }
+
     private UserDTO toDTO(User user) {
+        // Check if user is PRO and subscription hasn't expired
+        String subscriptionType = user.getSubscriptionType() != null ? user.getSubscriptionType() : "FREE";
+        LocalDateTime expiresAt = user.getSubscriptionExpiresAt();
+        boolean isProUser = "PRO".equals(subscriptionType) &&
+                (expiresAt == null || expiresAt.isAfter(LocalDateTime.now(ZoneOffset.UTC)));
+
         return UserDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -362,6 +425,9 @@ public class AuthService {
                 .createdAt(user.getCreatedAt())
                 .hasPassword(user.getPasswordHash() != null)
                 .emailVerified(Boolean.TRUE.equals(user.getEmailVerified()))
+                .subscriptionType(subscriptionType)
+                .subscriptionExpiresAt(expiresAt)
+                .isProUser(isProUser)
                 .build();
     }
 }

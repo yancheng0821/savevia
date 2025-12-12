@@ -1,26 +1,42 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background base -->
+  <rect width="512" height="512" fill="#FFFCF5"/>
+
   <!-- Background Card -->
-  <rect x="106" y="85" width="300" height="188" rx="24" transform="rotate(6 106 85)" fill="url(#splash1)"/>
+  <rect x="36" y="20" width="400" height="250" rx="26" transform="rotate(8 36 20)" fill="url(#splash1)"/>
 
   <!-- Middle Card -->
-  <rect x="86" y="150" width="300" height="188" rx="24" transform="rotate(-3 86 150)" fill="url(#splash2)"/>
+  <rect x="16" y="90" width="400" height="250" rx="26" transform="rotate(-4 16 90)" fill="url(#splash2)"/>
 
   <!-- Front Card -->
-  <rect x="106" y="205" width="300" height="188" rx="24" fill="url(#splash3)"/>
+  <rect x="56" y="145" width="400" height="250" rx="26" fill="url(#splash3)"/>
+
+  <!-- Chip on front card -->
+  <rect x="90" y="180" width="56" height="42" rx="6" fill="url(#chipGradient)"/>
+  <line x1="90" y1="196" x2="146" y2="196" stroke="#c9a227" stroke-width="1" opacity="0.5"/>
+  <line x1="90" y1="209" x2="146" y2="209" stroke="#c9a227" stroke-width="1" opacity="0.5"/>
+  <line x1="118" y1="180" x2="118" y2="222" stroke="#c9a227" stroke-width="1" opacity="0.5"/>
 
   <!-- CASHBACK label -->
-  <text x="140" y="255" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="500" letter-spacing="1">CASHBACK</text>
+  <text x="90" y="250" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="1">CASHBACK</text>
 
   <!-- 5% rate -->
-  <text x="140" y="310" fill="white" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="700">5%</text>
+  <text x="90" y="295" fill="white" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="700">5%</text>
+
+  <!-- Small sparkle - positioned to the right top of the front card -->
+  <path d="M420 175 L425 190 L440 195 L425 200 L420 215 L415 200 L400 195 L415 190 Z" fill="white" opacity="0.7"/>
 
   <!-- Card number -->
-  <text x="140" y="370" fill="rgba(255,255,255,0.8)" font-family="Inter, Arial, sans-serif" font-size="18">•••• •••• •••• 4242</text>
+  <text x="90" y="375" fill="rgba(255,255,255,0.5)" font-family="Inter, Arial, sans-serif" font-size="16">•••• •••• •••• 4242</text>
 
   <!-- SaveVia Text below cards -->
-  <text x="256" y="460" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700" letter-spacing="-1" fill="url(#splashText)">SaveVia</text>
+  <text x="256" y="445" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="56" font-weight="700" letter-spacing="-1" fill="url(#splashText)">SaveVia</text>
+
+  <!-- Tagline -->
+  <text x="256" y="485" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="500" fill="#9ca3af" letter-spacing="1">MAXIMIZE YOUR CASHBACK</text>
 
   <defs>
+    <!-- Card gradients -->
     <linearGradient id="splash1" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#dbeafe"/>
       <stop offset="100%" style="stop-color:#ede9fe"/>
@@ -30,12 +46,16 @@
       <stop offset="100%" style="stop-color:#fce7f3"/>
     </linearGradient>
     <linearGradient id="splash3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#111827"/>
+      <stop offset="0%" style="stop-color:#1f2937"/>
       <stop offset="100%" style="stop-color:#374151"/>
     </linearGradient>
     <linearGradient id="splashText" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#2563eb"/>
       <stop offset="100%" style="stop-color:#0d9488"/>
+    </linearGradient>
+    <linearGradient id="chipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
     </linearGradient>
   </defs>
 </svg>

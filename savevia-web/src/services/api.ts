@@ -8,6 +8,13 @@ import type {
   CreditCard,
   OptimizationRequest,
   OptimizationResult,
+  BankConnection,
+  Transaction,
+  MissedCashbackSummary,
+  SubscriptionPlan,
+  UserSubscription,
+  VerifyReceiptRequest,
+  VerifyReceiptResponse,
 } from '../types'
 
 // API 基础地址 - 通过 Gateway 访问
@@ -149,8 +156,19 @@ const createRequest = async (
     // 解析响应
     let responseData
     try {
-      responseData = await response.json()
-    } catch {
+      const responseText = await response.text()
+      try {
+        responseData = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError, 'Raw text:', responseText.substring(0, 200))
+        responseData = {
+          code: response.status,
+          message: `HTTP ${response.status}: ${response.statusText}`,
+          data: null,
+        }
+      }
+    } catch (readError) {
+      console.error('Response read error:', readError)
       responseData = {
         code: response.status,
         message: `HTTP ${response.status}: ${response.statusText}`,
@@ -268,6 +286,7 @@ export const authApi = {
   appleLogin: async (data: {
     identityToken: string
     fullName?: string
+    email?: string
   }): Promise<ApiResponse<any>> => {
     return createRequest('/api/v1/auth/apple', {
       method: 'POST',
@@ -328,6 +347,26 @@ export const authApi = {
   verifyEmail: async (token: string): Promise<ApiResponse<void>> => {
     return createRequest(`/api/v1/auth/verify-email?token=${encodeURIComponent(token)}`, {
       method: 'POST',
+    })
+  },
+
+  // 更新订阅状态 (购买成功后调用)
+  updateSubscription: async (data: {
+    subscriptionType: string  // FREE or PRO
+    expiresAt?: string        // ISO 8601 format
+    platform: string          // ios, android, web
+    productId?: string
+  }): Promise<ApiResponse<any>> => {
+    return createRequest('/api/v1/auth/subscription', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // 获取订阅状态
+  getSubscription: async (): Promise<ApiResponse<any>> => {
+    return createRequest('/api/v1/auth/subscription', {
+      method: 'GET',
     })
   },
 }
@@ -485,6 +524,184 @@ export const userApi = {
       body: JSON.stringify({ password }),
     })
   },
+
+  // 获取AI使用情况
+  getAiUsage: async (): Promise<ApiResponse<{ used: number; limit: number; remaining: number; isProUser: boolean }>> => {
+    return createRequest('/api/v1/users/ai-usage', {
+      method: 'GET',
+    })
+  },
+}
+
+/**
+ * Connection limit info type
+ */
+export interface ConnectionLimit {
+  used: number
+  max: number
+  remaining: number
+  canConnect: boolean
+  yearMonth?: string
+}
+
+/**
+ * Bank Connection API (V2)
+ */
+export const bankApi = {
+  // Get Flinks Connect configuration (includes connection limit)
+  getFlinksConfig: async (): Promise<ApiResponse<{
+    customerId: string
+    iframeUrl: string
+    sandbox: boolean
+    connectUrl: string
+    connectionLimit: ConnectionLimit
+  }>> => {
+    return createRequest('/api/v1/optimize/bank/flinks-config', {
+      method: 'GET',
+    })
+  },
+
+  // Get connection limit status
+  getConnectionLimit: async (): Promise<ApiResponse<ConnectionLimit>> => {
+    return createRequest('/api/v1/optimize/bank/connection-limit', {
+      method: 'GET',
+    })
+  },
+
+  // Connect bank via Flinks
+  connect: async (data: {
+    loginId: string
+    institutionName: string
+    accountId?: string
+    userCardIds?: number[]
+  }): Promise<ApiResponse<BankConnection>> => {
+    return createRequest('/api/v1/optimize/bank/connect', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // Get all bank connections
+  getConnections: async (): Promise<ApiResponse<BankConnection[]>> => {
+    return createRequest('/api/v1/optimize/bank/connections', {
+      method: 'GET',
+    })
+  },
+
+  // Refresh bank data (local only, no Flinks API call)
+  refresh: async (connectionId: number): Promise<ApiResponse<BankConnection>> => {
+    return createRequest(`/api/v1/optimize/bank/connections/${connectionId}/refresh`, {
+      method: 'POST',
+    })
+  },
+
+  // Resync bank data from Flinks (costs connection quota!)
+  resync: async (connectionId: number, userCardIds?: number[]): Promise<ApiResponse<BankConnection>> => {
+    return createRequest(`/api/v1/optimize/bank/connections/${connectionId}/resync`, {
+      method: 'POST',
+      body: JSON.stringify({ userCardIds }),
+    })
+  },
+
+  // Disconnect bank
+  disconnect: async (connectionId: number): Promise<ApiResponse<void>> => {
+    return createRequest(`/api/v1/optimize/bank/connections/${connectionId}`, {
+      method: 'DELETE',
+    })
+  },
+}
+
+/**
+ * Transaction API (V2)
+ */
+export const transactionApi = {
+  // Get recent transactions with recommendations
+  getRecent: async (limit: number = 50, cardIds?: number[]): Promise<ApiResponse<Transaction[]>> => {
+    const headers: Record<string, string> = {}
+    if (cardIds && cardIds.length > 0) {
+      headers['X-User-Card-Ids'] = cardIds.join(',')
+    }
+    return createRequest(`/api/v1/optimize/transactions?limit=${limit}`, {
+      method: 'GET',
+      headers,
+    })
+  },
+
+  // Get missed cashback summary
+  getSummary: async (cardIds?: number[]): Promise<ApiResponse<MissedCashbackSummary>> => {
+    const headers: Record<string, string> = {}
+    if (cardIds && cardIds.length > 0) {
+      headers['X-User-Card-Ids'] = cardIds.join(',')
+    }
+    return createRequest('/api/v1/optimize/transactions/summary', {
+      method: 'GET',
+      headers,
+    })
+  },
+
+  // Trigger transaction analysis
+  analyze: async (cardIds?: number[], force: boolean = false): Promise<ApiResponse<void>> => {
+    const headers: Record<string, string> = {}
+    if (cardIds && cardIds.length > 0) {
+      headers['X-User-Card-Ids'] = cardIds.join(',')
+    }
+    const url = force
+      ? '/api/v1/optimize/transactions/analyze?force=true'
+      : '/api/v1/optimize/transactions/analyze'
+    return createRequest(url, {
+      method: 'POST',
+      headers,
+    })
+  },
+}
+
+/**
+ * Subscription API
+ */
+export const subscriptionApi = {
+  // Get available subscription plans
+  getPlans: async (): Promise<ApiResponse<SubscriptionPlan[]>> => {
+    return createRequest('/api/v1/subscriptions/plans', {
+      method: 'GET',
+    })
+  },
+
+  // Get current user's subscription
+  getMySubscription: async (): Promise<ApiResponse<UserSubscription | null>> => {
+    return createRequest('/api/v1/subscriptions/me', {
+      method: 'GET',
+    })
+  },
+
+  // Verify and process receipt
+  verifyReceipt: async (request: VerifyReceiptRequest): Promise<ApiResponse<VerifyReceiptResponse>> => {
+    return createRequest('/api/v1/subscriptions/verify', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    })
+  },
+
+  // Restore purchases
+  restorePurchases: async (request: VerifyReceiptRequest): Promise<ApiResponse<VerifyReceiptResponse>> => {
+    return createRequest('/api/v1/subscriptions/restore', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    })
+  },
+
+  // Cancel subscription
+  cancel: async (): Promise<ApiResponse<boolean>> => {
+    return createRequest('/api/v1/subscriptions/cancel', {
+      method: 'POST',
+    })
+  },
+
+  // Get subscription history
+  getHistory: async (): Promise<ApiResponse<UserSubscription[]>> => {
+    return createRequest('/api/v1/subscriptions/history', {
+      method: 'GET',
+    })
+  },
 }
 
 export default {
@@ -492,4 +709,7 @@ export default {
   card: cardApi,
   optimizer: optimizerApi,
   user: userApi,
+  bank: bankApi,
+  transaction: transactionApi,
+  subscription: subscriptionApi,
 }

@@ -5,14 +5,14 @@ spring:
   application:
     name: savevia-optimizer
   datasource:
-    url: jdbc:mysql://localhost:3306/savevia?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: savevia
-    password: savevia123
+    url: jdbc:mysql://localhost:3306/${MYSQL_DATABASE:savevia}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:savevia}
+    password: ${MYSQL_PASSWORD:savevia123}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -22,7 +22,7 @@ mybatis:
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+      defaultZone: http://${EUREKA_USER:eureka}:${EUREKA_PASSWORD:eureka123}@localhost:8761/eureka/
   instance:
     prefer-ip-address: true
 
@@ -33,6 +33,47 @@ feign:
         connect-timeout: 5000
         read-timeout: 5000
 
+# Actuator endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
 logging:
   level:
-    com.savevia.optimizer: DEBUG
+    com.savevia.optimizer: INFO
+    com.savevia.optimizer.mapper: WARN
+    com.savevia.common: INFO
+
+# Flinks API Configuration (Canadian Open Banking)
+# Sandbox mode: Uses Flinks Toolbox for testing
+# Production mode: Use your production customer-id
+# OpenAI Configuration
+openai:
+  api:
+    key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+    base-url: ${OPENAI_API_URL:https://api.openai.com}
+  enabled: ${OPENAI_ENABLED:true}
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:5173}
+  frontend-url: ${FRONTEND_URL:https://savevia.app}
+
+flinks:
+  api:
+    # Sandbox URL (Toolbox API)
+    base-url: ${FLINKS_API_URL:https://toolbox-api.private.fin.ag/v3}
+    # Sandbox customer ID for testing
+    customer-id: ${FLINKS_CUSTOMER_ID:43387ca6-0391-4c82-857d-70d95f087ecb}
+    # Flinks Connect iframe URL for frontend (Canadian toolbox)
+    iframe-url: ${FLINKS_IFRAME_URL:https://toolbox-iframe.private.fin.ag/}
+  sandbox:
+    # Set to true to use demo data (no Flinks contract required)
+    # Set to false only when you have a production Flinks contract
+    enabled: ${FLINKS_SANDBOX:true}
+    # Test credentials: Flinks Capital bank, Username: Greatday, Password: Everyday

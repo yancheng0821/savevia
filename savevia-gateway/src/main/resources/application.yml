@@ -11,8 +11,8 @@ spring:
     name: savevia-gateway
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   cloud:
     gateway:
       discovery:
@@ -71,13 +71,40 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+      defaultZone: http://${EUREKA_USER:eureka}:${EUREKA_PASSWORD:eureka123}@localhost:8761/eureka/
+    # Faster service discovery refresh
+    registry-fetch-interval-seconds: 5
+    # Enable fetching registry from Eureka
+    fetch-registry: true
   instance:
     prefer-ip-address: true
+    # Faster heartbeat for quicker detection of service changes
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+# Load balancer configuration for better resilience
+spring.cloud.loadbalancer:
+  # Use round-robin with health checks
+  retry:
+    enabled: true
+  cache:
+    # Shorter TTL for service instance cache (in ms)
+    ttl: 5s
+    # Shorter initial delay before cache refresh
+    capacity: 256
 
 jwt:
-  secret: savevia-jwt-secret-key-2024-must-be-at-least-256-bits-long
+  secret: ${JWT_SECRET:savevia-jwt-secret-key-2024-must-be-at-least-256-bits-long}
   expiration: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:

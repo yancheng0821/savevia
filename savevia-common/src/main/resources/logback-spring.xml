@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- 日志目录配置 -->
-    <springProperty scope="context" name="LOG_HOME" source="logging.file.path" defaultValue="./logs"/>
+    <!-- 日志目录配置 - 使用环境变量，默认为当前目录的logs -->
+    <springProperty scope="context" name="LOG_HOME" source="logging.file.path" defaultValue="../logs"/>
     <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="savevia"/>
 
     <!-- 控制台输出 -->
@@ -27,32 +27,13 @@
         </encoder>
     </appender>
 
-    <!-- 错误日志单独输出 -->
-    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_HOME}/${APP_NAME}-error.log</file>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>ERROR</level>
-        </filter>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/${APP_NAME}-error.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId:-NO_TRACE}] %-5level %logger{36} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-    </appender>
-
-    <!-- 应用日志级别 -->
+    <!-- 应用日志级别 - 只输出到文件 -->
     <logger name="com.savevia" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
     </logger>
 
     <!-- MyBatis SQL日志 -->
     <logger name="com.savevia.*.mapper" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>
 
@@ -60,23 +41,23 @@
     <logger name="org.apache.ibatis" level="WARN"/>
     <logger name="org.mybatis" level="WARN"/>
     <logger name="org.springframework" level="WARN"/>
+    <logger name="org.springframework.context.support.PostProcessorRegistrationDelegate" level="ERROR"/>
+    <logger name="org.springframework.cloud.loadbalancer" level="ERROR"/>
     <logger name="com.netflix" level="WARN"/>
     <logger name="com.zaxxer.hikari" level="WARN"/>
 
-    <!-- 生产环境配置 -->
+    <!-- 根日志级别 - 根据profile区分 -->
     <springProfile name="prod">
-        <root level="INFO">
-            <appender-ref ref="FILE"/>
-            <appender-ref ref="ERROR_FILE"/>
-        </root>
-    </springProfile>
-
-    <!-- 开发环境配置 -->
-    <springProfile name="dev,default">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
-            <appender-ref ref="ERROR_FILE"/>
         </root>
     </springProfile>
+
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
 </configuration>

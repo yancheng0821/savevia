@@ -1,5 +1,6 @@
 {
   "common": {
+    "locale": "zh",
     "appName": "SaveVia",
     "loading": "加载中...",
     "save": "保存",
@@ -38,7 +39,7 @@
     "step3Title": "获取优化方案",
     "step3Desc": "我们会告诉您每个类别该用哪张卡",
     "getStarted": "开始使用",
-    "savingsBadge": "💰 每年节省 $300 - $2,000",
+    "savingsBadge": "💰 每年节省 $300 - $1,000",
     "savingsTitle": "每年节省 $300 - $1,000",
     "savingsDesc": "大多数加拿大人因为没有使用正确的卡片而错失了数百美元的返现。",
     "annualSavings": "年度节省",
@@ -53,6 +54,20 @@
       "cashback": "返现",
       "loginFirst": "登录并添加信用卡，开始使用",
       "addCards": "添加您的信用卡，获取推荐"
+    },
+    "bankConnect": {
+      "title": "查看您错过的返现",
+      "description": "连接您的银行账户，自动分析交易记录，发现您本可以获得多少返现。",
+      "cta": "连接银行",
+      "poweredBy": "安全银行连接由",
+      "security": "银行级加密 · 只读访问 · 数据隐私保护",
+      "demoNotice": "演示模式 - 正式版即将上线"
+    },
+    "cardModal": {
+      "hint": "在此类别消费时使用这张卡",
+      "openAppleWallet": "打开 Apple 钱包",
+      "openGooglePay": "打开 Google Pay",
+      "viewDetails": "查看卡片详情"
     }
   },
   "cards": {
@@ -80,10 +95,13 @@
     "calculateSavings": "计算我的节省",
     "total": "合计",
     "perMonth": "/月",
-    "calculate": "计算",
-    "calculating": "计算中...",
+    "calculate": "AI 智能优化",
+    "calculateBasic": "智能优化",
+    "calculating": "AI 分析中...",
+    "calculatingBasic": "分析中...",
     "cardsSelected": "张卡片",
-    "categoriesFilled": "个类别"
+    "categoriesFilled": "个类别",
+    "loginToOptimize": "请登录后使用AI智能优化"
   },
   "result": {
     "title": "您的优化结果",
@@ -107,7 +125,17 @@
     "sharing": "分享中...",
     "shareLink": "分享链接",
     "copyLink": "复制",
-    "copied": "已复制!"
+    "copied": "已复制!",
+    "aiInsight": "AI 解读",
+    "aiTip": "小贴士"
+  },
+  "categoryGroups": {
+    "daily": "日常消费",
+    "transport": "交通出行",
+    "shopping": "购物",
+    "bills": "账单服务",
+    "lifestyle": "生活娱乐",
+    "other": "其他"
   },
   "categories": {
     "DINING": "餐饮",
@@ -121,12 +149,22 @@
     "RECURRING": "固定账单",
     "ONLINE_SHOPPING": "网购",
     "FOREIGN": "外币消费",
+    "RETAIL": "零售购物",
+    "ENTERTAINMENT": "娱乐",
+    "PERSONAL_SERVICES": "个人服务",
+    "HOME_IMPROVEMENT": "家装建材",
+    "WHOLESALE": "仓储会员店",
+    "INSURANCE": "保险",
+    "TELECOM": "电信",
+    "EV_CHARGING": "电动车充电",
     "OTHER": "其他"
   },
   "auth": {
     "welcomeBack": "欢迎回来",
     "createAccount": "创建账户",
     "joinUs": "加入 SaveVia",
+    "signInSubtitle": "登录以继续使用",
+    "signUpSubtitle": "创建账户开始使用",
     "continueWithGoogle": "使用 Google 登录",
     "continueWithApple": "使用 Apple 登录",
     "continueWithEmail": "使用邮箱登录",
@@ -189,7 +227,11 @@
     "invalidVerificationLink": "无效或已过期的验证链接",
     "backToHome": "返回首页",
     "resendVerification": "重新发送验证邮件",
-    "verificationSent": "验证邮件已发送！"
+    "verificationSent": "验证邮件已发送！",
+    "agreeToTerms": "我同意",
+    "and": "和",
+    "pleaseAgreeTerms": "请同意服务条款和隐私政策",
+    "socialLoginTerms": "继续即表示您同意我们的"
   },
   "me": {
     "settings": "设置",
@@ -223,7 +265,11 @@
     "deleteAccountConfirm": "确定要注销账户吗？此操作无法撤销，您的所有数据将被永久删除。",
     "deleteAccountOk": "注销",
     "accountDeleted": "账户已注销",
-    "passwordRequired": "请输入密码"
+    "passwordRequired": "请输入密码",
+    "bankTransactions": "银行交易记录",
+    "missedCashback": "错过返现",
+    "restartOnboarding": "个性化设置",
+    "onboardingReset": "已重置个性化设置，请刷新页面"
   },
   "errors": {
     "serviceUnavailable": "服务暂不可用，请稍后重试",
@@ -256,5 +302,138 @@
     "viewDetails": "查看详情",
     "add": "添加",
     "added": "已添加"
+  },
+  "subscription": {
+    "title": "SaveVia Pro",
+    "subtitle": "解锁全部功能",
+    "active": "已激活",
+    "expiresOn": "有效期至 {{date}}",
+    "featureAi": "无限次AI智能优化",
+    "featureAnalysis": "高级消费分析",
+    "featureSupport": "优先客户支持",
+    "month": "月",
+    "year": "年",
+    "bestValue": "最佳选择",
+    "save20": "省20%",
+    "subscribe": "订阅",
+    "trialInfo": "7天免费试用，随时取消",
+    "restore": "恢复购买",
+    "loginRequired": "请先登录再订阅",
+    "nativeOnly": "订阅功能仅在移动端App中提供",
+    "webNotice": "请从App Store或Google Play下载我们的App进行订阅",
+    "purchaseSuccess": "订阅成功！",
+    "purchaseFailed": "购买失败，请重试",
+    "restoreSuccess": "购买已恢复！",
+    "restoreFailed": "恢复购买失败",
+    "noSubscription": "未找到历史购买记录",
+    "manageSub": "管理订阅",
+    "pro": "Pro",
+    "skipForNow": "稍后再说",
+    "limitReachedWeb": "您本月的免费AI优化次数已用完。请下载我们的App订阅以获得无限使用权限。",
+    "limitReachedPro": "您本月的AI优化次数已用完，下月重置。",
+    "limitReachedFree": "您本月的免费AI优化次数已用完，订阅以获取更多次数！",
+    "autoRenewInfo": "订阅将自动续订，除非在当前订阅期结束前至少24小时取消。系统将在当前订阅期结束前24小时内从您的账户扣款续订。您可以在App Store账户设置中管理和取消订阅。"
+  },
+  "share": {
+    "sharedResult": "分享的结果",
+    "notFound": "结果未找到",
+    "expiredOrNotExist": "此分享结果可能已过期或不存在。",
+    "getStarted": "开始使用",
+    "wantToOptimize": "想要优化您的信用卡返现？",
+    "freeToUse": "SaveVia 免费使用，立即开始省钱！"
+  },
+  "onboarding": {
+    "welcome": "让我们为您定制体验",
+    "continue": "继续",
+    "step1": {
+      "title": "您有多少张信用卡？",
+      "description": "我们会帮您最大化所有卡片的返现收益。"
+    },
+    "step2": {
+      "title": "您每年的刷卡消费大约多少？",
+      "description": "这有助于我们估算您的潜在节省金额。"
+    },
+    "step3": {
+      "title": "您主要在哪些场景使用信用卡？",
+      "description": "选择所有适用于您消费习惯的类别。"
+    },
+    "categories": {
+      "dining": "餐饮",
+      "grocery": "超市",
+      "gas": "加油",
+      "travel": "旅行",
+      "online": "网购",
+      "streaming": "订阅"
+    },
+    "summary": {
+      "title": "您的节省潜力",
+      "before": "优化前",
+      "after": "优化后",
+      "extraSavings": "每年额外节省",
+      "perYear": "年",
+      "description": "根据您的 {{cardCount}} 张信用卡和 {{categoryCount}} 个消费类别，SaveVia 可以帮您优化返现收益。",
+      "disclaimer": "* 仅为估算，实际结果可能有所不同。非财务建议。",
+      "getStarted": "开始省钱"
+    }
+  },
+  "transactions": {
+    "title": "交易记录",
+    "loginRequired": "登录查看交易记录",
+    "loginDesc": "连接银行账户，查看交易记录并获取信用卡推荐。",
+    "connectBank": "发现您的隐藏返现",
+    "connectBankDesc": "我们会分析您的消费，计算因未使用最优卡而错失的返现。加拿大人平均每年因此损失 $300-$1,000 — 让我们帮您省回来！",
+    "connectBankBtn": "安全连接银行",
+    "connectingBank": "正在连接银行服务...",
+    "selectBank": "选择您的银行",
+    "demoModeNotice": "演示模式：点击任意银行生成示例交易数据。",
+    "startupNotice": "银行连接功能正在开发中。目前展示的是演示数据，帮助您了解该功能的使用方式。正式版本上线后，您可以连接真实银行账户进行分析。",
+    "startupNoticeShort": "演示模式 - 正式版即将上线",
+    "bankConnected": "银行连接成功！",
+    "refreshSuccess": "数据刷新成功",
+    "poweredByFlinks": "由 Flinks 提供技术支持 - 加拿大可信赖的开放银行平台",
+    "security": {
+      "encrypted": "银行级 256 位加密传输",
+      "readOnly": "只读权限 - 我们永远无法转移您的资金",
+      "noPassword": "我们绝不存储您的银行密码"
+    },
+    "last90Days": "过去90天",
+    "summaryTooltip": "基于过去90天交易数据的分析",
+    "totalSpent": "总消费",
+    "missedCashback": "错失返现",
+    "earnedCashback": "已获返现",
+    "opportunityText": "使用最优信用卡，您本可多赚 ${{amount}}（占总额 {{percentage}}%）。",
+    "tabSummary": "摘要",
+    "tabTransactions": "交易",
+    "categoryBreakdown": "分类明细",
+    "noCategories": "暂无分类数据",
+    "spent": "消费",
+    "shouldUse": "应使用",
+    "used": "已用",
+    "unknownCard": "未知卡",
+    "openBankingBy": "开放银行技术由",
+    "recommendations": "推荐",
+    "bestFor": "最适合",
+    "noTransactions": "暂无交易记录",
+    "connectedBanks": "已连接银行",
+    "lastSync": "上次同步",
+    "addBank": "添加其他银行",
+    "disconnect": "断开连接",
+    "disconnected": "已断开银行连接",
+    "disconnectConfirmTitle": "断开银行连接",
+    "disconnectConfirmContent": "⚠️ 由于 API 成本较高，每位用户每月只能连接 5 次银行。如果断开 {{bank}}，重新连接将消耗一次连接配额。\n\n您的交易记录也将被删除。\n\n确定要断开连接吗？",
+    "debitCard": "借记卡",
+    "debitAnalysis": "借记卡消费",
+    "debitTxCount": "笔交易",
+    "debitSpent": "消费金额",
+    "debitMissed": "损失返现",
+    "debitHint": "使用信用卡替代借记卡可获得返现！",
+    "debitTip": "{{count}} 笔借记卡交易（${{amount}}）错失 ${{missed}} 返现",
+    "connectionLimit": "本月剩余 {{remaining}}/{{max}} 次连接",
+    "connectionLimitExceeded": "本月连接次数已用尽（每月5次），请下月再试。",
+    "resync": "重新同步",
+    "resyncConfirmTitle": "重新同步银行数据",
+    "resyncConfirmContent": "⚠️ 重新同步 {{bank}} 将从银行获取最新交易记录。\n\n这将消耗您本月剩余 {{remaining}}/{{max}} 次连接中的 1 次。\n\n确定要继续吗？",
+    "resyncSuccess": "银行数据同步成功！",
+    "analyzeSuccess": "重新分析完成"
   }
 }

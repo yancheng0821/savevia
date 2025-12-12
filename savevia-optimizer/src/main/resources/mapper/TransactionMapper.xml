@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.optimizer.mapper.TransactionMapper">
+
+    <resultMap id="BaseResultMap" type="com.savevia.optimizer.entity.Transaction">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="account_id" property="accountId"/>
+        <result column="flinks_transaction_id" property="flinksTransactionId"/>
+        <result column="amount" property="amount"/>
+        <result column="merchant" property="merchant"/>
+        <result column="description" property="description"/>
+        <result column="mcc" property="mcc"/>
+        <result column="category" property="category"/>
+        <result column="transaction_date" property="transactionDate"/>
+        <result column="card_used_id" property="cardUsedId"/>
+        <result column="best_card_id" property="bestCardId"/>
+        <result column="actual_cashback" property="actualCashback"/>
+        <result column="optimal_cashback" property="optimalCashback"/>
+        <result column="missed_cashback" property="missedCashback"/>
+        <result column="is_analyzed" property="isAnalyzed"/>
+    </resultMap>
+
+    <resultMap id="CategorySummaryResultMap" type="com.savevia.optimizer.mapper.TransactionMapper$CategorySummary">
+        <result column="category" property="category"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="total_missed" property="totalMissed"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO transactions (user_id, account_id, flinks_transaction_id, amount, merchant,
+            description, mcc, category, transaction_date, card_used_id)
+        VALUES (#{userId}, #{accountId}, #{flinksTransactionId}, #{amount}, #{merchant},
+            #{description}, #{mcc}, #{category}, #{transactionDate}, #{cardUsedId})
+    </insert>
+
+    <insert id="batchInsert">
+        INSERT INTO transactions (user_id, account_id, flinks_transaction_id, amount, merchant,
+            description, mcc, category, transaction_date) VALUES
+        <foreach collection="list" item="t" separator=",">
+            (#{t.userId}, #{t.accountId}, #{t.flinksTransactionId}, #{t.amount}, #{t.merchant},
+            #{t.description}, #{t.mcc}, #{t.category}, #{t.transactionDate})
+        </foreach>
+    </insert>
+
+    <update id="updateAnalysis">
+        UPDATE transactions
+        SET best_card_id = #{bestCardId},
+            actual_cashback = #{actualCashback},
+            optimal_cashback = #{optimalCashback},
+            missed_cashback = #{missedCashback},
+            is_analyzed = #{isAnalyzed},
+            category = #{category}
+        WHERE id = #{id}
+    </update>
+
+    <update id="resetAnalysisByUserId">
+        UPDATE transactions
+        SET is_analyzed = false,
+            best_card_id = NULL,
+            actual_cashback = NULL,
+            optimal_cashback = NULL,
+            missed_cashback = NULL
+        WHERE user_id = #{userId}
+    </update>
+
+    <select id="findByUserIdAndDateRange" resultMap="BaseResultMap">
+        SELECT * FROM transactions
+        WHERE user_id = #{userId}
+        AND transaction_date >= #{startDate}
+        AND transaction_date &lt; #{endDate}
+        ORDER BY transaction_date DESC
+    </select>
+
+    <select id="findUnanalyzedByUserId" resultMap="BaseResultMap">
+        SELECT * FROM transactions
+        WHERE user_id = #{userId} AND is_analyzed = false
+    </select>
+
+    <select id="findRecentByUserId" resultMap="BaseResultMap">
+        SELECT * FROM transactions
+        WHERE user_id = #{userId}
+        ORDER BY transaction_date DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findByAccountAndFlinksId" resultMap="BaseResultMap">
+        SELECT * FROM transactions
+        WHERE account_id = #{accountId} AND flinks_transaction_id = #{flinksId}
+    </select>
+
+    <select id="getCategorySummary" resultMap="CategorySummaryResultMap">
+        SELECT category, SUM(amount) as total_amount, SUM(missed_cashback) as total_missed
+        FROM transactions
+        WHERE user_id = #{userId} AND transaction_date >= #{startDate}
+        GROUP BY category
+    </select>
+
+</mapper>

@@ -1,21 +1,30 @@
-<svg width="120" height="120" viewBox="3 8 107 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background Card -->
-  <rect x="15" y="12" width="85" height="54" rx="10" transform="rotate(6 15 12)" fill="url(#gradient1)"/>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Card - shifted right -->
+  <rect x="142" y="100" width="800" height="500" rx="55" transform="rotate(8 142 100)" fill="url(#gradient1)"/>
 
-  <!-- Middle Card -->
-  <rect x="10" y="30" width="85" height="54" rx="10" transform="rotate(-3 10 30)" fill="url(#gradient2)"/>
+  <!-- Middle Card - shifted right -->
+  <rect x="102" y="260" width="800" height="500" rx="55" transform="rotate(-4 102 260)" fill="url(#gradient2)"/>
 
-  <!-- Front Card -->
-  <rect x="17" y="45" width="85" height="54" rx="10" fill="url(#gradient3)"/>
+  <!-- Front Card - shifted right -->
+  <rect x="142" y="380" width="800" height="500" rx="55" fill="url(#gradient3)"/>
+
+  <!-- Chip on front card -->
+  <rect x="202" y="450" width="110" height="85" rx="12" fill="url(#chipGradient)"/>
+  <line x1="202" y1="480" x2="312" y2="480" stroke="#c9a227" stroke-width="2" opacity="0.5"/>
+  <line x1="202" y1="505" x2="312" y2="505" stroke="#c9a227" stroke-width="2" opacity="0.5"/>
+  <line x1="257" y1="450" x2="257" y2="535" stroke="#c9a227" stroke-width="2" opacity="0.5"/>
 
   <!-- CASHBACK label -->
-  <text x="28" y="60" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="7" font-weight="500" letter-spacing="0.5">CASHBACK</text>
+  <text x="202" y="580" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="32" font-weight="600" letter-spacing="2">CASHBACK</text>
 
   <!-- 5% rate -->
-  <text x="28" y="76" fill="white" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700">5%</text>
+  <text x="202" y="680" fill="white" font-family="Inter, Arial, sans-serif" font-size="80" font-weight="700">5%</text>
+
+  <!-- Small sparkle - positioned to the right top of the card -->
+  <path d="M870 450 L878 475 L903 483 L878 491 L870 516 L862 491 L837 483 L862 475 Z" fill="white" opacity="0.7"/>
 
   <!-- Card number -->
-  <text x="28" y="92" fill="rgba(255,255,255,0.8)" font-family="Inter, Arial, sans-serif" font-size="7">•••• •••• •••• 4242</text>
+  <text x="202" y="840" fill="rgba(255,255,255,0.5)" font-family="Inter, Arial, sans-serif" font-size="36">•••• •••• •••• 4242</text>
 
   <!-- Gradients -->
   <defs>
@@ -28,8 +37,12 @@
       <stop offset="100%" style="stop-color:#fce7f3"/>
     </linearGradient>
     <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#111827"/>
+      <stop offset="0%" style="stop-color:#1f2937"/>
       <stop offset="100%" style="stop-color:#374151"/>
+    </linearGradient>
+    <linearGradient id="chipGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
     </linearGradient>
   </defs>
 </svg>

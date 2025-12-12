@@ -1,5 +1,6 @@
 {
   "common": {
+    "locale": "ja",
     "appName": "SaveVia",
     "loading": "読み込み中...",
     "save": "保存",
@@ -53,6 +54,20 @@
       "cashback": "キャッシュバック",
       "loginFirst": "ログインしてカードを追加してください",
       "addCards": "クレジットカードを追加して推奨を受け取る"
+    },
+    "bankConnect": {
+      "title": "逃したキャッシュバックを確認",
+      "description": "銀行口座を接続して取引を自動分析し、どれだけのキャッシュバックを獲得できたか確認しましょう。",
+      "cta": "銀行を接続",
+      "poweredBy": "安全な銀行接続は",
+      "security": "銀行レベルの暗号化 · 読み取り専用 · プライバシー保護",
+      "demoNotice": "デモモード - 実際の接続は近日公開"
+    },
+    "cardModal": {
+      "hint": "このカテゴリで買い物する際にこのカードを使用",
+      "openAppleWallet": "Apple Walletを開く",
+      "openGooglePay": "Google Payを開く",
+      "viewDetails": "カード詳細を見る"
     }
   },
   "cards": {
@@ -74,10 +89,13 @@
     "calculateSavings": "節約額を計算",
     "total": "合計",
     "perMonth": "/月",
-    "calculate": "計算",
-    "calculating": "計算中...",
+    "calculate": "AI 最適化",
+    "calculateBasic": "最適化",
+    "calculating": "AI 分析中...",
+    "calculatingBasic": "分析中...",
     "cardsSelected": "枚のカード",
-    "categoriesFilled": "カテゴリ"
+    "categoriesFilled": "カテゴリ",
+    "loginToOptimize": "AI最適化を使用するにはログインしてください"
   },
   "result": {
     "title": "最適化結果",
@@ -95,7 +113,17 @@
     "monthlySpend": "月間支出",
     "bestCard": "最適カード",
     "rewardRate": "還元率",
-    "monthlyRewardCol": "月間還元額"
+    "monthlyRewardCol": "月間還元額",
+    "aiInsight": "AI 解説",
+    "aiTip": "ヒント"
+  },
+  "categoryGroups": {
+    "daily": "日常",
+    "transport": "交通",
+    "shopping": "買い物",
+    "bills": "請求書",
+    "lifestyle": "レジャー",
+    "other": "その他"
   },
   "categories": {
     "DINING": "外食",
@@ -109,12 +137,22 @@
     "RECURRING": "定期支払い",
     "ONLINE_SHOPPING": "オンラインショッピング",
     "FOREIGN": "海外決済",
+    "RETAIL": "小売",
+    "ENTERTAINMENT": "娯楽",
+    "PERSONAL_SERVICES": "個人サービス",
+    "HOME_IMPROVEMENT": "ホームセンター",
+    "WHOLESALE": "卸売",
+    "INSURANCE": "保険",
+    "TELECOM": "通信",
+    "EV_CHARGING": "EV充電",
     "OTHER": "その他"
   },
   "auth": {
     "welcomeBack": "おかえりなさい",
     "createAccount": "アカウント作成",
     "joinUs": "SaveViaに参加",
+    "signInSubtitle": "ログインして続ける",
+    "signUpSubtitle": "アカウントを作成して始める",
     "continueWithGoogle": "Googleで続ける",
     "continueWithApple": "Appleで続ける",
     "continueWithEmail": "メールで続ける",
@@ -177,7 +215,11 @@
     "invalidVerificationLink": "無効または期限切れの認証リンク",
     "backToHome": "ホームに戻る",
     "resendVerification": "認証メールを再送信",
-    "verificationSent": "認証メールを送信しました！"
+    "verificationSent": "認証メールを送信しました！",
+    "agreeToTerms": "同意します：",
+    "and": "および",
+    "pleaseAgreeTerms": "利用規約とプライバシーポリシーに同意してください",
+    "socialLoginTerms": "続行すると、以下に同意したことになります："
   },
   "me": {
     "settings": "設定",
@@ -208,7 +250,11 @@
     "deleteAccountConfirm": "本当にアカウントを削除しますか？この操作は取り消せず、すべてのデータが完全に削除されます。",
     "deleteAccountOk": "削除",
     "accountDeleted": "アカウントが削除されました",
-    "passwordRequired": "パスワードを入力してください"
+    "passwordRequired": "パスワードを入力してください",
+    "bankTransactions": "銀行取引履歴",
+    "missedCashback": "損失キャッシュバック",
+    "restartOnboarding": "パーソナライズ設定",
+    "onboardingReset": "パーソナライズ設定がリセットされました。ページを更新してください"
   },
   "errors": {
     "serviceUnavailable": "サービスを利用できません。後でもう一度お試しください",
@@ -241,5 +287,134 @@
     "viewDetails": "詳細を見る",
     "add": "追加",
     "added": "追加済"
+  },
+  "subscription": {
+    "title": "SaveVia Pro",
+    "subtitle": "すべての機能をアンロック",
+    "active": "有効",
+    "expiresOn": "{{date}}まで有効",
+    "featureAi": "無制限のAI最適化",
+    "featureAnalysis": "高度な支出分析",
+    "featureSupport": "優先サポート",
+    "month": "月",
+    "year": "年",
+    "bestValue": "お得",
+    "save20": "20%オフ",
+    "subscribe": "購読",
+    "trialInfo": "7日間無料体験。いつでもキャンセル可能。",
+    "restore": "購入を復元",
+    "loginRequired": "購読するにはログインしてください",
+    "nativeOnly": "購読はモバイルアプリでのみ利用可能です",
+    "webNotice": "App StoreまたはGoogle Playからアプリをダウンロードして購読してください。",
+    "purchaseSuccess": "購読が有効になりました！",
+    "purchaseFailed": "購入に失敗しました。再試行してください。",
+    "restoreSuccess": "購読が復元されました！",
+    "restoreFailed": "購入の復元に失敗しました",
+    "noSubscription": "過去の購入履歴が見つかりません",
+    "manageSub": "購読を管理",
+    "pro": "Pro",
+    "skipForNow": "後で",
+    "limitReachedWeb": "今月の無料AI最適化の上限に達しました。アプリをダウンロードして購読すると、無制限にご利用いただけます。",
+    "limitReachedPro": "今月のAI最適化の上限に達しました。来月リセットされます。",
+    "limitReachedFree": "今月の無料AI最適化の上限に達しました。購読してもっと利用しましょう！"
+  },
+  "share": {
+    "sharedResult": "共有された結果",
+    "notFound": "結果が見つかりません",
+    "expiredOrNotExist": "この共有された結果は期限切れまたは存在しません。",
+    "getStarted": "始める",
+    "wantToOptimize": "クレジットカードのリワードを最適化しませんか？",
+    "freeToUse": "SaveViaは無料です。今日から節約を始めましょう！"
+  },
+  "transactions": {
+    "title": "取引履歴",
+    "loginRequired": "取引履歴を見るにはログインしてください",
+    "loginDesc": "銀行を連携して取引履歴を確認し、カードのおすすめを受け取りましょう。",
+    "connectBank": "隠れたキャッシュバックを発見",
+    "connectBankDesc": "お支払いを分析し、最適なカード未使用で逃したキャッシュバックをお知らせします。カナダ人は年間$300〜$1,000をこうして逃しています — 節約をお手伝いします！",
+    "connectBankBtn": "安全に連携",
+    "connectingBank": "銀行サービスに接続中...",
+    "selectBank": "銀行を選択",
+    "demoModeNotice": "デモモード：銀行をクリックするとサンプル取引が生成されます。",
+    "bankConnected": "銀行が連携されました！",
+    "refreshSuccess": "データが更新されました",
+    "poweredByFlinks": "Flinks提供 - カナダの信頼されるオープンバンキングプラットフォーム",
+    "security": {
+      "encrypted": "銀行レベルの256ビット暗号化",
+      "readOnly": "読み取り専用 - 送金は不可能です",
+      "noPassword": "銀行のパスワードは保存しません"
+    },
+    "last90Days": "過去90日間",
+    "summaryTooltip": "過去90日間の取引に基づく分析",
+    "totalSpent": "総支出",
+    "missedCashback": "逃したキャッシュバック",
+    "earnedCashback": "獲得済み",
+    "opportunityText": "最適なカードを使用していれば、さらに${{amount}}（{{percentage}}%）獲得できました。",
+    "tabSummary": "概要",
+    "tabTransactions": "取引",
+    "categoryBreakdown": "カテゴリ別内訳",
+    "noCategories": "カテゴリデータなし",
+    "spent": "支出",
+    "shouldUse": "使用",
+    "used": "使用済み",
+    "unknownCard": "不明",
+    "openBankingBy": "オープンバンキング提供",
+    "recommendations": "おすすめ",
+    "bestFor": "最適",
+    "noTransactions": "取引なし",
+    "connectedBanks": "連携済み銀行",
+    "lastSync": "最終同期",
+    "addBank": "銀行を追加",
+    "disconnect": "連携解除",
+    "disconnected": "銀行の連携を解除しました",
+    "disconnectConfirmTitle": "銀行連携を解除",
+    "disconnectConfirmContent": "⚠️ API費用の関係で、銀行接続は月5回までに制限されています。{{bank}}の連携を解除すると、再接続時に接続枠を1回消費します。\n\n取引履歴も削除されます。\n\n本当に解除しますか？",
+    "debitCard": "デビットカード",
+    "debitAnalysis": "デビットカード支出",
+    "debitTxCount": "件",
+    "debitSpent": "支出額",
+    "debitMissed": "逃した還元",
+    "debitHint": "デビットカードの代わりにクレジットカードを使えばキャッシュバックが得られます！",
+    "connectionLimit": "今月残り {{remaining}}/{{max}} 回の接続",
+    "connectionLimitExceeded": "月間接続制限に達しました（月5回）。来月お試しください。",
+    "resync": "再同期",
+    "resyncConfirmTitle": "銀行データを再同期",
+    "resyncConfirmContent": "⚠️ {{bank}}を再同期すると、最新の取引データを取得します。\n\n今月残り{{remaining}}/{{max}}回の接続のうち1回を消費します。\n\n続けますか？",
+    "resyncSuccess": "銀行データを再同期しました！",
+    "analyzeSuccess": "分析が完了しました"
+  },
+  "onboarding": {
+    "welcome": "体験をカスタマイズしましょう",
+    "continue": "続ける",
+    "step1": {
+      "title": "何枚のクレジットカードをお持ちですか？",
+      "description": "すべてのカードでキャッシュバックを最大化するお手伝いをします。"
+    },
+    "step2": {
+      "title": "年間のカード利用額はどれくらいですか？",
+      "description": "潜在的な節約額を見積もるのに役立ちます。"
+    },
+    "step3": {
+      "title": "どこでカードを使いますか？",
+      "description": "支出に該当するすべてのカテゴリを選択してください。"
+    },
+    "categories": {
+      "dining": "外食",
+      "grocery": "食料品",
+      "gas": "ガソリン",
+      "travel": "旅行",
+      "online": "オンラインショッピング",
+      "streaming": "ストリーミング"
+    },
+    "summary": {
+      "title": "節約ポテンシャル",
+      "before": "最適化前",
+      "after": "最適化後",
+      "extraSavings": "年間追加節約額",
+      "perYear": "年",
+      "description": "{{cardCount}}枚のカードと{{categoryCount}}個の支出カテゴリに基づき、SaveViaがキャッシュバックを最適化します。",
+      "disclaimer": "* 推定値のみ。実際の結果は異なる場合があります。金融アドバイスではありません。",
+      "getStarted": "節約を始める"
+    }
   }
 }

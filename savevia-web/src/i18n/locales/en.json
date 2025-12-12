@@ -1,5 +1,6 @@
 {
   "common": {
+    "locale": "en",
     "appName": "SaveVia",
     "loading": "Loading...",
     "save": "Save",
@@ -38,7 +39,7 @@
     "step3Title": "Get Optimized",
     "step3Desc": "We'll show you which card to use for each category",
     "getStarted": "Get Started",
-    "savingsBadge": "💰 Save $300 - $2,000 per year",
+    "savingsBadge": "💰 Save $300 - $1,000 per year",
     "savingsTitle": "Save $300 - $1,000 per year",
     "savingsDesc": "Most Canadians leave hundreds of dollars on the table by not using the right card for each purchase.",
     "annualSavings": "Annual Savings",
@@ -53,6 +54,20 @@
       "cashback": "cashback",
       "loginFirst": "Login and add your cards to get started",
       "addCards": "Add your credit cards to get recommendations"
+    },
+    "bankConnect": {
+      "title": "See Your Missed Cashback",
+      "description": "Connect your bank to automatically analyze your transactions and discover how much cashback you could have earned.",
+      "cta": "Connect Bank",
+      "poweredBy": "Secure bank connection powered by",
+      "security": "Bank-level encryption · Read-only access · Your data stays private",
+      "demoNotice": "Demo Mode - Official release coming soon"
+    },
+    "cardModal": {
+      "hint": "Use this card when shopping in this category",
+      "openAppleWallet": "Open Apple Wallet",
+      "openGooglePay": "Open Google Pay",
+      "viewDetails": "View Card Details"
     }
   },
   "cards": {
@@ -80,10 +95,13 @@
     "calculateSavings": "Calculate My Savings",
     "total": "Total",
     "perMonth": "/mo",
-    "calculate": "Calculate",
-    "calculating": "Calculating...",
+    "calculate": "AI Optimize",
+    "calculateBasic": "Optimize",
+    "calculating": "AI Analyzing...",
+    "calculatingBasic": "Analyzing...",
     "cardsSelected": "Cards Selected",
-    "categoriesFilled": "Categories Filled"
+    "categoriesFilled": "Categories Filled",
+    "loginToOptimize": "Please login to use AI optimization"
   },
   "result": {
     "title": "Your Optimization Results",
@@ -107,7 +125,17 @@
     "sharing": "Sharing...",
     "shareLink": "Share Link",
     "copyLink": "Copy",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "aiInsight": "AI Insight",
+    "aiTip": "Tip"
+  },
+  "categoryGroups": {
+    "daily": "Daily Essentials",
+    "transport": "Transportation",
+    "shopping": "Shopping",
+    "bills": "Bills & Services",
+    "lifestyle": "Lifestyle",
+    "other": "Other"
   },
   "categories": {
     "DINING": "Dining",
@@ -121,12 +149,22 @@
     "RECURRING": "Recurring Bills",
     "ONLINE_SHOPPING": "Online Shopping",
     "FOREIGN": "Foreign Currency",
+    "RETAIL": "Retail",
+    "ENTERTAINMENT": "Entertainment",
+    "PERSONAL_SERVICES": "Personal Services",
+    "HOME_IMPROVEMENT": "Home Improvement",
+    "WHOLESALE": "Wholesale",
+    "INSURANCE": "Insurance",
+    "TELECOM": "Telecom",
+    "EV_CHARGING": "EV Charging",
     "OTHER": "Other"
   },
   "auth": {
     "welcomeBack": "Welcome back",
     "createAccount": "Create account",
     "joinUs": "Join SaveVia",
+    "signInSubtitle": "Sign in to continue to",
+    "signUpSubtitle": "Create an account to get started with",
     "continueWithGoogle": "Continue with Google",
     "continueWithApple": "Continue with Apple",
     "continueWithEmail": "Continue with Email",
@@ -189,7 +227,11 @@
     "invalidVerificationLink": "Invalid or expired verification link",
     "backToHome": "Back to Home",
     "resendVerification": "Resend Verification Email",
-    "verificationSent": "Verification email sent!"
+    "verificationSent": "Verification email sent!",
+    "agreeToTerms": "I agree to the",
+    "and": "and",
+    "pleaseAgreeTerms": "Please agree to the Terms of Service and Privacy Policy",
+    "socialLoginTerms": "By continuing, you agree to our"
   },
   "me": {
     "settings": "Settings",
@@ -223,7 +265,11 @@
     "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.",
     "deleteAccountOk": "Delete",
     "accountDeleted": "Account deleted successfully",
-    "passwordRequired": "Password is required"
+    "passwordRequired": "Password is required",
+    "bankTransactions": "Bank Transactions",
+    "missedCashback": "Missed Cashback",
+    "restartOnboarding": "Personalization settings",
+    "onboardingReset": "Personalization reset, please refresh the page"
   },
   "errors": {
     "serviceUnavailable": "Service unavailable, please try again later",
@@ -256,5 +302,138 @@
     "viewDetails": "View Details",
     "add": "Add",
     "added": "Added"
+  },
+  "subscription": {
+    "title": "SaveVia Pro",
+    "subtitle": "Unlock all features",
+    "active": "Active",
+    "expiresOn": "Expires on {{date}}",
+    "featureAi": "Unlimited AI-powered optimization",
+    "featureAnalysis": "Advanced spending analysis",
+    "featureSupport": "Priority customer support",
+    "month": "month",
+    "year": "year",
+    "bestValue": "Best Value",
+    "save20": "Save 20%",
+    "subscribe": "Subscribe",
+    "trialInfo": "7-day free trial. Cancel anytime.",
+    "restore": "Restore Purchases",
+    "loginRequired": "Please login to subscribe",
+    "nativeOnly": "Subscriptions are available on the mobile app",
+    "webNotice": "Download our app from the App Store or Google Play to subscribe.",
+    "purchaseSuccess": "Subscription activated successfully!",
+    "purchaseFailed": "Purchase failed. Please try again.",
+    "restoreSuccess": "Subscription restored successfully!",
+    "restoreFailed": "Failed to restore purchases",
+    "noSubscription": "No previous purchases found",
+    "manageSub": "Manage Subscription",
+    "pro": "Pro",
+    "skipForNow": "Skip for now",
+    "limitReachedWeb": "You've reached your free AI optimization limit this month. Download our app to subscribe for unlimited access.",
+    "limitReachedPro": "You've reached your AI optimization limit this month. Limit resets next month.",
+    "limitReachedFree": "You've reached your free AI optimization limit this month. Subscribe to get more!",
+    "autoRenewInfo": "Subscriptions automatically renew unless cancelled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions in your App Store account settings."
+  },
+  "share": {
+    "sharedResult": "Shared Result",
+    "notFound": "Result not found",
+    "expiredOrNotExist": "This shared result may have expired or doesn't exist.",
+    "getStarted": "Get Started",
+    "wantToOptimize": "Want to optimize your credit card rewards?",
+    "freeToUse": "SaveVia is free to use. Start saving today!"
+  },
+  "onboarding": {
+    "welcome": "Let's personalize your experience",
+    "continue": "Continue",
+    "step1": {
+      "title": "How many credit cards do you have?",
+      "description": "We'll help you maximize cashback across all your cards."
+    },
+    "step2": {
+      "title": "What's your annual card spending?",
+      "description": "This helps us estimate your potential savings."
+    },
+    "step3": {
+      "title": "Where do you use your cards?",
+      "description": "Select all categories that apply to your spending."
+    },
+    "categories": {
+      "dining": "Dining",
+      "grocery": "Grocery",
+      "gas": "Gas",
+      "travel": "Travel",
+      "online": "Online Shopping",
+      "streaming": "Streaming"
+    },
+    "summary": {
+      "title": "Your Savings Potential",
+      "before": "Before",
+      "after": "After",
+      "extraSavings": "Extra Annual Savings",
+      "perYear": "year",
+      "description": "Based on your {{cardCount}} cards and {{categoryCount}} spending categories, SaveVia can help you optimize your cashback rewards.",
+      "disclaimer": "* Estimates only. Actual results may vary. Not financial advice.",
+      "getStarted": "Start Saving"
+    }
+  },
+  "transactions": {
+    "title": "Transactions",
+    "loginRequired": "Login to View Transactions",
+    "loginDesc": "Connect your bank to see your transactions and get card recommendations.",
+    "connectBank": "Discover Your Hidden Savings",
+    "connectBankDesc": "We'll analyze your spending and show how much cashback you've missed by not using the optimal card. Canadians lose $300-$1,000/year this way - we'll help you save it!",
+    "connectBankBtn": "Securely Connect Bank",
+    "connectingBank": "Connecting to bank service...",
+    "selectBank": "Select Your Bank",
+    "demoModeNotice": "Demo Mode: Click any bank to generate sample transactions.",
+    "startupNotice": "Bank connection feature is under development. The data shown is for demonstration purposes to help you understand how this feature works. Real bank connections will be available in the official release.",
+    "startupNoticeShort": "Demo Mode - Official release coming soon",
+    "bankConnected": "Bank connected successfully!",
+    "refreshSuccess": "Data refreshed successfully",
+    "poweredByFlinks": "Powered by Flinks - Canada's trusted Open Banking platform",
+    "security": {
+      "encrypted": "Bank-level 256-bit encryption",
+      "readOnly": "Read-only access - we can never move your money",
+      "noPassword": "We never store your banking password"
+    },
+    "last90Days": "Last 90 Days",
+    "summaryTooltip": "Analysis based on your transactions from the last 90 days",
+    "totalSpent": "Total Spent",
+    "missedCashback": "Missed Cashback",
+    "earnedCashback": "Earned",
+    "opportunityText": "You could have earned ${{amount}} more ({{percentage}}% of total) by using the optimal card for each purchase.",
+    "tabSummary": "Summary",
+    "tabTransactions": "Transactions",
+    "categoryBreakdown": "Category Breakdown",
+    "noCategories": "No category data available",
+    "spent": "spent",
+    "shouldUse": "Use",
+    "used": "Used",
+    "unknownCard": "Unknown",
+    "openBankingBy": "Open Banking by",
+    "recommendations": "Top Recommendations",
+    "bestFor": "Best for",
+    "noTransactions": "No transactions yet",
+    "connectedBanks": "Connected Banks",
+    "lastSync": "Last sync",
+    "addBank": "Add Another Bank",
+    "disconnect": "Disconnect",
+    "disconnected": "Bank disconnected",
+    "disconnectConfirmTitle": "Disconnect Bank",
+    "disconnectConfirmContent": "⚠️ Bank connections are limited to 5 per month due to API costs. If you disconnect {{bank}}, reconnecting will use another connection quota.\n\nYour transaction history will also be removed.\n\nAre you sure you want to disconnect?",
+    "debitCard": "Debit Card",
+    "debitAnalysis": "Debit Card Spending",
+    "debitTxCount": "Transactions",
+    "debitSpent": "Spent",
+    "debitMissed": "Missed Cashback",
+    "debitHint": "Using credit cards instead of debit could earn you cashback!",
+    "debitTip": "{{count}} debit transactions (${{amount}}) missed ${{missed}} in cashback",
+    "connectionLimit": "{{remaining}} of {{max}} connections remaining this month",
+    "connectionLimitExceeded": "Monthly connection limit reached (5/month). Please try again next month.",
+    "resync": "Resync",
+    "resyncConfirmTitle": "Resync Bank Data",
+    "resyncConfirmContent": "⚠️ Resyncing {{bank}} will fetch the latest transactions from your bank.\n\nThis will use 1 of your {{remaining}}/{{max}} remaining monthly connections.\n\nDo you want to continue?",
+    "resyncSuccess": "Bank data resynced successfully!",
+    "analyzeSuccess": "Analysis completed"
   }
 }

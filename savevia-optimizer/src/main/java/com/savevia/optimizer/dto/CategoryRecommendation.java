@@ -20,4 +20,5 @@ public class CategoryRecommendation {
     private BigDecimal rewardRate;
     private BigDecimal monthlyReward;
     private String explanation;
+    private String aiExplanation;
 }

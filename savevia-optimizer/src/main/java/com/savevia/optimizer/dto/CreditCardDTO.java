@@ -1,5 +1,6 @@
 package com.savevia.optimizer.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreditCardDTO {
 
     private Long id;
@@ -24,4 +26,5 @@ public class CreditCardDTO {
     private String applyUrl;
     private Boolean noFxFee;
     private List<RewardRuleDTO> rewardRules;
+    private Object signupBonus; // Allow any structure from card service
 }

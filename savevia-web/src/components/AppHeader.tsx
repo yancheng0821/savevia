@@ -6,7 +6,7 @@ import type { MenuProps } from 'antd'
 import { UserOutlined, MailOutlined, LockOutlined, HomeOutlined, CreditCardOutlined, ThunderboltOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons'
 import { useGoogleLogin } from '@react-oauth/google'
 import { Capacitor } from '@capacitor/core'
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
+import { GoogleAuth } from '@southdevs/capacitor-google-auth'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 
@@ -73,7 +73,7 @@ function GoogleLoginButton({ onSuccess }: { onSuccess: () => void }) {
       }
 
       // GoogleAuth is already initialized in main.tsx
-      const result = await GoogleAuth.signIn()
+      const result = await GoogleAuth.signIn({ scopes: ['profile', 'email'] })
       console.log('Google signIn result:', result)
 
       if (result.authentication?.accessToken) {
@@ -204,19 +204,8 @@ function AppHeader() {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <img src="/favicon.svg" alt="SaveVia" style={{ width: '28px', height: '28px' }} />
-            <span className="sv-logo-text" style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              letterSpacing: '-0.5px',
-              background: 'linear-gradient(90deg, #2563eb 0%, #0d9488 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              SaveVia
-            </span>
+          <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <img src="/logo-full.svg" alt="SaveVia" style={{ height: '40px', width: 'auto' }} />
           </Link>
 
           <nav className="sv-header-nav" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
@@ -230,16 +219,7 @@ function AppHeader() {
                 <Link
                   key={item.path}
                   to={targetPath}
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: isActive ? '#111827' : '#9ca3af',
-                    textDecoration: 'none',
-                    position: 'relative',
-                    paddingBottom: '4px',
-                    borderBottom: isActive ? '2px solid #111827' : '2px solid transparent',
-                    transition: 'all 0.2s ease'
-                  }}
+                  className={`sv-header-nav-link ${isActive ? 'active' : ''}`}
                 >
                   {item.label}
                 </Link>
@@ -247,24 +227,9 @@ function AppHeader() {
             })}
 
             {/* Language Selector */}
-            <div className="sv-header-lang-divider" style={{
-              marginLeft: '16px',
-              paddingLeft: '24px',
-              borderLeft: '1px solid #e5e7eb'
-            }}>
+            <div className="sv-header-lang-divider">
               <Dropdown menu={{ items: langItems, onClick: handleLangChange }} placement="bottomRight">
-                <button style={{
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#9ca3af',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  paddingBottom: '4px',
-                  borderBottom: '2px solid transparent',
-                  lineHeight: '1.5'
-                }}>
+                <button className="sv-header-lang-btn">
                   {langLabels[i18n.language] || 'EN'}
                 </button>
               </Dropdown>
@@ -296,7 +261,8 @@ function AppHeader() {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Mobile Bottom Navigation - hide on share page */}
+      {!location.pathname.startsWith('/share') && (
       <nav className="sv-mobile-nav">
         {navItems.map((item) => {
           // If result exists and clicking optimizer, go to result page instead
@@ -329,6 +295,7 @@ function AppHeader() {
           <span>{t('nav.me')}</span>
         </Link>
       </nav>
+      )}
 
       {/* Auth Modal */}
       <Modal

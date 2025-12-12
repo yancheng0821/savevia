@@ -1,4 +1,5 @@
 export type SpendingCategory =
+  // Core categories
   | 'DINING'
   | 'GROCERY'
   | 'GAS'
@@ -10,6 +11,16 @@ export type SpendingCategory =
   | 'RECURRING'
   | 'ONLINE_SHOPPING'
   | 'FOREIGN'
+  // Extended categories
+  | 'RETAIL'
+  | 'ENTERTAINMENT'
+  | 'PERSONAL_SERVICES'
+  | 'HOME_IMPROVEMENT'
+  | 'WHOLESALE'
+  | 'INSURANCE'
+  | 'TELECOM'
+  | 'EV_CHARGING'
+  // Catch-all
   | 'OTHER'
 
 export interface CreditCard {
@@ -42,8 +53,11 @@ export interface RewardRule {
 }
 
 export interface OptimizationRequest {
+  userId?: number
   cardIds: number[]
   monthlySpending: Record<SpendingCategory, number>
+  locale?: string
+  enableAiExplanation?: boolean
 }
 
 export interface OptimizationResult {
@@ -62,6 +76,7 @@ export interface CategoryRecommendation {
   rewardRate: number
   monthlyReward: number
   explanation: string
+  aiExplanation?: string
 }
 
 export interface ApiResponse<T> {
@@ -72,6 +87,7 @@ export interface ApiResponse<T> {
 }
 
 export const CATEGORY_LABELS: Record<SpendingCategory, string> = {
+  // Core categories
   DINING: 'Dining',
   GROCERY: 'Grocery',
   GAS: 'Gas',
@@ -83,5 +99,138 @@ export const CATEGORY_LABELS: Record<SpendingCategory, string> = {
   RECURRING: 'Recurring Bills',
   ONLINE_SHOPPING: 'Online Shopping',
   FOREIGN: 'Foreign Currency',
+  // Extended categories
+  RETAIL: 'Retail',
+  ENTERTAINMENT: 'Entertainment',
+  PERSONAL_SERVICES: 'Personal Services',
+  HOME_IMPROVEMENT: 'Home Improvement',
+  WHOLESALE: 'Wholesale',
+  INSURANCE: 'Insurance',
+  TELECOM: 'Telecom',
+  EV_CHARGING: 'EV Charging',
+  // Catch-all
   OTHER: 'Other',
+}
+
+// V2: Bank Connection Types
+export interface BankConnection {
+  id: number
+  institutionName: string
+  status: 'PENDING' | 'CONNECTED' | 'REFRESHING' | 'ERROR' | 'DISCONNECTED'
+  lastSyncAt?: string
+  errorMessage?: string
+  accounts: BankAccount[]
+  createdAt: string
+}
+
+export interface BankAccount {
+  id: number
+  accountType: string
+  accountName: string
+  accountNumberMasked: string
+  balance: number
+  isActive: boolean
+}
+
+// V2: Transaction Types
+export interface Transaction {
+  id: number
+  amount: number
+  merchant: string
+  description?: string
+  category: SpendingCategory
+  transactionDate: string
+  cardUsedId?: number
+  cardUsedName?: string
+  bestCardId?: number
+  bestCardName?: string
+  bestCardBank?: string
+  bestCardRate?: number
+  actualCashback?: number
+  optimalCashback?: number
+  missedCashback?: number
+  isAnalyzed: boolean
+  isDebitTransaction?: boolean // true if paid with debit card (no cashback)
+}
+
+export interface MissedCashbackSummary {
+  totalTransactions: number
+  totalSpending: number
+  totalActualCashback: number
+  totalOptimalCashback: number
+  totalMissedCashback: number
+  // Debit card analysis
+  debitTransactions?: number      // Count of debit/checking transactions
+  debitSpending?: number          // Total spending via debit cards
+  debitMissedCashback?: number    // Cashback lost by not using credit cards
+  categoryBreakdown: CategoryMissedCashback[]
+  topRecommendations: CardRecommendation[]
+}
+
+export interface CategoryMissedCashback {
+  category: string
+  spending: number
+  missedCashback: number
+  bestCardName?: string
+  bestCardBank?: string
+  bestCardRate?: number
+}
+
+export interface CardRecommendation {
+  cardId: number
+  cardName: string
+  bank: string
+  potentialSavings: number
+  bestCategories: string[]
+}
+
+// Subscription Types
+export type SubscriptionPlatform = 'APPLE' | 'GOOGLE'
+export type SubscriptionStatus = 'ACTIVE' | 'TRIALING' | 'EXPIRED' | 'CANCELLED' | 'GRACE_PERIOD' | 'ON_HOLD' | 'PAUSED'
+export type BillingPeriod = 'WEEKLY' | 'MONTHLY' | 'YEARLY'
+
+export interface SubscriptionPlan {
+  id: number
+  planId: string
+  name: string
+  description?: string
+  price: number
+  currency: string
+  billingPeriod: BillingPeriod
+  trialDays: number
+  aiMonthlyLimit: number
+  isActive: boolean
+}
+
+export interface UserSubscription {
+  id: number
+  userId: number
+  planId: string
+  planName: string
+  price: number
+  currency: string
+  billingPeriod: BillingPeriod
+  platform: SubscriptionPlatform
+  status: SubscriptionStatus
+  startsAt: string
+  expiresAt: string
+  isTrial: boolean
+  trialEndsAt?: string
+  autoRenew: boolean
+  aiMonthlyLimit: number
+}
+
+export interface VerifyReceiptRequest {
+  platform: SubscriptionPlatform
+  receiptData?: string
+  purchaseToken?: string
+  productId?: string
+  transactionId?: string
+  originalTransactionId?: string
+}
+
+export interface VerifyReceiptResponse {
+  valid: boolean
+  message: string
+  subscription?: UserSubscription
 }

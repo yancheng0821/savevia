@@ -21,16 +21,18 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
   MailOutlined,
-  MessageOutlined
+  BankOutlined,
 } from '@ant-design/icons'
 import { Capacitor } from '@capacitor/core'
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth'
+import { GoogleAuth } from '@southdevs/capacitor-google-auth'
 import { Share } from '@capacitor/share'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
-
+import LegalModal, { type LegalType } from '../components/LegalModal'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
-import { userApi, authApi } from '../services/api'
+import { userApi, authApi, transactionApi, bankApi } from '../services/api'
+import type { MissedCashbackSummary } from '../types'
 import { ExclamationCircleOutlined, KeyOutlined } from '@ant-design/icons'
 
 // Platform detection
@@ -93,7 +95,7 @@ function MePage() {
     const saved = localStorage.getItem('sv_darkMode')
     return saved === 'true'
   })
-  const [policyModal, setPolicyModal] = useState<'privacy' | 'terms' | null>(null)
+  const [policyModal, setPolicyModal] = useState<LegalType | null>(null)
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
@@ -111,6 +113,63 @@ function MePage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showDeletePassword, setShowDeletePassword] = useState(false)
+
+  // Missed cashback summary state - initialize from cache
+  const [missedCashbackSummary, setMissedCashbackSummary] = useState<MissedCashbackSummary | null>(() => {
+    const cached = localStorage.getItem('sv_missedCashbackSummary')
+    if (cached) {
+      try {
+        return JSON.parse(cached)
+      } catch {
+        return null
+      }
+    }
+    return null
+  })
+  const [hasBankConnection, setHasBankConnection] = useState(() => {
+    return localStorage.getItem('sv_hasBankConnection') === 'true'
+  })
+
+  // Load missed cashback summary on mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadMissedCashbackSummary()
+    }
+  }, [isAuthenticated])
+
+  const loadMissedCashbackSummary = async () => {
+    try {
+      // First check if user has bank connections
+      const connectionsRes = await bankApi.getConnections()
+      const hasConnection = connectionsRes.code === 200 && connectionsRes.data && connectionsRes.data.length > 0
+      setHasBankConnection(hasConnection)
+      localStorage.setItem('sv_hasBankConnection', String(hasConnection))
+
+      if (hasConnection) {
+        // Load user's card IDs for analysis
+        let cardIds: number[] = []
+        try {
+          const cardsRes = await userApi.getUserCards()
+          if (cardsRes.code === 200 && cardsRes.data) {
+            cardIds = cardsRes.data
+          }
+        } catch (e) {
+          // Ignore
+        }
+        // Get summary
+        const summaryRes = await transactionApi.getSummary(cardIds)
+        if (summaryRes.code === 200 && summaryRes.data) {
+          setMissedCashbackSummary(summaryRes.data)
+          localStorage.setItem('sv_missedCashbackSummary', JSON.stringify(summaryRes.data))
+        }
+      } else {
+        setMissedCashbackSummary(null)
+        localStorage.removeItem('sv_missedCashbackSummary')
+      }
+    } catch (error) {
+      console.error('Failed to load missed cashback summary:', error)
+    }
+  }
 
   // Get annual savings from result (fallback to manual calculation for old data)
   const annualSavings = result
@@ -140,10 +199,66 @@ function MePage() {
     }
   }
 
-  // Handle avatar upload
-  const handleAvatarClick = () => {
-    if (isAuthenticated && fileInputRef.current) {
-      fileInputRef.current.click()
+  // Handle avatar upload - use native camera on mobile, file input on web
+  const handleAvatarClick = async () => {
+    if (!isAuthenticated) return
+
+    const isNative = Capacitor.isNativePlatform()
+
+    if (isNative) {
+      // Use native camera/photo picker
+      try {
+        const image = await Camera.getPhoto({
+          quality: 80,
+          allowEditing: true,
+          resultType: CameraResultType.Base64,
+          source: CameraSource.Prompt, // Let user choose camera or gallery
+          width: 512,
+          height: 512,
+        })
+
+        if (image.base64String) {
+          // Convert base64 to blob
+          const byteString = atob(image.base64String)
+          const arrayBuffer = new ArrayBuffer(byteString.length)
+          const uint8Array = new Uint8Array(arrayBuffer)
+          for (let i = 0; i < byteString.length; i++) {
+            uint8Array[i] = byteString.charCodeAt(i)
+          }
+          const blob = new Blob([uint8Array], { type: `image/${image.format || 'jpeg'}` })
+          const file = new File([blob], `avatar.${image.format || 'jpg'}`, { type: `image/${image.format || 'jpeg'}` })
+
+          await uploadAvatarFile(file)
+        }
+      } catch (error: any) {
+        // User cancelled or permission denied - don't show error
+        if (error.message?.includes('cancelled') || error.message?.includes('User cancelled')) {
+          return
+        }
+        console.error('Camera error:', error)
+        message.error(t('errors.unexpectedError'))
+      }
+    } else {
+      // Use file input on web
+      if (fileInputRef.current) {
+        fileInputRef.current.click()
+      }
+    }
+  }
+
+  // Upload avatar file (shared by both native and web)
+  const uploadAvatarFile = async (file: File) => {
+    setUploadingAvatar(true)
+    try {
+      const response = await userApi.uploadAvatar(file)
+      if (response.code === 200 && response.data) {
+        updateUserAvatar(response.data.avatarUrl)
+        message.success(t('me.avatarUpdated'))
+      }
+    } catch (error: any) {
+      message.error(error.message || t('errors.unexpectedError'))
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -163,18 +278,7 @@ function MePage() {
       return
     }
 
-    setUploadingAvatar(true)
-    try {
-      const response = await userApi.uploadAvatar(file)
-      if (response.code === 200 && response.data) {
-        updateUserAvatar(response.data.avatarUrl)
-        message.success(t('me.avatarUpdated'))
-      }
-    } catch (error: any) {
-      message.error(error.message || t('errors.unexpectedError'))
-    } finally {
-      setUploadingAvatar(false)
-    }
+    await uploadAvatarFile(file)
 
     // Reset input
     if (fileInputRef.current) {
@@ -222,6 +326,9 @@ function MePage() {
     }
     logout()
     useOptimizerStore.getState().reset()
+    // Clear missed cashback cache
+    localStorage.removeItem('sv_missedCashbackSummary')
+    localStorage.removeItem('sv_hasBankConnection')
     message.success(t('nav.logout'))
   }
 
@@ -396,7 +503,7 @@ function MePage() {
       )}
 
       {/* Quick Stats - Only for logged in users with data */}
-      {isAuthenticated && (selectedCards.length > 0 || result) && (
+      {isAuthenticated && (selectedCards.length > 0 || result || hasBankConnection) && (
         <div className="sv-me-stats">
           <Link to="/cards" className="sv-me-stat-card">
             <CreditCardOutlined />
@@ -408,8 +515,18 @@ function MePage() {
             <div className="sv-me-stat-value">${result ? annualSavings.toFixed(0) : '—'}</div>
             <div className="sv-me-stat-label">{t('me.annualSavings')}</div>
           </Link>
+          <Link to="/transactions" className="sv-me-stat-card sv-me-stat-missed">
+            <BankOutlined />
+            <div className="sv-me-stat-value">
+              {hasBankConnection && missedCashbackSummary
+                ? `$${missedCashbackSummary.totalMissedCashback.toFixed(0)}`
+                : '—'}
+            </div>
+            <div className="sv-me-stat-label">{t('me.missedCashback')}</div>
+          </Link>
         </div>
       )}
+
 
       {/* Settings Section */}
       <div className="sv-me-section">
@@ -586,118 +703,14 @@ function MePage() {
               <RightOutlined />
             </a>
 
-            <a
-              href="https://github.com/anthropics/claude-code/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="feedback-option"
-              onClick={() => setFeedbackModalOpen(false)}
-            >
-              <MessageOutlined />
-              <div className="feedback-option-text">
-                <span className="feedback-option-title">{t('me.reportBug')}</span>
-                <span className="feedback-option-desc">{t('me.reportBugDesc')}</span>
-              </div>
-              <RightOutlined />
-            </a>
           </div>
         </div>
       </Modal>
 
       {/* Privacy Policy / Terms Modal */}
-      <Modal
-        open={policyModal !== null}
-        onCancel={() => setPolicyModal(null)}
-        footer={null}
-        centered
-        width={680}
-        className="policy-modal"
-      >
-        <div className="policy-modal-content">
-          <h2>{policyModal === 'privacy' ? t('me.privacyPolicy') : t('me.termsOfService')}</h2>
-          {policyModal === 'privacy' ? (
-            <div className="policy-text">
-              <p className="policy-date">Last Updated: December 2024</p>
-
-              <h3>1. Information We Collect</h3>
-              <p>We collect the following types of information:</p>
-              <ul>
-                <li>Account information (email, name) when you register</li>
-                <li>Credit card preferences (card names only, never actual card numbers)</li>
-                <li>Spending category preferences for optimization</li>
-                <li>Usage data to improve our services</li>
-              </ul>
-
-              <h3>2. How We Use Your Information</h3>
-              <p>We use your information to:</p>
-              <ul>
-                <li>Provide personalized credit card recommendations</li>
-                <li>Calculate and optimize your cashback rewards</li>
-                <li>Send important service updates (with your consent)</li>
-              </ul>
-
-              <h3>3. Data Security</h3>
-              <p>We implement industry-standard security measures to protect your data. We use encryption for data transmission and secure storage. We never store actual credit card numbers - only your card preferences for optimization purposes.</p>
-
-              <h3>4. Third-Party Services</h3>
-              <p>We use third-party services for authentication (Google Sign-In, Apple Sign-In) and analytics. These services have their own privacy policies. We do not sell your personal information to third parties.</p>
-
-              <h3>5. Data Retention</h3>
-              <p>We retain your data as long as your account is active. You can delete your account at any time, which will permanently remove all your data from our systems.</p>
-
-              <h3>6. Your Rights</h3>
-              <p>You have the right to:</p>
-              <ul>
-                <li>Access and download your personal data</li>
-                <li>Correct inaccurate information</li>
-                <li>Delete your account and all associated data</li>
-              </ul>
-
-              <h3>7. Contact Us</h3>
-              <p>For privacy-related questions, please contact us at: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></p>
-            </div>
-          ) : (
-            <div className="policy-text">
-              <p className="policy-date">Last Updated: December 2024</p>
-
-              <h3>1. Acceptance of Terms</h3>
-              <p>By accessing or using SaveVia, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.</p>
-
-              <h3>2. Service Description</h3>
-              <p>SaveVia is a credit card optimization tool that helps Canadian users maximize their cashback rewards. We analyze your spending patterns and card portfolio to recommend which card to use for each purchase category.</p>
-
-              <h3>3. User Account</h3>
-              <p>You may need to create an account to access certain features. You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.</p>
-
-              <h3>4. User Responsibilities</h3>
-              <p>When using SaveVia, you agree to:</p>
-              <ul>
-                <li>Provide accurate information about your credit cards</li>
-                <li>Use the service for personal, non-commercial purposes</li>
-                <li>Not attempt to reverse engineer or harm the service</li>
-              </ul>
-
-              <h3>5. Disclaimer</h3>
-              <p>Our recommendations are for informational purposes only. SaveVia does not guarantee any specific savings or cashback amounts. We are not responsible for any financial decisions you make based on our suggestions. Always verify card terms with your card issuer.</p>
-
-              <h3>6. Limitation of Liability</h3>
-              <p>SaveVia shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the service. Our total liability shall not exceed the amount you paid for the service.</p>
-
-              <h3>7. Intellectual Property</h3>
-              <p>All content, features, and functionality of SaveVia are owned by us and protected by copyright, trademark, and other intellectual property laws.</p>
-
-              <h3>8. Termination</h3>
-              <p>We may terminate or suspend your account at any time for violations of these terms. You may also delete your account at any time through the app settings.</p>
-
-              <h3>9. Modifications</h3>
-              <p>We reserve the right to modify these terms at any time. We will notify users of significant changes. Continued use of the service after changes constitutes acceptance of the new terms.</p>
-
-              <h3>10. Contact Us</h3>
-              <p>For questions about these terms, please contact us at: <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></p>
-            </div>
-          )}
-        </div>
-      </Modal>
+      {policyModal && (
+        <LegalModal type={policyModal} onClose={() => setPolicyModal(null)} />
+      )}
 
       {/* Delete Account Modal */}
       <Modal
@@ -838,11 +851,12 @@ function MePage() {
         .sv-me-page {
           padding: 20px;
           min-height: calc(100vh - 140px);
+          background: var(--app-bg);
         }
 
         @media (min-width: 641px) {
           .sv-me-page {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
           }
         }
@@ -861,6 +875,7 @@ function MePage() {
           gap: 16px;
           padding: 24px 0 20px;
           margin-bottom: 8px;
+          position: relative;
         }
 
         .sv-me-login-prompt {
@@ -907,6 +922,35 @@ function MePage() {
           font-size: 13px;
           color: #6b7280;
           margin: 0;
+        }
+
+        .sv-me-pro-badge {
+          position: absolute;
+          top: 20px;
+          right: 0;
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+
+        .sv-me-pro-badge:active {
+          opacity: 0.6;
+        }
+
+        .sv-me-pro-logo {
+          width: 36px;
+          height: 36px;
+        }
+
+        .sv-me-pro-text {
+          font-size: 13px;
+          font-weight: 700;
+          background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
 
         .sv-me-arrow {
@@ -974,6 +1018,17 @@ function MePage() {
           color: #d1d5db;
         }
 
+        .sv-me-item-link {
+          text-decoration: none;
+          color: inherit;
+        }
+
+        .sv-me-item-emoji {
+          font-size: 18px;
+          width: 24px;
+          text-align: center;
+        }
+
         .sv-me-logout .sv-me-item-left {
           color: #ef4444;
         }
@@ -988,6 +1043,53 @@ function MePage() {
 
         .sv-me-danger .sv-me-item-left .anticon {
           color: #ef4444;
+        }
+
+        .sv-me-subscription-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 16px;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border-radius: 16px;
+          text-decoration: none;
+          color: inherit;
+          transition: all 0.2s;
+        }
+
+        .sv-me-subscription-card:active {
+          opacity: 0.8;
+          transform: scale(0.99);
+        }
+
+        .sv-me-subscription-icon {
+          width: 44px;
+          height: 44px;
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          color: white;
+          box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+        }
+
+        .sv-me-subscription-info {
+          flex: 1;
+        }
+
+        .sv-me-subscription-info h3 {
+          font-size: 16px;
+          font-weight: 600;
+          color: #92400e;
+          margin: 0 0 2px;
+        }
+
+        .sv-me-subscription-info p {
+          font-size: 13px;
+          color: #a16207;
+          margin: 0;
         }
 
         .sv-me-footer {
@@ -1052,8 +1154,16 @@ function MePage() {
           color: #6366f1;
         }
 
-        .sv-me-stat-card:last-child .anticon {
+        .sv-me-stat-card:nth-child(2) .anticon {
           color: #10b981;
+        }
+
+        .sv-me-stat-card.sv-me-stat-missed .anticon {
+          color: #ef4444;
+        }
+
+        .sv-me-stat-card.sv-me-stat-missed .sv-me-stat-value {
+          color: #ef4444;
         }
 
         .sv-me-stat-value {
@@ -1478,6 +1588,14 @@ function MePage() {
             font-size: 13px;
             margin-bottom: 16px;
           }
+        }
+
+        /* Dark mode for Pro badge */
+        html.dark-mode .sv-me-pro-text {
+          background: linear-gradient(135deg, #3b82f6 0%, #14b8a6 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
       `}</style>
     </div>

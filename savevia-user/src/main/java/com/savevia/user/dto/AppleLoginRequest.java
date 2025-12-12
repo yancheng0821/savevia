@@ -12,4 +12,8 @@ public class AppleLoginRequest {
     // Apple only provides name on first authorization
     // Can be null for subsequent logins
     private String fullName;
+
+    // Apple provides email in the response (not in JWT token)
+    // Only available on first authorization when user chooses to share
+    private String email;
 }

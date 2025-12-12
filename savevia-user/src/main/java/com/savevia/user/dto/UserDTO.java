@@ -20,4 +20,9 @@ public class UserDTO {
     private LocalDateTime createdAt;
     private Boolean hasPassword;
     private Boolean emailVerified;
+
+    // Subscription info
+    private String subscriptionType;  // FREE or PRO
+    private LocalDateTime subscriptionExpiresAt;
+    private Boolean isProUser;  // Convenience field: true if PRO and not expired
 }

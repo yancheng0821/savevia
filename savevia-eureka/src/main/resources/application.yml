@@ -6,8 +6,8 @@ spring:
     name: savevia-eureka
   security:
     user:
-      name: eureka
-      password: eureka123
+      name: ${EUREKA_USER:eureka}
+      password: ${EUREKA_PASSWORD:eureka123}
 
 eureka:
   instance:

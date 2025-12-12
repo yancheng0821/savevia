@@ -17,9 +17,15 @@ import java.util.Map;
 @AllArgsConstructor
 public class OptimizationRequest {
 
+    private Long userId;
+
     @NotEmpty(message = "At least one card must be selected")
     private List<Long> cardIds;
 
     @NotEmpty(message = "Spending data is required")
     private Map<SpendingCategory, BigDecimal> monthlySpending;
+
+    private String locale;
+
+    private Boolean enableAiExplanation;
 }

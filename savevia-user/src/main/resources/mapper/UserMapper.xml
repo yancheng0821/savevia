@@ -20,13 +20,18 @@
         <result column="password_reset_expires_at" property="passwordResetExpiresAt" jdbcType="TIMESTAMP"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
         <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+        <result column="subscription_type" property="subscriptionType" jdbcType="VARCHAR"/>
+        <result column="subscription_expires_at" property="subscriptionExpiresAt" jdbcType="TIMESTAMP"/>
+        <result column="subscription_platform" property="subscriptionPlatform" jdbcType="VARCHAR"/>
+        <result column="subscription_product_id" property="subscriptionProductId" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 列定义 -->
     <sql id="Base_Column_List">
         id, email, password_hash, name, google_id, apple_id, avatar_url, is_active,
         email_verified, email_verification_token, email_verification_expires_at,
-        password_reset_token, password_reset_expires_at, created_at, updated_at
+        password_reset_token, password_reset_expires_at, created_at, updated_at,
+        subscription_type, subscription_expires_at, subscription_platform, subscription_product_id
     </sql>
 
     <!-- 根据ID查询 -->
@@ -106,6 +111,10 @@
             <if test="emailVerificationExpiresAt != null">email_verification_expires_at = #{emailVerificationExpiresAt},</if>
             <if test="passwordResetToken != null">password_reset_token = #{passwordResetToken},</if>
             <if test="passwordResetExpiresAt != null">password_reset_expires_at = #{passwordResetExpiresAt},</if>
+            <if test="subscriptionType != null">subscription_type = #{subscriptionType},</if>
+            <if test="subscriptionExpiresAt != null">subscription_expires_at = #{subscriptionExpiresAt},</if>
+            <if test="subscriptionPlatform != null">subscription_platform = #{subscriptionPlatform},</if>
+            <if test="subscriptionProductId != null">subscription_product_id = #{subscriptionProductId},</if>
             updated_at = UTC_TIMESTAMP()
         </set>
         WHERE id = #{id}

@@ -5,10 +5,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: savevia
-      MYSQL_USER: savevia
-      MYSQL_PASSWORD: savevia123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-savevia}
+      MYSQL_USER: ${MYSQL_USER:-savevia}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-savevia123}
     volumes:
       - savevia-mysql-data:/var/lib/mysql
       - ./docker/mysql/init:/docker-entrypoint-initdb.d
@@ -40,8 +40,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: savevia
-      RABBITMQ_DEFAULT_PASS: savevia123
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-savevia}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-savevia123}
     volumes:
       - savevia-rabbitmq-data:/var/lib/rabbitmq
     healthcheck:

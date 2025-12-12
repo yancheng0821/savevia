@@ -15,11 +15,8 @@
             android:launchMode="singleTask"
             android:exported="true"
             android:resizeableActivity="true">
-
             <!-- Foldable screen support -->
-            <meta-data
-                android:name="android.supports_size_changes"
-                android:value="true" />
+            <meta-data android:name="android.supports_size_changes" android:value="true" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

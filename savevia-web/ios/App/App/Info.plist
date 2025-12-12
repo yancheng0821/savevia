@@ -56,5 +56,16 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>890444343202-npol552p21etjqs53homftgo6430g4qo.apps.googleusercontent.com</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>SaveVia needs camera access to take a profile photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SaveVia needs photo library access to select a profile photo.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SaveVia needs permission to save photos to your library.</string>
 </dict>
 </plist>

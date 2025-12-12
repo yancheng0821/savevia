@@ -50,80 +50,26 @@ function useAndroidSwipeBack(onSwipeBack: () => void) {
   }, [onSwipeBack])
 }
 
-// Card visual styles - EXACT match with CardsPage.tsx
-const CARD_STYLES: Record<string, { gradient: string; textColor: string }> = {
-  // AMEX Cards (bank: 'AMEX')
-  'Cobalt Card': { gradient: 'linear-gradient(135deg, #5b4b9e 0%, #3d3270 100%)', textColor: 'white' },
-  'Gold Rewards Card': { gradient: 'linear-gradient(135deg, #c9a227 0%, #9a7b1c 100%)', textColor: '#1a1a1a' },
-  'Platinum Card': { gradient: 'linear-gradient(135deg, #e5e4e2 0%, #c0c0c0 100%)', textColor: '#1a1a1a' },
-  'SimplyCash Preferred': { gradient: 'linear-gradient(135deg, #016fd0 0%, #0055a5 100%)', textColor: 'white' },
-  'SimplyCash': { gradient: 'linear-gradient(135deg, #016fd0 0%, #004080 100%)', textColor: 'white' },
-  'Aeroplan Card': { gradient: 'linear-gradient(135deg, #016fd0 0%, #004080 100%)', textColor: 'white' },
-  'Aeroplan Reserve Card': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: '#c0c0c0' },
+// Default card style fallback
+const DEFAULT_CARD_STYLE = { gradient: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)', textColor: 'white' }
 
-  // TD Cards (bank: 'TD')
-  'Cash Back Visa Infinite': { gradient: 'linear-gradient(135deg, #34a853 0%, #1e7e34 100%)', textColor: 'white' },
-  'First Class Visa Infinite': { gradient: 'linear-gradient(135deg, #2c3e2d 0%, #1a261b 100%)', textColor: '#c5a572' },
-  'Aeroplan Visa Infinite': { gradient: 'linear-gradient(135deg, #34a853 0%, #1e7e34 100%)', textColor: 'white' },
-  'Aeroplan Visa Infinite Privilege': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', textColor: '#34a853' },
-  'Cash Back Visa': { gradient: 'linear-gradient(135deg, #34a853 0%, #2d8a45 100%)', textColor: 'white' },
-
-  // RBC Cards (bank: 'RBC')
-  'Avion Visa Infinite': { gradient: 'linear-gradient(135deg, #003168 0%, #001a3a 100%)', textColor: 'white' },
-  'Avion Visa Infinite Privilege': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)', textColor: '#ffd700' },
-  'WestJet World Elite Mastercard': { gradient: 'linear-gradient(135deg, #00a651 0%, #007a3d 100%)', textColor: 'white' },
-  'Cash Back Mastercard': { gradient: 'linear-gradient(135deg, #0051a5 0%, #003a75 100%)', textColor: 'white' },
-  'ION Visa': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #5521b5 100%)', textColor: 'white' },
-
-  // Scotiabank Cards (bank: 'Scotiabank')
-  'Gold American Express': { gradient: 'linear-gradient(135deg, #c9a227 0%, #9a7b1c 100%)', textColor: '#1a1a1a' },
-  'Passport Visa Infinite': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: '#c0c0c0' },
-  'Momentum Visa Infinite': { gradient: 'linear-gradient(135deg, #ec111a 0%, #b30d14 100%)', textColor: 'white' },
-  'Scene+ Visa': { gradient: 'linear-gradient(135deg, #ec111a 0%, #c70d14 100%)', textColor: 'white' },
-
-  // CIBC Cards (bank: 'CIBC')
-  'Aventura Visa Infinite': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)', textColor: '#c9a227' },
-  'Aventura Visa Infinite Privilege': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)', textColor: '#ffd700' },
-  'Dividend Visa Infinite': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: '#c0c0c0' },
-  'Costco Mastercard': { gradient: 'linear-gradient(135deg, #e31837 0%, #005daa 100%)', textColor: 'white' },
-
-  // BMO Cards (bank: 'BMO')
-  'Eclipse Visa Infinite': { gradient: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d1a 100%)', textColor: '#a78bfa' },
-  'CashBack World Elite Mastercard': { gradient: 'linear-gradient(135deg, #0079c1 0%, #005a91 100%)', textColor: 'white' },
-  'Air Miles World Elite Mastercard': { gradient: 'linear-gradient(135deg, #0079c1 0%, #004a73 100%)', textColor: 'white' },
-  'CashBack Mastercard': { gradient: 'linear-gradient(135deg, #0079c1 0%, #005a91 100%)', textColor: 'white' },
-
-  // Rogers Cards (bank: 'Rogers')
-  'World Elite Mastercard': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
-  'Platinum Mastercard': { gradient: 'linear-gradient(135deg, #e31837 0%, #c41530 100%)', textColor: 'white' },
-
-  // Tangerine Cards (bank: 'Tangerine')
-  'Money-Back Credit Card': { gradient: 'linear-gradient(135deg, #ff6600 0%, #cc5200 100%)', textColor: 'white' },
-  'World Mastercard': { gradient: 'linear-gradient(135deg, #ff6600 0%, #e65c00 100%)', textColor: 'white' },
-
-  // Neo Financial Cards (bank: 'Neo')
-  'Neo Mastercard': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', textColor: 'white' },
-  'Neo World Mastercard': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', textColor: 'white' },
-
-  // PC Financial Cards (bank: 'PC Financial')
-  'PC World Elite Mastercard': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
-  'PC World Mastercard': { gradient: 'linear-gradient(135deg, #e31837 0%, #c41530 100%)', textColor: 'white' },
-
-  // Simplii Financial Cards (bank: 'Simplii')
-  'Cash Back Visa Card': { gradient: 'linear-gradient(135deg, #ff6600 0%, #e65c00 100%)', textColor: 'white' },
-
-  // MBNA Cards (bank: 'MBNA')
-  'Rewards World Elite Mastercard': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: 'white' },
-  'True Line Gold Mastercard': { gradient: 'linear-gradient(135deg, #c9a227 0%, #9a7b1c 100%)', textColor: '#1a1a1a' },
-
-  // National Bank Cards (bank: 'National Bank')
-  'National Bank World Elite Mastercard': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
-
-  // Home Trust Cards (bank: 'Home Trust')
-  'Preferred Visa': { gradient: 'linear-gradient(135deg, #1e3a5f 0%, #152a45 100%)', textColor: 'white' },
-
-  // Default
-  'default': { gradient: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)', textColor: 'white' },
+// Bank fallback colors (used when imageUrl is not set)
+const BANK_FALLBACK_COLORS: Record<string, { gradient: string; textColor: string }> = {
+  'AMEX': { gradient: 'linear-gradient(135deg, #016fd0 0%, #004080 100%)', textColor: 'white' },
+  'American Express': { gradient: 'linear-gradient(135deg, #016fd0 0%, #004080 100%)', textColor: 'white' },
+  'TD': { gradient: 'linear-gradient(135deg, #34a853 0%, #1e7e34 100%)', textColor: 'white' },
+  'RBC': { gradient: 'linear-gradient(135deg, #003168 0%, #001a3a 100%)', textColor: 'white' },
+  'Scotiabank': { gradient: 'linear-gradient(135deg, #ec111a 0%, #b30d14 100%)', textColor: 'white' },
+  'CIBC': { gradient: 'linear-gradient(135deg, #8b1538 0%, #6b1029 100%)', textColor: 'white' },
+  'BMO': { gradient: 'linear-gradient(135deg, #0079c1 0%, #005a91 100%)', textColor: 'white' },
+  'Rogers': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
+  'Tangerine': { gradient: 'linear-gradient(135deg, #ff6600 0%, #cc5200 100%)', textColor: 'white' },
+  'Neo': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', textColor: 'white' },
+  'PC Financial': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
+  'Simplii': { gradient: 'linear-gradient(135deg, #ff6600 0%, #e65c00 100%)', textColor: 'white' },
+  'MBNA': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: 'white' },
+  'National Bank': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
+  'Home Trust': { gradient: 'linear-gradient(135deg, #1e3a5f 0%, #152a45 100%)', textColor: 'white' },
 }
 
 // Bank abbreviations
@@ -167,6 +113,7 @@ const BANK_LOGOS: Record<string, string> = {
 
 // Category icons
 const CATEGORY_ICONS: Record<SpendingCategory, string> = {
+  // Core categories
   DINING: '🍽️',
   GROCERY: '🛒',
   GAS: '⛽',
@@ -178,30 +125,34 @@ const CATEGORY_ICONS: Record<SpendingCategory, string> = {
   RECURRING: '🔄',
   ONLINE_SHOPPING: '📦',
   FOREIGN: '🌍',
+  // Extended categories
+  RETAIL: '🛍️',
+  ENTERTAINMENT: '🎬',
+  PERSONAL_SERVICES: '💇',
+  HOME_IMPROVEMENT: '🔨',
+  WHOLESALE: '🏪',
+  INSURANCE: '📋',
+  TELECOM: '📱',
+  EV_CHARGING: '⚡',
+  // Catch-all
   OTHER: '💳',
 }
 
-function getCardStyle(cardName: string, bankName: string) {
-  if (CARD_STYLES[cardName]) {
-    return CARD_STYLES[cardName]
+// Parse card style from imageUrl JSON or use fallback
+function getCardStyle(card: CreditCard) {
+  // Try to parse imageUrl as JSON with gradient/textColor
+  if (card.imageUrl) {
+    try {
+      const parsed = JSON.parse(card.imageUrl)
+      if (parsed.gradient && parsed.textColor) {
+        return { gradient: parsed.gradient, textColor: parsed.textColor }
+      }
+    } catch {
+      // Not JSON, ignore
+    }
   }
-  const bankColors: Record<string, { gradient: string; textColor: string }> = {
-    'AMEX': { gradient: 'linear-gradient(135deg, #016fd0 0%, #004080 100%)', textColor: 'white' },
-    'TD': { gradient: 'linear-gradient(135deg, #34a853 0%, #1e7e34 100%)', textColor: 'white' },
-    'RBC': { gradient: 'linear-gradient(135deg, #003168 0%, #001a3a 100%)', textColor: 'white' },
-    'Scotiabank': { gradient: 'linear-gradient(135deg, #ec111a 0%, #b30d14 100%)', textColor: 'white' },
-    'CIBC': { gradient: 'linear-gradient(135deg, #8b1538 0%, #6b1029 100%)', textColor: 'white' },
-    'BMO': { gradient: 'linear-gradient(135deg, #0079c1 0%, #005a91 100%)', textColor: 'white' },
-    'Rogers': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
-    'Tangerine': { gradient: 'linear-gradient(135deg, #ff6600 0%, #cc5200 100%)', textColor: 'white' },
-    'Neo': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', textColor: 'white' },
-    'PC Financial': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
-    'Simplii': { gradient: 'linear-gradient(135deg, #ff6600 0%, #e65c00 100%)', textColor: 'white' },
-    'MBNA': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: 'white' },
-    'National Bank': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
-    'Home Trust': { gradient: 'linear-gradient(135deg, #1e3a5f 0%, #152a45 100%)', textColor: 'white' },
-  }
-  return bankColors[bankName] || CARD_STYLES['default']
+  // Fallback to bank colors
+  return BANK_FALLBACK_COLORS[card.bank] || DEFAULT_CARD_STYLE
 }
 
 function CardDetailPage() {
@@ -280,7 +231,7 @@ function CardDetailPage() {
     )
   }
 
-  const style = getCardStyle(card.name, card.bank)
+  const style = getCardStyle(card)
   const isSelected = selectedCards.some(c => c.id === card.id)
   const hasNoFxFee = card.noFxFee === true
 
@@ -479,34 +430,25 @@ function CardDetailPage() {
 
       {/* Signup Bonus */}
       {card.signupBonus && (
-        <div style={{
-          marginBottom: '24px'
-        }}>
-          <div style={{
-            fontSize: '12px',
-            fontWeight: '600',
-            color: '#9ca3af',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            marginBottom: '12px'
-          }}>
+        <div className="sv-card-detail-bonus">
+          <div className="sv-card-detail-section-title">
             {t('cardDetail.welcomeBonus')}
           </div>
-          <div style={{ fontSize: '28px', fontWeight: '700', color: '#111827', marginBottom: '12px' }}>
+          <div className="sv-card-detail-bonus-amount">
             {typeof card.signupBonus.bonusAmount === 'number' && card.signupBonus.bonusAmount > 1000
               ? `${card.signupBonus.bonusAmount.toLocaleString()} ${t('cardDetail.points')}`
               : `$${card.signupBonus.bonusAmount}`}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '13px', color: '#6b7280' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div className="sv-card-detail-bonus-meta">
+            <span>
               <DollarOutlined /> {t('cardDetail.minSpend')}: ${card.signupBonus.minSpend.toLocaleString()}
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span>
               <ClockCircleOutlined /> {card.signupBonus.daysToComplete} {t('cardDetail.days')}
             </span>
           </div>
           {card.signupBonus.description && (
-            <p style={{ fontSize: '13px', color: '#6b7280', marginTop: '12px', marginBottom: 0 }}>
+            <p className="sv-card-detail-bonus-desc">
               {card.signupBonus.description}
             </p>
           )}
@@ -514,49 +456,39 @@ function CardDetailPage() {
       )}
 
       {/* Reward Rules */}
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{
-          fontSize: '14px',
-          fontWeight: '600',
-          color: '#9ca3af',
-          textTransform: 'uppercase',
-          letterSpacing: '1px',
-          marginBottom: '16px'
-        }}>
+      <div className="sv-card-detail-rules">
+        <h2 className="sv-card-detail-section-title">
           {t('cardDetail.rewardRates')}
         </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+        <div className="sv-card-detail-rules-list">
           {card.rewardRules.length > 0 ? (
             card.rewardRules.map((rule, index) => (
               <div
                 key={rule.id}
+                className="sv-card-detail-rule-item"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '14px 0',
-                  borderBottom: index < card.rewardRules.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none'
+                  borderBottom: index < card.rewardRules.length - 1 ? '1px solid var(--border-color, rgba(0,0,0,0.06))' : 'none'
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="sv-card-detail-rule-left">
                   <span style={{ fontSize: '20px' }}>{CATEGORY_ICONS[rule.category]}</span>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>
+                    <div className="sv-card-detail-rule-category">
                       {t(`categories.${rule.category}`)}
                     </div>
                     {rule.description && (
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                      <div className="sv-card-detail-rule-desc">
                         {rule.description}
                       </div>
                     )}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '18px', fontWeight: '700', color: '#059669' }}>
+                <div className="sv-card-detail-rule-right">
+                  <div className="sv-card-detail-rule-rate">
                     {(rule.rewardRate * 100).toFixed(0)}%
                   </div>
                   {rule.monthlyCapAmount && (
-                    <div style={{ fontSize: '11px', color: '#9ca3af' }}>
+                    <div className="sv-card-detail-rule-cap">
                       {t('cardDetail.capAmount', { amount: rule.monthlyCapAmount })}
                     </div>
                   )}
@@ -564,11 +496,7 @@ function CardDetailPage() {
               </div>
             ))
           ) : (
-            <div style={{
-              padding: '20px 0',
-              textAlign: 'center',
-              color: '#6b7280'
-            }}>
+            <div className="sv-card-detail-no-rules">
               <CreditCardOutlined style={{ fontSize: '24px', marginBottom: '8px', display: 'block' }} />
               {(card.baseRewardRate * 100).toFixed(1)}% {t('cardDetail.onAllPurchases')}
             </div>

@@ -1,5 +1,6 @@
 {
   "common": {
+    "locale": "ko",
     "appName": "SaveVia",
     "loading": "로딩 중...",
     "save": "저장",
@@ -53,6 +54,20 @@
       "cashback": "캐시백",
       "loginFirst": "로그인하고 카드를 추가하세요",
       "addCards": "신용카드를 추가하여 추천을 받으세요"
+    },
+    "bankConnect": {
+      "title": "놓친 캐시백 확인하기",
+      "description": "은행 계좌를 연결하여 거래를 자동 분석하고 얼마나 많은 캐시백을 받을 수 있었는지 확인하세요.",
+      "cta": "은행 연결",
+      "poweredBy": "안전한 은행 연결 제공",
+      "security": "은행 수준 암호화 · 읽기 전용 · 데이터 보호",
+      "demoNotice": "데모 모드 - 실제 연결 곧 출시"
+    },
+    "cardModal": {
+      "hint": "이 카테고리 구매 시 이 카드를 사용하세요",
+      "openAppleWallet": "Apple Wallet 열기",
+      "openGooglePay": "Google Pay 열기",
+      "viewDetails": "카드 상세 보기"
     }
   },
   "cards": {
@@ -74,10 +89,13 @@
     "calculateSavings": "절약액 계산하기",
     "total": "합계",
     "perMonth": "/월",
-    "calculate": "계산",
-    "calculating": "계산 중...",
+    "calculate": "AI 최적화",
+    "calculateBasic": "최적화",
+    "calculating": "AI 분석 중...",
+    "calculatingBasic": "분석 중...",
     "cardsSelected": "개 카드",
-    "categoriesFilled": "개 카테고리"
+    "categoriesFilled": "개 카테고리",
+    "loginToOptimize": "AI 최적화를 사용하려면 로그인하세요"
   },
   "result": {
     "title": "최적화 결과",
@@ -95,7 +113,17 @@
     "monthlySpend": "월 지출",
     "bestCard": "최적 카드",
     "rewardRate": "적립률",
-    "monthlyRewardCol": "월 적립금"
+    "monthlyRewardCol": "월 적립금",
+    "aiInsight": "AI 분석",
+    "aiTip": "팁"
+  },
+  "categoryGroups": {
+    "daily": "일상",
+    "transport": "교통",
+    "shopping": "쇼핑",
+    "bills": "청구서",
+    "lifestyle": "라이프",
+    "other": "기타"
   },
   "categories": {
     "DINING": "외식",
@@ -109,12 +137,22 @@
     "RECURRING": "정기 결제",
     "ONLINE_SHOPPING": "온라인 쇼핑",
     "FOREIGN": "해외 결제",
+    "RETAIL": "소매점",
+    "ENTERTAINMENT": "엔터테인먼트",
+    "PERSONAL_SERVICES": "개인 서비스",
+    "HOME_IMPROVEMENT": "홈 인테리어",
+    "WHOLESALE": "도매점",
+    "INSURANCE": "보험",
+    "TELECOM": "통신",
+    "EV_CHARGING": "전기차 충전",
     "OTHER": "기타"
   },
   "auth": {
     "welcomeBack": "다시 오신 것을 환영합니다",
     "createAccount": "계정 만들기",
     "joinUs": "SaveVia 가입하기",
+    "signInSubtitle": "로그인하여 계속하기",
+    "signUpSubtitle": "계정을 만들어 시작하기",
     "continueWithGoogle": "Google로 계속하기",
     "continueWithApple": "Apple로 계속하기",
     "continueWithEmail": "이메일로 계속하기",
@@ -177,7 +215,11 @@
     "invalidVerificationLink": "유효하지 않거나 만료된 인증 링크",
     "backToHome": "홈으로 돌아가기",
     "resendVerification": "인증 이메일 재전송",
-    "verificationSent": "인증 이메일이 전송되었습니다!"
+    "verificationSent": "인증 이메일이 전송되었습니다!",
+    "agreeToTerms": "동의합니다:",
+    "and": "및",
+    "pleaseAgreeTerms": "서비스 약관 및 개인정보 처리방침에 동의해 주세요",
+    "socialLoginTerms": "계속하면 다음에 동의하는 것입니다:"
   },
   "me": {
     "settings": "설정",
@@ -208,7 +250,11 @@
     "deleteAccountConfirm": "정말 계정을 삭제하시겠습니까? 이 작업은 취소할 수 없으며 모든 데이터가 영구적으로 삭제됩니다.",
     "deleteAccountOk": "삭제",
     "accountDeleted": "계정이 삭제되었습니다",
-    "passwordRequired": "비밀번호를 입력해주세요"
+    "passwordRequired": "비밀번호를 입력해주세요",
+    "bankTransactions": "은행 거래내역",
+    "missedCashback": "놓친 캐시백",
+    "restartOnboarding": "맞춤 설정",
+    "onboardingReset": "맞춤 설정이 초기화되었습니다. 페이지를 새로고침해 주세요"
   },
   "errors": {
     "serviceUnavailable": "서비스를 사용할 수 없습니다. 나중에 다시 시도해주세요",
@@ -241,5 +287,134 @@
     "viewDetails": "상세보기",
     "add": "추가",
     "added": "추가됨"
+  },
+  "subscription": {
+    "title": "SaveVia Pro",
+    "subtitle": "모든 기능 잠금 해제",
+    "active": "활성",
+    "expiresOn": "{{date}}까지 유효",
+    "featureAi": "무제한 AI 최적화",
+    "featureAnalysis": "고급 지출 분석",
+    "featureSupport": "우선 고객 지원",
+    "month": "월",
+    "year": "년",
+    "bestValue": "최고 가치",
+    "save20": "20% 절약",
+    "subscribe": "구독",
+    "trialInfo": "7일 무료 체험. 언제든 취소 가능.",
+    "restore": "구매 복원",
+    "loginRequired": "구독하려면 로그인하세요",
+    "nativeOnly": "구독은 모바일 앱에서만 가능합니다",
+    "webNotice": "App Store 또는 Google Play에서 앱을 다운로드하여 구독하세요.",
+    "purchaseSuccess": "구독이 활성화되었습니다!",
+    "purchaseFailed": "구매 실패. 다시 시도해 주세요.",
+    "restoreSuccess": "구독이 복원되었습니다!",
+    "restoreFailed": "구매 복원 실패",
+    "noSubscription": "이전 구매 내역을 찾을 수 없습니다",
+    "manageSub": "구독 관리",
+    "pro": "Pro",
+    "skipForNow": "나중에",
+    "limitReachedWeb": "이번 달 무료 AI 최적화 한도에 도달했습니다. 앱을 다운로드하고 구독하여 무제한 이용하세요.",
+    "limitReachedPro": "이번 달 AI 최적화 한도에 도달했습니다. 다음 달에 초기화됩니다.",
+    "limitReachedFree": "이번 달 무료 AI 최적화 한도에 도달했습니다. 구독하고 더 많이 이용하세요!"
+  },
+  "share": {
+    "sharedResult": "공유된 결과",
+    "notFound": "결과를 찾을 수 없습니다",
+    "expiredOrNotExist": "이 공유된 결과는 만료되었거나 존재하지 않습니다.",
+    "getStarted": "시작하기",
+    "wantToOptimize": "신용카드 리워드를 최적화하시겠어요?",
+    "freeToUse": "SaveVia는 무료입니다. 지금 바로 절약을 시작하세요!"
+  },
+  "transactions": {
+    "title": "거래내역",
+    "loginRequired": "거래내역을 보려면 로그인하세요",
+    "loginDesc": "은행을 연결하여 거래내역을 확인하고 카드 추천을 받으세요.",
+    "connectBank": "숨겨진 캐시백을 발견하세요",
+    "connectBankDesc": "소비 내역을 분석해 최적의 카드 미사용으로 놓친 캐시백을 알려드려요. 캐나다인은 연간 $300-$1,000를 이렇게 놓쳐요 — 절약을 도와드릴게요!",
+    "connectBankBtn": "안전하게 연결",
+    "connectingBank": "은행 서비스에 연결 중...",
+    "selectBank": "은행 선택",
+    "demoModeNotice": "데모 모드: 은행을 클릭하면 샘플 거래가 생성됩니다.",
+    "bankConnected": "은행이 연결되었습니다!",
+    "refreshSuccess": "데이터가 새로고침되었습니다",
+    "poweredByFlinks": "Flinks 제공 - 캐나다 공인 오픈뱅킹 플랫폼",
+    "security": {
+      "encrypted": "은행급 256비트 암호화",
+      "readOnly": "읽기 전용 - 자금 이체 불가",
+      "noPassword": "은행 비밀번호를 저장하지 않습니다"
+    },
+    "last90Days": "최근 90일",
+    "summaryTooltip": "최근 90일 거래 기준 분석",
+    "totalSpent": "총 지출",
+    "missedCashback": "놓친 캐시백",
+    "earnedCashback": "획득",
+    "opportunityText": "최적의 카드를 사용했다면 ${{amount}} ({{percentage}}%) 더 받을 수 있었습니다.",
+    "tabSummary": "요약",
+    "tabTransactions": "거래",
+    "categoryBreakdown": "카테고리별 분석",
+    "noCategories": "카테고리 데이터 없음",
+    "spent": "지출",
+    "shouldUse": "사용",
+    "used": "사용됨",
+    "unknownCard": "알 수 없음",
+    "openBankingBy": "오픈뱅킹 제공",
+    "recommendations": "추천",
+    "bestFor": "최적",
+    "noTransactions": "거래 없음",
+    "connectedBanks": "연결된 은행",
+    "lastSync": "마지막 동기화",
+    "addBank": "은행 추가",
+    "disconnect": "연결 해제",
+    "disconnected": "은행 연결이 해제되었습니다",
+    "disconnectConfirmTitle": "은행 연결 해제",
+    "disconnectConfirmContent": "⚠️ API 비용으로 인해 은행 연결은 월 5회로 제한됩니다. {{bank}} 연결을 해제하면 재연결 시 연결 횟수가 차감됩니다.\n\n거래내역도 삭제됩니다.\n\n정말 연결을 해제하시겠습니까?",
+    "debitCard": "체크카드",
+    "debitAnalysis": "체크카드 지출",
+    "debitTxCount": "건",
+    "debitSpent": "지출액",
+    "debitMissed": "놓친 캐시백",
+    "debitHint": "체크카드 대신 신용카드를 사용하면 캐시백을 받을 수 있습니다!",
+    "connectionLimit": "이번 달 남은 연결 {{remaining}}/{{max}}회",
+    "connectionLimitExceeded": "월 연결 한도에 도달했습니다 (월 5회). 다음 달에 다시 시도해 주세요.",
+    "resync": "재동기화",
+    "resyncConfirmTitle": "은행 데이터 재동기화",
+    "resyncConfirmContent": "⚠️ {{bank}}를 재동기화하면 최신 거래 내역을 가져옵니다.\n\n이번 달 남은 {{remaining}}/{{max}}회 연결 중 1회를 사용합니다.\n\n계속하시겠습니까?",
+    "resyncSuccess": "은행 데이터가 재동기화되었습니다!",
+    "analyzeSuccess": "분석이 완료되었습니다"
+  },
+  "onboarding": {
+    "welcome": "맞춤 경험을 설정해 드릴게요",
+    "continue": "계속",
+    "step1": {
+      "title": "신용카드가 몇 장 있으신가요?",
+      "description": "모든 카드에서 캐시백을 최대화할 수 있도록 도와드릴게요."
+    },
+    "step2": {
+      "title": "연간 카드 사용액은 얼마인가요?",
+      "description": "잠재적인 절약액을 추정하는 데 도움이 됩니다."
+    },
+    "step3": {
+      "title": "카드를 어디에 사용하시나요?",
+      "description": "지출에 해당하는 모든 카테고리를 선택하세요."
+    },
+    "categories": {
+      "dining": "외식",
+      "grocery": "식료품",
+      "gas": "주유",
+      "travel": "여행",
+      "online": "온라인 쇼핑",
+      "streaming": "스트리밍"
+    },
+    "summary": {
+      "title": "절약 잠재력",
+      "before": "최적화 전",
+      "after": "최적화 후",
+      "extraSavings": "연간 추가 절약액",
+      "perYear": "년",
+      "description": "{{cardCount}}장의 카드와 {{categoryCount}}개의 지출 카테고리를 기반으로 SaveVia가 캐시백을 최적화합니다.",
+      "disclaimer": "* 추정치일 뿐입니다. 실제 결과는 다를 수 있습니다. 재정 조언이 아닙니다.",
+      "getStarted": "절약 시작하기"
+    }
   }
 }

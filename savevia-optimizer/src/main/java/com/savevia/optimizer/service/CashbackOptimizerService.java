@@ -22,7 +22,9 @@ import java.util.Map;
 public class CashbackOptimizerService {
 
     private final CardServiceClient cardClient;
+    private final UserServiceClient userClient;
     private final CashbackCalculator calculator;
+    private final OpenAiService openAiService;
 
     /**
      * Main optimization method - finds the best card for each spending category
@@ -108,6 +110,26 @@ public class CashbackOptimizerService {
             formatCurrency(totalAnnualFees),
             formatCurrency(netAnnualSavings)
         );
+
+        // Generate AI explanations if enabled, user is logged in, and has quota
+        if (Boolean.TRUE.equals(request.getEnableAiExplanation()) && request.getUserId() != null) {
+            try {
+                // Check if user can use AI
+                Result<Boolean> canUseResult = userClient.checkCanUseAi(request.getUserId());
+                if (canUseResult.isSuccess() && Boolean.TRUE.equals(canUseResult.getData())) {
+                    openAiService.generateExplanations(recommendations, userCards, request.getLocale());
+                    // Record usage after successful AI generation
+                    userClient.recordAiUsage(request.getUserId());
+                } else {
+                    log.info("User {} has reached AI usage limit", request.getUserId());
+                }
+            } catch (Exception e) {
+                log.warn("Failed to generate AI explanations: {}", e.getMessage());
+            }
+        } else if (Boolean.TRUE.equals(request.getEnableAiExplanation()) && request.getUserId() == null) {
+            // Guest user - AI disabled, must login to use AI feature
+            log.info("Guest user attempted to use AI feature - login required");
+        }
 
         return OptimizationResult.builder()
             .recommendations(recommendations)

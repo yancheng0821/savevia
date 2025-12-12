@@ -1,10 +1,73 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightOutlined, ShareAltOutlined, LinkOutlined, RedoOutlined, MailOutlined } from '@ant-design/icons'
+import { ArrowRightOutlined, ShareAltOutlined, LinkOutlined, RedoOutlined, MailOutlined, DownOutlined } from '@ant-design/icons'
+import { Capacitor } from '@capacitor/core'
+import { Share } from '@capacitor/share'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
 import { optimizerApi } from '../services/api'
+import type { SpendingCategory } from '../types'
+
+// Check if running on native platform
+const isNativeApp = Capacitor.isNativePlatform()
+
+// Category emoji mapping
+const CATEGORY_ICONS: Record<string, string> = {
+  // Daily Essentials
+  'DINING': '🍽️',
+  'GROCERY': '🛒',
+  'PHARMACY': '💊',
+  // Transportation
+  'GAS': '⛽',
+  'TRANSIT': '🚇',
+  'EV_CHARGING': '⚡',
+  // Shopping
+  'RETAIL': '🛍️',
+  'ONLINE_SHOPPING': '📦',
+  'WHOLESALE': '🏪',
+  'HOME_IMPROVEMENT': '🔨',
+  // Bills & Services
+  'RENT': '🏠',
+  'RECURRING': '🔄',
+  'TELECOM': '📱',
+  'INSURANCE': '📋',
+  'STREAMING': '📺',
+  // Lifestyle
+  'TRAVEL': '✈️',
+  'ENTERTAINMENT': '🎬',
+  'PERSONAL_SERVICES': '💇',
+  'FOREIGN': '🌍',
+  // Catch-all
+  'OTHER': '💳',
+}
+
+// Category order for sorting results
+const CATEGORY_ORDER: string[] = [
+  // Daily Essentials
+  'DINING', 'GROCERY', 'PHARMACY',
+  // Transportation
+  'GAS', 'TRANSIT', 'EV_CHARGING',
+  // Shopping
+  'RETAIL', 'ONLINE_SHOPPING', 'WHOLESALE', 'HOME_IMPROVEMENT',
+  // Bills & Services
+  'RENT', 'RECURRING', 'TELECOM', 'INSURANCE', 'STREAMING',
+  // Lifestyle
+  'TRAVEL', 'ENTERTAINMENT', 'PERSONAL_SERVICES', 'FOREIGN',
+  // Other
+  'OTHER',
+]
+
+// Sort recommendations by category order
+const sortByCategory = <T extends { category: string | SpendingCategory }>(items: T[]): T[] => {
+  return [...items].sort((a, b) => {
+    const indexA = CATEGORY_ORDER.indexOf(String(a.category))
+    const indexB = CATEGORY_ORDER.indexOf(String(b.category))
+    const orderA = indexA === -1 ? 999 : indexA
+    const orderB = indexB === -1 ? 999 : indexB
+    return orderA - orderB
+  })
+}
 
 // Bank logo paths
 const BANK_LOGOS: Record<string, string> = {
@@ -77,7 +140,33 @@ function ResultPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [expandedAi, setExpandedAi] = useState<Set<SpendingCategory>>(new Set())
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640)
   const shareMenuRef = useRef<HTMLDivElement>(null)
+
+  // Check if mobile on resize
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 640)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const toggleAiExpanded = (category: SpendingCategory) => {
+    if (!isMobile) return // Desktop always shows expanded
+    setExpandedAi(prev => {
+      const next = new Set(prev)
+      if (next.has(category)) {
+        next.delete(category)
+      } else {
+        next.add(category)
+      }
+      return next
+    })
+  }
+
+  const isAiExpanded = (category: SpendingCategory) => {
+    return !isMobile || expandedAi.has(category)
+  }
 
   useEffect(() => {
     if (!result) {
@@ -113,7 +202,8 @@ function ResultPage() {
     try {
       const response = await optimizerApi.shareResult(result)
       if (response.code === 200 && response.data) {
-        const url = `${window.location.origin}/share/${response.data.shareId}`
+        // Use API OG endpoint for sharing - it has dynamic Open Graph meta tags
+        const url = `https://api.savevia.app/api/v1/optimize/share/${response.data.shareId}/og`
         setShareUrl(url)
         return url
       }
@@ -125,8 +215,26 @@ function ResultPage() {
     return null
   }
 
-  const handleShareClick = () => {
-    setShowShareMenu(!showShareMenu)
+  const handleShareClick = async () => {
+    // On native app, use system share sheet directly
+    if (isNativeApp) {
+      const url = await getShareUrl()
+      if (url) {
+        try {
+          await Share.share({
+            title: 'SaveVia',
+            text: `I just saved $${result.netAnnualSavings.toFixed(0)}/year with SaveVia!`,
+            url: url,
+            dialogTitle: 'Share Results'
+          })
+        } catch (e) {
+          // User cancelled - do nothing
+        }
+      }
+    } else {
+      // On web, show dropdown menu
+      setShowShareMenu(!showShareMenu)
+    }
   }
 
   const handleCopyLink = async () => {
@@ -176,9 +284,27 @@ function ResultPage() {
   const shareToWeChat = async () => {
     const url = await getShareUrl()
     if (url) {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 3000)
+      if (isNativeApp) {
+        // On native app, use system share sheet which includes WeChat
+        try {
+          await Share.share({
+            title: 'SaveVia',
+            text: `I just saved $${result.netAnnualSavings.toFixed(0)}/year with SaveVia!`,
+            url: url,
+            dialogTitle: 'Share to WeChat'
+          })
+        } catch (e) {
+          // User cancelled or error - fallback to copy
+          await navigator.clipboard.writeText(url)
+          setCopied(true)
+          setTimeout(() => setCopied(false), 3000)
+        }
+      } else {
+        // On web, copy link (WeChat doesn't have web share URL)
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 3000)
+      }
     }
     setShowShareMenu(false)
   }
@@ -246,39 +372,12 @@ function ResultPage() {
 
         {/* Share Menu Dropdown */}
         {showShareMenu && (
-          <div style={{
-            position: 'absolute',
-            top: '40px',
-            right: '0',
-            background: '#fffcf5',
-            borderRadius: '12px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
-            border: '1px solid rgba(0, 0, 0, 0.06)',
-            padding: '6px',
-            minWidth: '180px',
-            zIndex: 100
-          }}>
+          <div className="sv-share-menu">
             <button
               onClick={handleCopyLink}
-              className="share-menu-item"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                width: '100%',
-                padding: '10px 14px',
-                border: 'none',
-                background: copied ? 'rgba(5, 150, 105, 0.08)' : 'transparent',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: copied ? '#059669' : '#374151',
-                cursor: 'pointer',
-                textAlign: 'left',
-                transition: 'all 0.15s ease'
-              }}
+              className={`share-menu-item ${copied ? 'copied' : ''}`}
             >
-              <LinkOutlined style={{ color: copied ? '#059669' : '#6b7280' }} />
+              <LinkOutlined />
               {copied ? t('result.copied') : t('result.copyLink')}
             </button>
             <button onClick={shareToTwitter} className="share-menu-item">
@@ -302,9 +401,9 @@ function ResultPage() {
             <button onClick={shareToReddit} className="share-menu-item">
               <RedditIcon /> Reddit
             </button>
-            <div style={{ height: '1px', background: 'rgba(0,0,0,0.06)', margin: '4px 0' }} />
+            <div className="sv-share-menu-divider" />
             <button onClick={shareViaEmail} className="share-menu-item">
-              <MailOutlined style={{ color: '#6b7280' }} /> Email
+              <MailOutlined /> Email
             </button>
           </div>
         )}
@@ -313,146 +412,117 @@ function ResultPage() {
 
       {/* Big Number */}
       <div className="sv-result-hero" style={{ marginBottom: '48px' }}>
-        <div style={{ fontSize: '14px', color: '#059669', fontWeight: '500', marginBottom: '8px' }}>
+        <div className="sv-result-savings-label">
           {t('result.netSavings')}
         </div>
-        <div className="sv-result-amount" style={{
-          fontWeight: '800',
-          color: '#111827',
-          letterSpacing: '-3px',
-          lineHeight: 1
-        }}>
+        <div className="sv-result-amount">
           ${result.netAnnualSavings.toFixed(0)}
-          <span className="sv-result-unit" style={{ fontWeight: '500', color: '#6b7280', letterSpacing: '0' }}>{t('common.perYear')}</span>
+          <span className="sv-result-unit">{t('common.perYear')}</span>
         </div>
       </div>
 
       {/* Stats Row */}
-      <div className="sv-result-stats" style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '32px',
-        marginBottom: '48px',
-        paddingBottom: '32px',
-        borderBottom: '1px solid #f3f4f6'
-      }}>
-        <div style={{ minWidth: '120px' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
-            {t('result.monthlyReward')}
-          </div>
-          <div className="sv-result-stat-value" style={{ fontWeight: '700', color: '#111827' }}>
-            ${result.monthlyReward.toFixed(2)}
-          </div>
+      <div className="sv-result-stats-row">
+        <div className="sv-result-stat-item">
+          <div className="sv-result-stat-label">{t('result.monthlyReward')}</div>
+          <div className="sv-result-stat-value">${result.monthlyReward.toFixed(2)}</div>
         </div>
-        <div style={{ minWidth: '120px' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
-            {t('result.annualReward')}
-          </div>
-          <div className="sv-result-stat-value" style={{ fontWeight: '700', color: '#111827' }}>
-            ${result.annualReward.toFixed(0)}
-          </div>
+        <div className="sv-result-stat-divider" />
+        <div className="sv-result-stat-item">
+          <div className="sv-result-stat-label">{t('result.annualReward')}</div>
+          <div className="sv-result-stat-value">${result.annualReward.toFixed(0)}</div>
         </div>
-        <div style={{ minWidth: '120px' }}>
-          <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>
-            {t('result.annualFees')}
-          </div>
-          <div className="sv-result-stat-value" style={{ fontWeight: '700', color: '#ef4444' }}>
-            -${result.totalAnnualFees.toFixed(0)}
-          </div>
+        <div className="sv-result-stat-divider" />
+        <div className="sv-result-stat-item">
+          <div className="sv-result-stat-label">{t('result.annualFees')}</div>
+          <div className="sv-result-stat-value sv-result-stat-fees">-${result.totalAnnualFees.toFixed(0)}</div>
         </div>
       </div>
 
       {/* Recommendations - Simple List */}
       <div style={{ marginBottom: '48px' }}>
-        <h2 style={{
-          fontSize: '14px',
-          fontWeight: '600',
-          color: '#9ca3af',
-          textTransform: 'uppercase',
-          letterSpacing: '1px',
-          marginBottom: '24px'
-        }}>
+        <h2 className="sv-result-section-title">
           {t('result.quickReference')}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {result.recommendations.map((rec) => (
-            <div
-              key={rec.category}
-              className="sv-result-rec-item"
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                padding: '16px 0',
-                borderBottom: '1px solid #f3f4f6',
-                gap: '12px',
-                flexWrap: 'wrap'
-              }}
-            >
-              <span style={{ fontSize: '16px', fontWeight: '500', color: '#111827' }}>
-                {t(`categories.${rec.category}`)}
-              </span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                {BANK_LOGOS[rec.recommendedCard.bank] && (
-                  <img
-                    src={BANK_LOGOS[rec.recommendedCard.bank]}
-                    alt={rec.recommendedCard.bank}
-                    style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px' }}
-                  />
+          {sortByCategory(result.recommendations).map((rec) => (
+              <div
+                key={rec.category}
+                className="sv-result-rec-item"
+                onClick={() => rec.aiExplanation && isMobile && toggleAiExpanded(rec.category as SpendingCategory)}
+                style={{
+                  cursor: isMobile && rec.aiExplanation ? 'pointer' : 'default'
+                }}
+              >
+                <div className="sv-result-rec-row">
+                  <div className="sv-result-rec-category">
+                    <span style={{ fontSize: '16px' }}>{CATEGORY_ICONS[rec.category] || '💳'}</span>
+                    <span className="sv-result-category-name">
+                      {t(`categories.${rec.category}`)}
+                    </span>
+                  </div>
+                  <div className="sv-result-rec-details">
+                    {BANK_LOGOS[rec.recommendedCard.bank] && (
+                      <img
+                        src={BANK_LOGOS[rec.recommendedCard.bank]}
+                        alt={rec.recommendedCard.bank}
+                        style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px' }}
+                      />
+                    )}
+                    <span className="sv-result-card-name">
+                      {rec.recommendedCard.name}
+                    </span>
+                    <span className="sv-result-rate">
+                      {(rec.rewardRate * 100).toFixed(0)}%
+                    </span>
+                    <span className="sv-result-reward">
+                      ${rec.monthlyReward.toFixed(2)}/mo
+                    </span>
+                    {/* Mobile: show expand indicator at far right */}
+                    {isMobile && rec.aiExplanation && (
+                      <DownOutlined style={{
+                        fontSize: '10px',
+                        color: '#9ca3af',
+                        transform: isAiExpanded(rec.category as SpendingCategory) ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s',
+                        marginLeft: '4px'
+                      }} />
+                    )}
+                  </div>
+                </div>
+                {rec.aiExplanation && (
+                  <div
+                    className="sv-ai-content"
+                    style={{
+                      maxHeight: isAiExpanded(rec.category as SpendingCategory) ? '200px' : '0',
+                      overflow: 'hidden',
+                      transition: isMobile ? 'max-height 0.3s ease, opacity 0.3s ease' : 'none',
+                      opacity: isAiExpanded(rec.category as SpendingCategory) ? 1 : 0
+                    }}
+                  >
+                    <p className="sv-result-ai-tip">
+                      <img src="/logo.svg" alt="" style={{ width: '14px', height: '14px', marginTop: '3px', flexShrink: 0 }} />
+                      <span><span className="sv-result-ai-label">{t('result.aiTip')}:</span> {rec.aiExplanation}</span>
+                    </p>
+                  </div>
                 )}
-                <span className="sv-result-card-name" style={{ fontSize: '14px', color: '#6b7280' }}>
-                  {rec.recommendedCard.name}
-                </span>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#059669' }}>
-                  {(rec.rewardRate * 100).toFixed(0)}%
-                </span>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>
-                  ${rec.monthlyReward.toFixed(2)}/mo
-                </span>
               </div>
-            </div>
           ))}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="sv-result-actions" style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+      <div className="sv-result-actions">
         <button
           onClick={() => navigate('/optimizer')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '600',
-            border: 'none',
-            background: '#111827',
-            color: 'white',
-            cursor: 'pointer'
-          }}
+          className="sv-result-btn-primary"
         >
           {t('result.adjustSpending')} <ArrowRightOutlined />
         </button>
         {!isAuthenticated && (
           <button
             onClick={handleStartOver}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 0',
-              fontSize: '14px',
-              fontWeight: '500',
-              border: 'none',
-              background: 'transparent',
-              color: '#6b7280',
-              cursor: 'pointer',
-              transition: 'color 0.2s'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#111827'}
-            onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}
+            className="sv-result-btn-secondary"
           >
             <RedoOutlined /> {t('result.startOver')}
           </button>

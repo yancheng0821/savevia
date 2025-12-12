@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { Capacitor } from '@capacitor/core'
+import { GoogleAuth } from '@southdevs/capacitor-google-auth'
 import { authApi, tokenManager } from '../services/api'
 import { useOptimizerStore } from './useOptimizerStore'
 
@@ -22,7 +24,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
   loginWithGoogle: (credential: string) => Promise<void>
-  loginWithApple: (identityToken: string, fullName?: string) => Promise<void>
+  loginWithApple: (identityToken: string, fullName?: string, email?: string) => Promise<void>
   logout: () => void
   updateUserAvatar: (avatarUrl: string) => void
 }
@@ -92,7 +94,9 @@ export const useAuthStore = create<AuthState>()(
       loginWithGoogle: async (credential) => {
         set({ isLoading: true })
         try {
+          console.log('Google login: sending credential to backend...')
           const response = await authApi.googleLogin({ credential })
+          console.log('Google login: backend response:', JSON.stringify(response, null, 2))
           if (response.code === 200 && response.data) {
             tokenManager.setToken(response.data.token)
             set({
@@ -105,6 +109,7 @@ export const useAuthStore = create<AuthState>()(
             // Then load user's saved data
             useOptimizerStore.getState().loadUserData()
           } else {
+            console.error('Google login failed: code=', response.code, 'data=', response.data, 'message=', response.message)
             throw new Error(response.message || 'Google login failed')
           }
         } finally {
@@ -112,10 +117,10 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      loginWithApple: async (identityToken, fullName) => {
+      loginWithApple: async (identityToken, fullName, email) => {
         set({ isLoading: true })
         try {
-          const response = await authApi.appleLogin({ identityToken, fullName })
+          const response = await authApi.appleLogin({ identityToken, fullName, email })
           if (response.code === 200 && response.data) {
             tokenManager.setToken(response.data.token)
             set({
@@ -140,6 +145,12 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, isAuthenticated: false })
         // Clear optimizer data on logout
         useOptimizerStore.getState().reset()
+        // Sign out from Google on native platforms
+        if (Capacitor.isNativePlatform()) {
+          GoogleAuth.signOut().catch(() => {
+            // Ignore errors - user might not be signed in with Google
+          })
+        }
       },
 
       updateUserAvatar: (avatarUrl) => {

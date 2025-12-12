@@ -1,5 +1,6 @@
 {
   "common": {
+    "locale": "es",
     "appName": "SaveVia",
     "loading": "Cargando...",
     "save": "Guardar",
@@ -53,6 +54,20 @@
       "cashback": "reembolso",
       "loginFirst": "Inicia sesión y agrega tus tarjetas",
       "addCards": "Agrega tus tarjetas para obtener recomendaciones"
+    },
+    "bankConnect": {
+      "title": "Ver tu reembolso perdido",
+      "description": "Conecta tu banco para analizar automáticamente tus transacciones y descubrir cuánto reembolso podrías haber ganado.",
+      "cta": "Conectar banco",
+      "poweredBy": "Conexión bancaria segura por",
+      "security": "Cifrado bancario · Acceso de solo lectura · Datos privados",
+      "demoNotice": "Modo demo - Conexión real próximamente"
+    },
+    "cardModal": {
+      "hint": "Usa esta tarjeta para compras en esta categoría",
+      "openAppleWallet": "Abrir Apple Wallet",
+      "openGooglePay": "Abrir Google Pay",
+      "viewDetails": "Ver detalles"
     }
   },
   "cards": {
@@ -74,10 +89,13 @@
     "calculateSavings": "Calcular mis ahorros",
     "total": "Total",
     "perMonth": "/mes",
-    "calculate": "Calcular",
-    "calculating": "Calculando...",
+    "calculate": "Optimizar con IA",
+    "calculateBasic": "Optimizar",
+    "calculating": "Analizando con IA...",
+    "calculatingBasic": "Analizando...",
     "cardsSelected": "Tarjetas",
-    "categoriesFilled": "Categorías"
+    "categoriesFilled": "Categorías",
+    "loginToOptimize": "Inicia sesión para usar la optimización con IA"
   },
   "result": {
     "title": "Tus resultados de optimización",
@@ -95,7 +113,17 @@
     "monthlySpend": "Gasto mensual",
     "bestCard": "Mejor tarjeta",
     "rewardRate": "Tasa de reembolso",
-    "monthlyRewardCol": "Reembolso mensual"
+    "monthlyRewardCol": "Reembolso mensual",
+    "aiInsight": "Análisis IA",
+    "aiTip": "Consejo"
+  },
+  "categoryGroups": {
+    "daily": "Diario",
+    "transport": "Transporte",
+    "shopping": "Compras",
+    "bills": "Facturas",
+    "lifestyle": "Ocio",
+    "other": "Otro"
   },
   "categories": {
     "DINING": "Restaurantes",
@@ -109,12 +137,22 @@
     "RECURRING": "Facturas recurrentes",
     "ONLINE_SHOPPING": "Compras en línea",
     "FOREIGN": "Moneda extranjera",
+    "RETAIL": "Tiendas",
+    "ENTERTAINMENT": "Entretenimiento",
+    "PERSONAL_SERVICES": "Servicios personales",
+    "HOME_IMPROVEMENT": "Mejoras del hogar",
+    "WHOLESALE": "Mayorista",
+    "INSURANCE": "Seguros",
+    "TELECOM": "Telecomunicaciones",
+    "EV_CHARGING": "Carga VE",
     "OTHER": "Otro"
   },
   "auth": {
     "welcomeBack": "Bienvenido de nuevo",
     "createAccount": "Crear cuenta",
     "joinUs": "Únete a SaveVia",
+    "signInSubtitle": "Inicia sesión para continuar en",
+    "signUpSubtitle": "Crea una cuenta para empezar con",
     "continueWithGoogle": "Continuar con Google",
     "continueWithApple": "Continuar con Apple",
     "continueWithEmail": "Continuar con correo",
@@ -177,7 +215,11 @@
     "invalidVerificationLink": "Enlace de verificación inválido o expirado",
     "backToHome": "Volver al inicio",
     "resendVerification": "Reenviar correo de verificación",
-    "verificationSent": "¡Correo de verificación enviado!"
+    "verificationSent": "¡Correo de verificación enviado!",
+    "agreeToTerms": "Acepto los",
+    "and": "y la",
+    "pleaseAgreeTerms": "Por favor, acepta los Términos de servicio y la Política de privacidad",
+    "socialLoginTerms": "Al continuar, aceptas nuestros"
   },
   "me": {
     "settings": "Configuración",
@@ -208,7 +250,11 @@
     "deleteAccountConfirm": "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer y todos tus datos serán eliminados permanentemente.",
     "deleteAccountOk": "Eliminar",
     "accountDeleted": "Cuenta eliminada exitosamente",
-    "passwordRequired": "La contraseña es requerida"
+    "passwordRequired": "La contraseña es requerida",
+    "bankTransactions": "Transacciones bancarias",
+    "missedCashback": "Reembolso perdido",
+    "restartOnboarding": "Configuración personalizada",
+    "onboardingReset": "Personalización restablecida, por favor actualiza la página"
   },
   "errors": {
     "serviceUnavailable": "Servicio no disponible, intenta más tarde",
@@ -241,5 +287,134 @@
     "viewDetails": "Ver detalles",
     "add": "Agregar",
     "added": "Agregada"
+  },
+  "subscription": {
+    "title": "SaveVia Pro",
+    "subtitle": "Desbloquea todas las funciones",
+    "active": "Activo",
+    "expiresOn": "Expira el {{date}}",
+    "featureAi": "Optimización IA ilimitada",
+    "featureAnalysis": "Análisis avanzado de gastos",
+    "featureSupport": "Soporte prioritario",
+    "month": "mes",
+    "year": "año",
+    "bestValue": "Mejor valor",
+    "save20": "Ahorra 20%",
+    "subscribe": "Suscribirse",
+    "trialInfo": "7 días de prueba gratis. Cancela cuando quieras.",
+    "restore": "Restaurar compras",
+    "loginRequired": "Inicia sesión para suscribirte",
+    "nativeOnly": "Las suscripciones están disponibles en la app móvil",
+    "webNotice": "Descarga nuestra app desde App Store o Google Play para suscribirte.",
+    "purchaseSuccess": "¡Suscripción activada!",
+    "purchaseFailed": "Error en la compra. Inténtalo de nuevo.",
+    "restoreSuccess": "¡Suscripción restaurada!",
+    "restoreFailed": "Error al restaurar compras",
+    "noSubscription": "No se encontraron compras anteriores",
+    "manageSub": "Gestionar suscripción",
+    "pro": "Pro",
+    "skipForNow": "Ahora no",
+    "limitReachedWeb": "Has alcanzado tu límite gratuito de optimización con IA este mes. Descarga nuestra app para suscribirte y obtener acceso ilimitado.",
+    "limitReachedPro": "Has alcanzado tu límite de optimización con IA este mes. El límite se restablece el próximo mes.",
+    "limitReachedFree": "Has alcanzado tu límite gratuito de optimización con IA este mes. ¡Suscríbete para obtener más!"
+  },
+  "share": {
+    "sharedResult": "Resultado compartido",
+    "notFound": "Resultado no encontrado",
+    "expiredOrNotExist": "Este resultado compartido puede haber expirado o no existe.",
+    "getStarted": "Comenzar",
+    "wantToOptimize": "¿Quieres optimizar tus recompensas de tarjeta de crédito?",
+    "freeToUse": "SaveVia es gratis. ¡Comienza a ahorrar hoy!"
+  },
+  "transactions": {
+    "title": "Transacciones",
+    "loginRequired": "Inicia sesión para ver transacciones",
+    "loginDesc": "Conecta tu banco para ver tus transacciones y obtener recomendaciones de tarjetas.",
+    "connectBank": "Descubre tus ahorros ocultos",
+    "connectBankDesc": "Analizaremos tus gastos y calcularemos el cashback perdido por no usar la tarjeta óptima. Los canadienses pierden $300-$1,000/año así — ¡te ayudaremos a ahorrarlo!",
+    "connectBankBtn": "Conexión segura",
+    "connectingBank": "Conectando al servicio bancario...",
+    "selectBank": "Selecciona tu banco",
+    "demoModeNotice": "Modo demo: Haz clic en cualquier banco para generar transacciones de ejemplo.",
+    "bankConnected": "¡Banco conectado exitosamente!",
+    "refreshSuccess": "Datos actualizados",
+    "poweredByFlinks": "Impulsado por Flinks - Plataforma de banca abierta de confianza en Canadá",
+    "security": {
+      "encrypted": "Encriptación de 256 bits nivel bancario",
+      "readOnly": "Acceso de solo lectura - nunca podremos mover tu dinero",
+      "noPassword": "Nunca almacenamos tu contraseña bancaria"
+    },
+    "last90Days": "Últimos 90 días",
+    "summaryTooltip": "Análisis basado en tus transacciones de los últimos 90 días",
+    "totalSpent": "Total gastado",
+    "missedCashback": "Cashback perdido",
+    "earnedCashback": "Ganado",
+    "opportunityText": "Podrías haber ganado ${{amount}} más ({{percentage}}% del total) usando la tarjeta óptima.",
+    "tabSummary": "Resumen",
+    "tabTransactions": "Transacciones",
+    "categoryBreakdown": "Desglose por categoría",
+    "noCategories": "Sin datos de categoría",
+    "spent": "gastado",
+    "shouldUse": "Usa",
+    "used": "Usado",
+    "unknownCard": "Desconocido",
+    "openBankingBy": "Open Banking por",
+    "recommendations": "Recomendaciones",
+    "bestFor": "Mejor para",
+    "noTransactions": "Sin transacciones",
+    "connectedBanks": "Bancos conectados",
+    "lastSync": "Última sync",
+    "addBank": "Agregar banco",
+    "disconnect": "Desconectar",
+    "disconnected": "Banco desconectado",
+    "disconnectConfirmTitle": "Desconectar banco",
+    "disconnectConfirmContent": "⚠️ Las conexiones bancarias están limitadas a 5 por mes debido a los costos de API. Si desconectas {{bank}}, reconectarlo usará otra cuota de conexión.\n\nTu historial de transacciones también será eliminado.\n\n¿Estás seguro de que quieres desconectar?",
+    "debitCard": "Tarjeta de débito",
+    "debitAnalysis": "Gastos con tarjeta de débito",
+    "debitTxCount": "Transacciones",
+    "debitSpent": "Gastado",
+    "debitMissed": "Cashback perdido",
+    "debitHint": "¡Usar tarjetas de crédito en lugar de débito te daría cashback!",
+    "connectionLimit": "{{remaining}} de {{max}} conexiones restantes este mes",
+    "connectionLimitExceeded": "Límite mensual alcanzado (5/mes). Por favor intente el próximo mes.",
+    "resync": "Resincronizar",
+    "resyncConfirmTitle": "Resincronizar datos bancarios",
+    "resyncConfirmContent": "⚠️ Resincronizar {{bank}} obtendrá las últimas transacciones.\n\nEsto usará 1 de sus {{remaining}}/{{max}} conexiones mensuales.\n\n¿Desea continuar?",
+    "resyncSuccess": "¡Datos bancarios resincronizados!",
+    "analyzeSuccess": "Análisis completado"
+  },
+  "onboarding": {
+    "welcome": "Personalicemos tu experiencia",
+    "continue": "Continuar",
+    "step1": {
+      "title": "¿Cuántas tarjetas de crédito tienes?",
+      "description": "Te ayudaremos a maximizar el reembolso en todas tus tarjetas."
+    },
+    "step2": {
+      "title": "¿Cuál es tu gasto anual con tarjeta?",
+      "description": "Esto nos ayuda a estimar tus ahorros potenciales."
+    },
+    "step3": {
+      "title": "¿Dónde usas tus tarjetas?",
+      "description": "Selecciona todas las categorías aplicables a tus gastos."
+    },
+    "categories": {
+      "dining": "Restaurantes",
+      "grocery": "Supermercado",
+      "gas": "Gasolina",
+      "travel": "Viajes",
+      "online": "Compras en línea",
+      "streaming": "Streaming"
+    },
+    "summary": {
+      "title": "Tu potencial de ahorro",
+      "before": "Antes",
+      "after": "Después",
+      "extraSavings": "Ahorro adicional anual",
+      "perYear": "año",
+      "description": "Con tus {{cardCount}} tarjetas y {{categoryCount}} categorías de gasto, SaveVia puede optimizar tus reembolsos.",
+      "disclaimer": "* Solo estimaciones. Los resultados reales pueden variar. No es asesoramiento financiero.",
+      "getStarted": "Empezar a ahorrar"
+    }
   }
 }

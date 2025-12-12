@@ -42,4 +42,13 @@ public class User {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    // Subscription fields
+    private String subscriptionType;  // FREE or PRO
+
+    private LocalDateTime subscriptionExpiresAt;
+
+    private String subscriptionPlatform;  // ios, android, web
+
+    private String subscriptionProductId;
 }
