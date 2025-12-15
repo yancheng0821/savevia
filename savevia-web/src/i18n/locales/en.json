@@ -31,7 +31,7 @@
   },
   "home": {
     "title": "Welcome to SaveVia",
-    "subtitle": "Canada's First AI-Powered Credit Card Cashback Optimizer",
+    "subtitle": "Canada's Leading AI-Powered Credit Card Cashback Optimizer",
     "step1Title": "Select Your Cards",
     "step1Desc": "Choose the credit cards you currently have",
     "step2Title": "Enter Spending",
@@ -340,7 +340,9 @@
     "expiredOrNotExist": "This shared result may have expired or doesn't exist.",
     "getStarted": "Get Started",
     "wantToOptimize": "Want to optimize your credit card rewards?",
-    "freeToUse": "SaveVia is free to use. Start saving today!"
+    "freeToUse": "SaveVia is free to use. Start saving today!",
+    "downloadApp": "Download our app for the best experience",
+    "downloadFromAppStore": "Download on App Store"
   },
   "onboarding": {
     "welcome": "Let's personalize your experience",

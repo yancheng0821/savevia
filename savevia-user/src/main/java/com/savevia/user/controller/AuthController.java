@@ -34,6 +34,11 @@ public class AuthController {
         return Result.success(authService.loginWithApple(request.getIdentityToken(), request.getFullName(), request.getEmail()));
     }
 
+    @PostMapping("/refresh")
+    public Result<LoginResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return Result.success(authService.refreshToken(request.getRefreshToken()));
+    }
+
     @PutMapping("/avatar")
     public Result<UserDTO> updateAvatar(
             @RequestHeader("X-User-Id") Long userId,

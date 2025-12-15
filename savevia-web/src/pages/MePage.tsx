@@ -1121,7 +1121,6 @@ function MePage() {
           display: flex;
           gap: 0;
           padding: 16px 0;
-          border-bottom: 1px solid rgba(0,0,0,0.06);
           margin-bottom: 8px;
         }
 
@@ -1134,11 +1133,6 @@ function MePage() {
           padding: 12px 0;
           text-decoration: none;
           transition: opacity 0.2s;
-          border-right: 1px solid rgba(0,0,0,0.06);
-        }
-
-        .sv-me-stat-card:last-child {
-          border-right: none;
         }
 
         .sv-me-stat-card:active {

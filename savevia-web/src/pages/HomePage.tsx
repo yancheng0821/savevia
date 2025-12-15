@@ -233,7 +233,12 @@ function HomePage() {
             marginBottom: '24px',
             letterSpacing: '-1px'
           }}>
-            {t('home.title')}
+            {t('home.title').split('SaveVia').map((part, index, arr) => (
+              <span key={index}>
+                {part}
+                {index < arr.length - 1 && <span className="sv-logo-gradient">SaveVia</span>}
+              </span>
+            ))}
           </h1>
 
           <p className="sv-home-subtitle" style={{
@@ -287,7 +292,7 @@ function HomePage() {
                     <SafetyOutlined /> {t('home.bankConnect.security')}
                   </span>
                   <span className="sv-home-bank-hint">
-                    {t('home.bankConnect.poweredBy')} Flinks
+                    {t('home.bankConnect.poweredBy')} <img src="/logos/flinks.png" alt="Flinks" style={{ height: '14px', verticalAlign: 'middle', marginLeft: '4px' }} /> Flinks
                   </span>
                 </div>
               </div>
@@ -545,7 +550,7 @@ function HomePage() {
               {t('home.bankConnect.security')}
             </span>
             <span className="sv-bank-connect-powered">
-              {t('home.bankConnect.poweredBy')} <strong>Flinks</strong>
+              {t('home.bankConnect.poweredBy')} <img src="/logos/flinks.png" alt="Flinks" style={{ height: '16px', verticalAlign: 'middle', marginLeft: '4px' }} /> <strong>Flinks</strong>
             </span>
           </div>
         </section>

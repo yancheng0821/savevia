@@ -340,31 +340,15 @@ function TransactionsPage() {
         const res = await bankApi.getFlinksConfig()
         if (res.code === 200 && res.data) {
           setFlinksConfig(res.data)
-          // Check if we should use real Flinks or demo mode
-          if (!res.data.sandbox && res.data.connectUrl) {
-            // Production mode - show Flinks iframe
-            setShowFlinksIframe(true)
-          } else {
-            // Sandbox/demo mode - show local bank selection modal
-            setShowConnectModal(true)
-          }
-        } else {
-          setShowConnectModal(true)
         }
       } catch (error) {
         console.error('Failed to load Flinks config:', error)
-        setShowConnectModal(true)
       } finally {
         setFlinksLoading(false)
       }
-    } else {
-      // Already have config
-      if (!flinksConfig.sandbox && flinksConfig.connectUrl) {
-        setShowFlinksIframe(true)
-      } else {
-        setShowConnectModal(true)
-      }
     }
+    // Always use demo mode - show local bank selection modal
+    setShowConnectModal(true)
   }
 
   const handleDisconnect = (connectionId: number, bankName: string) => {

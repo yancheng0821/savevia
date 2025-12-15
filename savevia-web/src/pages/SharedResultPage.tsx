@@ -300,28 +300,27 @@ function SharedResultPage() {
                 className="sv-result-rec-item"
                 onClick={() => aiExplanation && isMobile && toggleAiExpanded(category as SpendingCategory)}
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  padding: '16px 0',
-                  borderBottom: '1px solid #f3f4f6',
-                  gap: '8px',
                   cursor: isMobile && aiExplanation ? 'pointer' : 'default'
                 }}
               >
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  gap: '12px',
-                  flexWrap: 'wrap'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="sv-result-rec-row">
+                  <div className="sv-result-rec-category">
                     <span style={{ fontSize: '16px' }}>{CATEGORY_ICONS[category] || '💳'}</span>
-                    <span style={{ fontSize: '16px', fontWeight: '500', color: '#111827' }}>
+                    <span className="sv-result-category-name">
                       {t(`categories.${category}`)}
                     </span>
+                    {/* Mobile: show expand indicator */}
+                    {isMobile && aiExplanation && (
+                      <DownOutlined style={{
+                        fontSize: '10px',
+                        color: '#9ca3af',
+                        transform: isAiExpanded(category as SpendingCategory) ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s',
+                        marginLeft: 'auto'
+                      }} />
+                    )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <div className="sv-result-rec-details">
                     {bankLogo && (
                       <img
                         src={bankLogo}
@@ -329,25 +328,15 @@ function SharedResultPage() {
                         style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px' }}
                       />
                     )}
-                    <span className="sv-result-card-name" style={{ fontSize: '14px', color: '#6b7280' }}>
+                    <span className="sv-result-card-name">
                       {cardName}
                     </span>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#059669' }}>
+                    <span className="sv-result-rate">
                       {(rewardRate * 100).toFixed(0)}%
                     </span>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>
+                    <span className="sv-result-reward">
                       ${monthlyReward.toFixed(2)}/mo
                     </span>
-                    {/* Mobile: show expand indicator at far right */}
-                    {isMobile && aiExplanation && (
-                      <DownOutlined style={{
-                        fontSize: '10px',
-                        color: '#9ca3af',
-                        transform: isAiExpanded(category as SpendingCategory) ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s',
-                        marginLeft: '4px'
-                      }} />
-                    )}
                   </div>
                 </div>
                 {aiExplanation && (
@@ -360,17 +349,9 @@ function SharedResultPage() {
                       opacity: isAiExpanded(category as SpendingCategory) ? 1 : 0
                     }}
                   >
-                    <p style={{
-                      margin: '4px 0 0 0',
-                      fontSize: '13px',
-                      color: '#6b7280',
-                      lineHeight: '1.6',
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '6px'
-                    }}>
+                    <p className="sv-result-ai-tip">
                       <img src="/logo.svg" alt="" style={{ width: '14px', height: '14px', marginTop: '3px', flexShrink: 0 }} />
-                      <span><span style={{ color: '#9ca3af' }}>{t('result.aiTip')}:</span> {aiExplanation}</span>
+                      <span><span className="sv-result-ai-label">{t('result.aiTip')}:</span> {aiExplanation}</span>
                     </p>
                   </div>
                 )}
@@ -380,7 +361,7 @@ function SharedResultPage() {
         </div>
       </div>
 
-      {/* CTA - Invite to try */}
+      {/* CTA - Invite to download app */}
       <div style={{
         textAlign: 'center',
         padding: '32px 24px',
@@ -399,25 +380,37 @@ function SharedResultPage() {
           color: '#6b7280',
           marginBottom: '24px'
         }}>
-          {t('share.freeToUse')}
+          {t('share.downloadApp')}
         </p>
-        <Link
-          to="/cards"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: '#111827',
-            color: 'white',
-            padding: '14px 28px',
-            borderRadius: '50px',
-            fontSize: '15px',
-            fontWeight: '600',
-            textDecoration: 'none'
-          }}
-        >
-          {t('share.getStarted')} <ArrowRightOutlined />
-        </Link>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '16px',
+          flexWrap: 'wrap'
+        }}>
+          <a
+            href="https://apps.apple.com/app/savevia"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="/badges/app-store.svg"
+              alt="Download on App Store"
+              style={{ height: '44px' }}
+            />
+          </a>
+          <a
+            href="https://play.google.com/store/apps/details?id=app.savevia"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="/badges/google-play.svg"
+              alt="Get it on Google Play"
+              style={{ height: '44px' }}
+            />
+          </a>
+        </div>
       </div>
     </div>
   )

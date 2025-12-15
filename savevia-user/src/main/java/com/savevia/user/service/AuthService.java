@@ -64,12 +64,13 @@ public class AuthService {
             throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // Generate JWT token
+        // Generate JWT tokens
         String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
 
         log.info("User logged in: {}", user.getEmail());
 
-        return LoginResponse.of(token, jwtService.getExpiration(), toDTO(user));
+        return LoginResponse.of(token, refreshToken, jwtService.getExpiration(), toDTO(user));
     }
 
     @Transactional
@@ -108,11 +109,12 @@ public class AuthService {
                             });
                 });
 
-        // Generate JWT token
+        // Generate JWT tokens
         String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
         log.info("User logged in via Google: {}", user.getEmail());
 
-        return LoginResponse.of(token, jwtService.getExpiration(), toDTO(user));
+        return LoginResponse.of(token, refreshToken, jwtService.getExpiration(), toDTO(user));
     }
 
     @Transactional
@@ -175,11 +177,44 @@ public class AuthService {
                     return newUser;
                 });
 
-        // Generate JWT token
+        // Generate JWT tokens
         String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
         log.info("User logged in via Apple: {}", user.getEmail());
 
-        return LoginResponse.of(token, jwtService.getExpiration(), toDTO(user));
+        return LoginResponse.of(token, refreshToken, jwtService.getExpiration(), toDTO(user));
+    }
+
+    /**
+     * Refresh access token using refresh token
+     */
+    public LoginResponse refreshToken(String refreshToken) {
+        // Validate refresh token
+        if (!jwtService.validateToken(refreshToken)) {
+            throw new BusinessException(ErrorCode.TOKEN_INVALID, "Invalid refresh token");
+        }
+
+        if (!jwtService.isRefreshToken(refreshToken)) {
+            throw new BusinessException(ErrorCode.TOKEN_INVALID, "Not a refresh token");
+        }
+
+        // Get user info from refresh token
+        Long userId = jwtService.getUserIdFromToken(refreshToken);
+        String email = jwtService.getEmailFromToken(refreshToken);
+
+        // Verify user still exists
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        // Generate new tokens
+        String newToken = jwtService.generateToken(userId, email);
+        String newRefreshToken = jwtService.generateRefreshToken(userId, email);
+
+        log.info("Token refreshed for user: {}", email);
+
+        return LoginResponse.of(newToken, newRefreshToken, jwtService.getExpiration(), toDTO(user));
     }
 
     @Transactional

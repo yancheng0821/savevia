@@ -268,6 +268,14 @@ html, body, #root,
   letter-spacing: -0.5px;
 }
 
+.sv-logo-gradient {
+  background: linear-gradient(90deg, #2563eb 0%, #0d9488 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: inherit;
+}
+
 .sv-nav {
   display: flex;
   align-items: center;
@@ -1381,12 +1389,6 @@ button:active, .sv-btn:active {
   .sv-result-stats {
     gap: 24px !important;
   }
-
-  .sv-result-rec-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
 }
 
 @media (max-width: 480px) {
@@ -2017,8 +2019,6 @@ button:active, .sv-btn:active {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 48px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid #f3f4f6;
 }
 
 .sv-result-stat-item {
@@ -2039,10 +2039,7 @@ button:active, .sv-btn:active {
 }
 
 .sv-result-stat-divider {
-  width: 1px;
-  height: 36px;
-  background: #e5e7eb;
-  flex-shrink: 0;
+  display: none;
 }
 
 @media (min-width: 641px) {
@@ -3065,15 +3062,13 @@ html.dark-mode .sv-optimizer-title {
   flex-direction: column;
   padding: 16px 0;
   border-bottom: 1px solid #f3f4f6;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sv-result-rec-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .sv-result-rec-category {
@@ -3083,21 +3078,26 @@ html.dark-mode .sv-optimizer-title {
 }
 
 .sv-result-category-name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: #111827;
 }
 
 .sv-result-rec-details {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  padding-left: 24px;
 }
 
 .sv-result-card-name {
   font-size: 14px;
   color: #6b7280;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sv-result-rate {
@@ -3180,9 +3180,6 @@ html.dark-mode .sv-result-section-title {
   color: var(--text-secondary);
 }
 
-html.dark-mode .sv-result-stats-row {
-  border-color: var(--border-color);
-}
 
 html.dark-mode .sv-result-stat-label {
   color: var(--text-secondary);
@@ -3196,9 +3193,6 @@ html.dark-mode .sv-result-stat-fees {
   color: #ef4444 !important;
 }
 
-html.dark-mode .sv-result-stat-divider {
-  background: var(--border-color);
-}
 
 html.dark-mode .sv-result-rec-item {
   border-color: var(--border-color);

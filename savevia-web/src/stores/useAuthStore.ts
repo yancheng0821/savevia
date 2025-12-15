@@ -47,6 +47,9 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.login({ email, password })
           if (response.code === 200 && response.data) {
             tokenManager.setToken(response.data.token)
+            if (response.data.refreshToken) {
+              tokenManager.setRefreshToken(response.data.refreshToken)
+            }
             set({
               user: response.data.user,
               isAuthenticated: true,
@@ -73,6 +76,9 @@ export const useAuthStore = create<AuthState>()(
             const loginResponse = await authApi.login({ email, password })
             if (loginResponse.code === 200 && loginResponse.data) {
               tokenManager.setToken(loginResponse.data.token)
+              if (loginResponse.data.refreshToken) {
+                tokenManager.setRefreshToken(loginResponse.data.refreshToken)
+              }
               set({
                 user: loginResponse.data.user,
                 isAuthenticated: true,
@@ -99,6 +105,9 @@ export const useAuthStore = create<AuthState>()(
           console.log('Google login: backend response:', JSON.stringify(response, null, 2))
           if (response.code === 200 && response.data) {
             tokenManager.setToken(response.data.token)
+            if (response.data.refreshToken) {
+              tokenManager.setRefreshToken(response.data.refreshToken)
+            }
             set({
               user: response.data.user,
               isAuthenticated: true,
@@ -123,6 +132,9 @@ export const useAuthStore = create<AuthState>()(
           const response = await authApi.appleLogin({ identityToken, fullName, email })
           if (response.code === 200 && response.data) {
             tokenManager.setToken(response.data.token)
+            if (response.data.refreshToken) {
+              tokenManager.setRefreshToken(response.data.refreshToken)
+            }
             set({
               user: response.data.user,
               isAuthenticated: true,

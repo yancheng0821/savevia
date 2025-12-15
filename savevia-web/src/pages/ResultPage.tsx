@@ -460,6 +460,16 @@ function ResultPage() {
                     <span className="sv-result-category-name">
                       {t(`categories.${rec.category}`)}
                     </span>
+                    {/* Mobile: show expand indicator */}
+                    {isMobile && rec.aiExplanation && (
+                      <DownOutlined style={{
+                        fontSize: '10px',
+                        color: '#9ca3af',
+                        transform: isAiExpanded(rec.category as SpendingCategory) ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s',
+                        marginLeft: 'auto'
+                      }} />
+                    )}
                   </div>
                   <div className="sv-result-rec-details">
                     {BANK_LOGOS[rec.recommendedCard.bank] && (
@@ -478,16 +488,6 @@ function ResultPage() {
                     <span className="sv-result-reward">
                       ${rec.monthlyReward.toFixed(2)}/mo
                     </span>
-                    {/* Mobile: show expand indicator at far right */}
-                    {isMobile && rec.aiExplanation && (
-                      <DownOutlined style={{
-                        fontSize: '10px',
-                        color: '#9ca3af',
-                        transform: isAiExpanded(rec.category as SpendingCategory) ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s',
-                        marginLeft: '4px'
-                      }} />
-                    )}
                   </div>
                 </div>
                 {rec.aiExplanation && (

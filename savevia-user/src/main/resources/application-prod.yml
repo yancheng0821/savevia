@@ -28,6 +28,8 @@ eureka:
 
 jwt:
   secret: ${JWT_SECRET}
+  expiration: 604800000  # 7天 (毫秒)
+  refresh-expiration: 2592000000  # 30天 (毫秒)
 
 google:
   client-id: ${GOOGLE_CLIENT_ID}

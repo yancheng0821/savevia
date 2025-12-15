@@ -31,7 +31,7 @@
   },
   "home": {
     "title": "欢迎使用 SaveVia",
-    "subtitle": "加拿大首个AI驱动的信用卡返现优化助手",
+    "subtitle": "加拿大领先的AI信用卡返现优化助手",
     "step1Title": "选择您的卡片",
     "step1Desc": "选择您目前持有的信用卡",
     "step2Title": "输入消费",
@@ -340,7 +340,9 @@
     "expiredOrNotExist": "此分享结果可能已过期或不存在。",
     "getStarted": "开始使用",
     "wantToOptimize": "想要优化您的信用卡返现？",
-    "freeToUse": "SaveVia 免费使用，立即开始省钱！"
+    "freeToUse": "SaveVia 免费使用，立即开始省钱！",
+    "downloadApp": "下载我们的 App 获得最佳体验",
+    "downloadFromAppStore": "前往 App Store 下载"
   },
   "onboarding": {
     "welcome": "让我们为您定制体验",
