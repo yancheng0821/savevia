@@ -1756,7 +1756,7 @@ button:active, .sv-btn:active {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 10px 20px;
+  padding: 8px 16px;
   min-width: 64px;
   min-height: 50px;
   text-decoration: none;
@@ -1766,24 +1766,47 @@ button:active, .sv-btn:active {
   background: none;
   border: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 .sv-mobile-nav-item .anticon {
   font-size: 22px;
   pointer-events: none;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
 .sv-mobile-nav-item span {
   pointer-events: none;
+  transition: color 0.2s ease, font-weight 0.2s ease;
 }
 
+/* Active state with gradient icon */
 .sv-mobile-nav-item.active {
   color: #111827;
+}
+
+.sv-mobile-nav-item.active .anticon {
+  color: #2563eb;
+  transform: scale(1.1);
+}
+
+.sv-mobile-nav-item.active span {
+  font-weight: 600;
+  background: linear-gradient(90deg, #2563eb 0%, #0d9488 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Press state */
+.sv-mobile-nav-item:active {
+  transform: scale(0.95);
 }
 
 /* Card Detail Back Button - hide on mobile */
@@ -2547,6 +2570,18 @@ html.dark-mode .sv-mobile-nav-item.active {
   color: var(--text-primary);
 }
 
+html.dark-mode .sv-mobile-nav-item.active .anticon {
+  color: #60a5fa;
+}
+
+html.dark-mode .sv-mobile-nav-item.active span {
+  background: linear-gradient(90deg, #60a5fa 0%, #2dd4bf 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+
 /* Dark mode - Cards Page */
 html.dark-mode .sv-cards-title,
 html.dark-mode h1 {
@@ -2982,26 +3017,27 @@ html.dark-mode .sv-optimizer-title {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
+}
+
+.sv-ai-loading-logo {
+  height: 48px;
+}
+
+.sv-ai-loading-logo img {
+  height: 100%;
+  width: auto;
 }
 
 .sv-ai-loading-text {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 500;
-  color: #111827;
-}
-
-.sv-ai-loading-dots {
-  display: flex;
-  gap: 6px;
+  color: #6b7280;
 }
 
 .sv-ai-loading-dots span {
-  width: 8px;
-  height: 8px;
-  background: #111827;
-  border-radius: 50%;
-  animation: bounce 1.4s ease-in-out infinite;
+  animation: dot-blink 1.4s infinite;
+  opacity: 0;
 }
 
 .sv-ai-loading-dots span:nth-child(1) {
@@ -3016,12 +3052,19 @@ html.dark-mode .sv-optimizer-title {
   animation-delay: 0.4s;
 }
 
-@keyframes bounce {
-  0%, 80%, 100% {
-    transform: translateY(0);
+@keyframes dot-blink {
+  0%, 20% {
+    opacity: 0;
   }
-  40% {
-    transform: translateY(-8px);
+  40%, 100% {
+    opacity: 1;
+  }
+}
+
+/* Mobile adjustments for loading */
+@media (max-width: 768px) {
+  .sv-ai-loading-logo {
+    height: 40px;
   }
 }
 

@@ -90,21 +90,20 @@ public class SavedResultController {
                 <meta name="twitter:description" content="%s">
                 <meta name="twitter:image" content="%s">
 
-                <!-- Redirect to SPA -->
-                <meta http-equiv="refresh" content="0;url=%s">
                 <link rel="canonical" href="%s">
             </head>
             <body>
-                <p>Redirecting to <a href="%s">SaveVia</a>...</p>
-                <script>window.location.href = "%s";</script>
+                <h1>%s</h1>
+                <p>%s</p>
+                <a href="%s">View on SaveVia</a>
             </body>
             </html>
             """.formatted(
                 title,
                 shareUrl, title, description, logoUrl,
                 shareUrl, title, description, logoUrl,
-                shareUrl, shareUrl,
-                shareUrl, shareUrl
+                shareUrl,
+                title, description, shareUrl
             );
     }
 

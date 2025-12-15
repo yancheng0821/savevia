@@ -202,8 +202,8 @@ function ResultPage() {
     try {
       const response = await optimizerApi.shareResult(result)
       if (response.code === 200 && response.data) {
-        // Use API OG endpoint for sharing - it has dynamic Open Graph meta tags
-        const url = `https://api.savevia.app/api/v1/optimize/share/${response.data.shareId}/og`
+        // Use frontend URL directly for better user experience (no redirect page)
+        const url = `https://savevia.app/share/${response.data.shareId}`
         setShareUrl(url)
         return url
       }

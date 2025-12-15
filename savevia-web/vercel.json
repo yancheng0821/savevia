@@ -1,0 +1,27 @@
+{
+  "rewrites": [
+    {
+      "source": "/share/:shareId",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|TelegramBot|Slackbot|Discordbot|Pinterest)"
+        }
+      ],
+      "destination": "https://api.savevia.app/api/v1/optimize/share/:shareId/og"
+    },
+    {
+      "source": "/((?!assets|logos|badges|favicon|logo|manifest|robots|sitemap|api).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

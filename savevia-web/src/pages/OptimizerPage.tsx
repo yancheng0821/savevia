@@ -300,7 +300,7 @@ function OptimizerPage() {
           onClick={handleCalculate}
           disabled={totalMonthlySpending === 0 || mutation.isPending || checkingUsage}
         >
-          {mutation.isPending || checkingUsage ? (
+          {(mutation.isPending || checkingUsage) && !showPaywall ? (
             <>
               <LoadingOutlined spin />
               {t('optimizer.calculating')}
@@ -318,11 +318,11 @@ function OptimizerPage() {
       {mutation.isPending && (
         <div className="sv-ai-loading-overlay">
           <div className="sv-ai-loading-content">
-            <div className="sv-ai-loading-text">
-              {t('optimizer.calculating')}
+            <div className="sv-ai-loading-logo">
+              <img src="/logo-full.svg" alt="SaveVia" />
             </div>
-            <div className="sv-ai-loading-dots">
-              <span></span><span></span><span></span>
+            <div className="sv-ai-loading-text">
+              {t('optimizer.calculating')}<span className="sv-ai-loading-dots"><span>.</span><span>.</span><span>.</span></span>
             </div>
           </div>
         </div>

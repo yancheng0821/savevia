@@ -27,7 +27,6 @@ function Paywall({ onSubscribed, onClose }: PaywallProps) {
   const { setSubscribed } = useSubscriptionStore()
   const { isAuthenticated } = useAuthStore()
 
-  const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<IAPProduct[]>([])
   const [purchasing, setPurchasing] = useState<string | null>(null)
   const [restoring, setRestoring] = useState(false)
@@ -41,16 +40,12 @@ function Paywall({ onSubscribed, onClose }: PaywallProps) {
 
   const loadProducts = async () => {
     console.log('Paywall: loadProducts started')
-    setLoading(true)
     try {
       const productsData = await getProducts()
       console.log('Paywall: products loaded', productsData)
       setProducts(productsData)
     } catch (error) {
       console.error('Paywall: Failed to load products:', error)
-    } finally {
-      console.log('Paywall: loadProducts finished, setting loading to false')
-      setLoading(false)
     }
   }
 
@@ -135,16 +130,6 @@ function Paywall({ onSubscribed, onClose }: PaywallProps) {
     if (!isNative) {
       onSubscribed()
     }
-  }
-
-  if (loading) {
-    console.log('Paywall is in loading state')
-    return (
-      <div className="sv-paywall sv-paywall-loading">
-        {/* Show loading indicator */}
-        <LoadingOutlined style={{ fontSize: 32, color: '#111827' }} />
-      </div>
-    )
   }
 
   console.log('Paywall loaded, products:', products.length)
@@ -252,12 +237,6 @@ function Paywall({ onSubscribed, onClose }: PaywallProps) {
           align-items: center;
           justify-content: center;
           padding: 24px 20px;
-        }
-
-        .sv-paywall-loading {
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
 
         /* Header */

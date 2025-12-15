@@ -43,12 +43,6 @@ management:
     health:
       show-details: never
 
-logging:
-  level:
-    com.savevia.optimizer: INFO
-    com.savevia.optimizer.mapper: WARN
-    com.savevia.common: INFO
-
 # Flinks API Configuration (Canadian Open Banking)
 # Sandbox mode: Uses Flinks Toolbox for testing
 # Production mode: Use your production customer-id
