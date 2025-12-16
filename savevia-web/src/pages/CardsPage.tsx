@@ -48,6 +48,14 @@ const BANK_ABBR: Record<string, string> = {
   'MBNA': 'MBNA',
   'National Bank': 'NBC',
   'Home Trust': 'HT',
+  'Brim': 'Brim',
+  'Wealthsimple': 'WS',
+  'Desjardins': 'Desj',
+  'Canadian Tire': 'CT',
+  'Vancity': 'Vancity',
+  'Meridian': 'Merid',
+  'Coast Capital': 'Coast',
+  'Walmart': 'Walmart',
 }
 
 // Bank logo paths (local files)
@@ -67,6 +75,14 @@ const BANK_LOGOS: Record<string, string> = {
   'MBNA': '/logos/mbna.png',
   'National Bank': '/logos/nationalbank.png',
   'Home Trust': '/logos/hometrust.png',
+  'Brim': '/logos/brim.png',
+  'Wealthsimple': '/logos/wealthsimple.png',
+  'Desjardins': '/logos/desjardins.png',
+  'Canadian Tire': '/logos/canadiantire.png',
+  'Vancity': '/logos/vancity.png',
+  'Meridian': '/logos/meridian.png',
+  'Coast Capital': '/logos/coastcapital.png',
+  'Walmart': '/logos/walmart.png',
 }
 
 // Parse card style from imageUrl JSON or use fallback

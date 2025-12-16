@@ -25,6 +25,14 @@ const BANK_LOGOS: Record<string, string> = {
   'MBNA': '/logos/mbna.png',
   'National Bank': '/logos/nationalbank.png',
   'Home Trust': '/logos/hometrust.png',
+  'Brim': '/logos/brim.png',
+  'Wealthsimple': '/logos/wealthsimple.png',
+  'Desjardins': '/logos/desjardins.png',
+  'Canadian Tire': '/logos/canadiantire.png',
+  'Vancity': '/logos/vancity.png',
+  'Meridian': '/logos/meridian.png',
+  'Coast Capital': '/logos/coastcapital.png',
+  'Walmart': '/logos/walmart.png',
 }
 
 // Category icons and colors

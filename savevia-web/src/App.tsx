@@ -32,7 +32,10 @@ const BANK_LOGOS = [
   '/logos/cibc.png', '/logos/bmo.png', '/logos/amex.png',
   '/logos/rogers.png', '/logos/tangerine.png', '/logos/neo.png',
   '/logos/pc.png', '/logos/simplii.png', '/logos/mbna.png',
-  '/logos/nationalbank.png', '/logos/hometrust.png'
+  '/logos/nationalbank.png', '/logos/hometrust.png',
+  '/logos/brim.png', '/logos/wealthsimple.png', '/logos/desjardins.png',
+  '/logos/canadiantire.png', '/logos/vancity.png', '/logos/meridian.png',
+  '/logos/coastcapital.png', '/logos/walmart.png'
 ]
 
 function preloadImages(urls: string[]) {

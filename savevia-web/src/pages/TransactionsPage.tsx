@@ -46,6 +46,10 @@ const BANK_LOGOS: Record<string, string> = {
   'Coast Capital': '/logos/coastcapital.png',
   'ATB': '/logos/atb.png',
   'Laurentian': '/logos/laurentian.png',
+  'Brim': '/logos/brim.png',
+  'Wealthsimple': '/logos/wealthsimple.png',
+  'Vancity': '/logos/vancity.png',
+  'Walmart': '/logos/walmart.png',
   // Full names (from Flinks)
   'TD Canada Trust': '/logos/td.png',
   'RBC Royal Bank': '/logos/rbc.png',
@@ -689,14 +693,11 @@ function TransactionsPage() {
           {/* Debit Card Tip - Simplified */}
           {summary.debitTransactions && summary.debitTransactions > 0 && (
             <div className="sv-txn-debit-tip">
-              <span className="sv-txn-debit-tip-icon">💡</span>
-              <span className="sv-txn-debit-tip-text">
-                {t('transactions.debitTip', {
-                  count: summary.debitTransactions,
-                  amount: summary.debitSpending?.toFixed(0) || '0',
-                  missed: summary.debitMissedCashback?.toFixed(2) || '0.00'
-                })}
-              </span>
+              {t('transactions.debitTip', {
+                count: summary.debitTransactions,
+                amount: summary.debitSpending?.toFixed(0) || '0',
+                missed: summary.debitMissedCashback?.toFixed(2) || '0.00'
+              })}
             </div>
           )}
         </div>
@@ -1280,7 +1281,7 @@ const styles = `
   }
 
   .sv-txn-stat-value.sv-txn-missed {
-    color: #ef4444;
+    color: #f59e0b;
   }
 
   .sv-txn-stat-label {
@@ -1302,26 +1303,12 @@ const styles = `
   }
 
   .sv-txn-debit-tip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     margin-top: 12px;
-    padding: 10px 12px;
-    background: #fffbeb;
-    border-radius: 8px;
-    border: 1px solid #fef3c7;
-  }
-
-  .sv-txn-debit-tip-icon {
-    font-size: 14px;
-    line-height: 1;
-  }
-
-  .sv-txn-debit-tip-text {
     font-size: 12px;
     color: #92400e;
     line-height: 1.4;
   }
+
 
   .sv-txn-tabs {
     display: flex;
@@ -1410,7 +1397,7 @@ const styles = `
     display: block;
     font-size: 14px;
     font-weight: 600;
-    color: #ef4444;
+    color: #f59e0b;
   }
 
   .sv-txn-category-tip {
@@ -1557,7 +1544,7 @@ const styles = `
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: #ef4444;
+    color: #f59e0b;
     cursor: help;
   }
 
@@ -1612,7 +1599,7 @@ const styles = `
   .sv-txn-item-missed-amount {
     font-size: 12px;
     font-weight: 600;
-    color: #ef4444;
+    color: #f59e0b;
     margin-top: 2px;
   }
 
@@ -2160,11 +2147,6 @@ const styles = `
 
   /* Dark mode for debit tip */
   html.dark-mode .sv-txn-debit-tip {
-    background: #2d2815;
-    border-color: #78350f;
-  }
-
-  html.dark-mode .sv-txn-debit-tip-text {
     color: #fbbf24;
   }
 

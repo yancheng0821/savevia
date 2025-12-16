@@ -87,6 +87,12 @@ const BANK_LOGOS: Record<string, string> = {
   'ATB': '/logos/atb.png',
   'Canadian Tire': '/logos/canadiantire.png',
   'Laurentian': '/logos/laurentian.png',
+  'Brim': '/logos/brim.png',
+  'Wealthsimple': '/logos/wealthsimple.png',
+  'Vancity': '/logos/vancity.png',
+  'Meridian': '/logos/meridian.png',
+  'Coast Capital': '/logos/coastcapital.png',
+  'Walmart': '/logos/walmart.png',
 }
 
 // Helper to safely get number value from potentially BigDecimal object

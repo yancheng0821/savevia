@@ -1145,19 +1145,19 @@ function MePage() {
         }
 
         .sv-me-stat-card:first-child .anticon {
-          color: #6366f1;
+          color: #2563eb;
         }
 
         .sv-me-stat-card:nth-child(2) .anticon {
-          color: #10b981;
+          color: #059669;
         }
 
         .sv-me-stat-card.sv-me-stat-missed .anticon {
-          color: #ef4444;
+          color: #f59e0b;
         }
 
         .sv-me-stat-card.sv-me-stat-missed .sv-me-stat-value {
-          color: #ef4444;
+          color: #f59e0b;
         }
 
         .sv-me-stat-value {

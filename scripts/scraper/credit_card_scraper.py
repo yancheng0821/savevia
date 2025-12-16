@@ -1,23 +1,55 @@
 #!/usr/bin/env python3
 """
 Canadian Credit Card Data Scraper
-Scrapes credit card information from Rewards Canada and generates SQL statements.
+Scrapes credit card information from Credit Card Genius and Ratehub.
+Generates incremental SQL statements for database updates.
+
+Usage:
+    python credit_card_scraper.py [--dry-run] [--output FILE]
+
+Data Sources:
+    - Credit Card Genius (creditcardgenius.ca) - Primary source
+    - Ratehub (ratehub.ca) - Secondary/verification source
+
+Note: Does NOT scrape bank websites directly to avoid IP bans.
 """
 
-import requests
-from bs4 import BeautifulSoup
 import json
 import re
-from dataclasses import dataclass, field
-from typing import Optional, List, Dict
-from decimal import Decimal
 import time
+import argparse
+from dataclasses import dataclass, field, asdict
+from typing import Optional, List, Dict, Any
+from decimal import Decimal
+from datetime import datetime
+import hashlib
 
-# Headers to mimic browser request
+# Selenium imports
+try:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.common.exceptions import TimeoutException, NoSuchElementException
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
+    print("Warning: Selenium not installed. Run: pip install selenium")
+
+# For fallback HTTP requests
+import requests
+from bs4 import BeautifulSoup
+
+# ============================================
+# Configuration
+# ============================================
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Language': 'en-CA,en-US;q=0.9,en;q=0.8',
 }
 
 # Spending categories matching the backend enum
@@ -28,530 +60,826 @@ CATEGORIES = [
     'WHOLESALE', 'INSURANCE', 'TELECOM', 'EV_CHARGING', 'OTHER'
 ]
 
+# Category keyword mapping for parsing reward descriptions
+CATEGORY_KEYWORDS = {
+    'DINING': ['dining', 'restaurant', 'food', 'eat', 'meal', 'cafe', 'bar'],
+    'GROCERY': ['grocery', 'groceries', 'supermarket', 'food store', 'loblaw', 'sobeys', 'metro', 'safeway', 'iga', 'no frills', 'loblaws'],
+    'GAS': ['gas', 'fuel', 'petrol', 'esso', 'shell', 'petro-canada', 'pioneer'],
+    'TRAVEL': ['travel', 'hotel', 'flight', 'airline', 'air canada', 'westjet', 'marriott', 'hilton', 'expedia'],
+    'STREAMING': ['streaming', 'netflix', 'spotify', 'disney+', 'amazon prime', 'apple tv', 'crave'],
+    'TRANSIT': ['transit', 'public transport', 'uber', 'lyft', 'taxi', 'bus', 'subway', 'presto', 'rideshare'],
+    'PHARMACY': ['pharmacy', 'drug store', 'shoppers', 'rexall', 'london drugs', 'pharma'],
+    'RENT': ['rent', 'rental', 'landlord', 'plastiq'],
+    'RECURRING': ['recurring', 'subscription', 'bill', 'utility', 'utilities', 'pre-authorized', 'automatic payment'],
+    'ONLINE_SHOPPING': ['online', 'amazon', 'e-commerce', 'digital purchase'],
+    'FOREIGN': ['foreign', 'international', 'fx', 'currency', 'abroad', 'u.s.', 'usd', 'no fx fee'],
+    'RETAIL': ['retail', 'shopping', 'store', 'purchase'],
+    'ENTERTAINMENT': ['entertainment', 'movie', 'theatre', 'concert', 'sport', 'game'],
+    'PERSONAL_SERVICES': ['personal service', 'spa', 'salon', 'beauty', 'haircut', 'barber'],
+    'HOME_IMPROVEMENT': ['home improvement', 'hardware', 'home depot', 'rona', 'lowes', 'renovation'],
+    'WHOLESALE': ['wholesale', 'costco', 'bulk'],
+    'INSURANCE': ['insurance'],
+    'TELECOM': ['telecom', 'phone', 'mobile', 'internet', 'rogers', 'bell', 'telus', 'fido', 'shaw', 'freedom'],
+    'EV_CHARGING': ['ev', 'electric vehicle', 'charging', 'charger'],
+}
+
+# Bank name normalization
+BANK_ALIASES = {
+    'american express': 'AMEX',
+    'amex': 'AMEX',
+    'td bank': 'TD',
+    'td canada trust': 'TD',
+    'royal bank': 'RBC',
+    'rbc royal bank': 'RBC',
+    'bank of montreal': 'BMO',
+    'scotiabank': 'Scotiabank',
+    'scotia': 'Scotiabank',
+    'cibc': 'CIBC',
+    'national bank': 'National Bank',
+    'banque nationale': 'National Bank',
+    'tangerine': 'Tangerine',
+    'simplii': 'Simplii',
+    'simplii financial': 'Simplii',
+    'pc financial': 'PC Financial',
+    'president\'s choice': 'PC Financial',
+    'rogers bank': 'Rogers',
+    'rogers': 'Rogers',
+    'neo financial': 'Neo',
+    'neo': 'Neo',
+    'mbna': 'MBNA',
+    'home trust': 'Home Trust',
+    'hsbc': 'HSBC',
+    'desjardins': 'Desjardins',
+    'brim': 'Brim',
+    'canadian tire': 'Canadian Tire',
+    'triangle': 'Canadian Tire',
+}
+
+# Card type detection
+CARD_TYPE_PATTERNS = {
+    'AMEX': ['american express', 'amex'],
+    'VISA': ['visa'],
+    'MASTERCARD': ['mastercard', 'master card', 'mc'],
+}
+
+
+# ============================================
+# Data Classes
+# ============================================
+
 @dataclass
 class RewardRule:
     category: str
-    reward_rate: Decimal
-    monthly_cap: Optional[Decimal] = None
+    reward_rate: float  # As decimal, e.g., 0.05 for 5%
+    monthly_cap: Optional[float] = None
     description: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            'category': self.category,
+            'reward_rate': self.reward_rate,
+            'monthly_cap': self.monthly_cap,
+            'description': self.description
+        }
+
 
 @dataclass
 class CreditCard:
     bank: str
     name: str
     card_type: str  # VISA, MASTERCARD, AMEX
-    annual_fee: Decimal
-    base_reward_rate: Decimal
-    signup_bonus_json: Optional[str] = None
+    annual_fee: float = 0.0
+    base_reward_rate: float = 0.01
+    signup_bonus: Optional[Dict[str, Any]] = None
     image_url: Optional[str] = None
     apply_url: Optional[str] = None
     no_fx_fee: bool = False
     reward_rules: List[RewardRule] = field(default_factory=list)
+    source: str = ""  # Which website the data came from
+    scraped_at: str = ""
+
+    def __post_init__(self):
+        if not self.scraped_at:
+            self.scraped_at = datetime.now().isoformat()
+
+    def get_hash(self) -> str:
+        """Generate a hash for deduplication"""
+        key = f"{self.bank}|{self.name}".lower()
+        return hashlib.md5(key.encode()).hexdigest()[:12]
+
+    def to_dict(self) -> dict:
+        return {
+            'bank': self.bank,
+            'name': self.name,
+            'card_type': self.card_type,
+            'annual_fee': self.annual_fee,
+            'base_reward_rate': self.base_reward_rate,
+            'signup_bonus': self.signup_bonus,
+            'image_url': self.image_url,
+            'apply_url': self.apply_url,
+            'no_fx_fee': self.no_fx_fee,
+            'reward_rules': [r.to_dict() for r in self.reward_rules],
+            'source': self.source,
+            'scraped_at': self.scraped_at
+        }
 
 
-def scrape_rewards_canada_travel():
-    """Scrape travel rewards cards from Rewards Canada"""
-    url = "https://www.rewardscanada.ca/TopTravelCreditCard/"
-    cards = []
+# ============================================
+# Helper Functions
+# ============================================
 
-    try:
-        response = requests.get(url, headers=HEADERS, timeout=30)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'lxml')
-
-        # Find card containers - structure varies by page
-        # This is a template - actual selectors need to be adjusted based on page structure
-        card_divs = soup.find_all('div', class_=re.compile(r'card|credit'))
-
-        for div in card_divs:
-            # Extract card details - selectors need adjustment
-            name_elem = div.find(['h2', 'h3', 'h4'], class_=re.compile(r'card-name|title'))
-            if name_elem:
-                print(f"Found card: {name_elem.text.strip()}")
-
-    except requests.RequestException as e:
-        print(f"Error scraping {url}: {e}")
-
-    return cards
+def normalize_bank_name(name: str) -> str:
+    """Normalize bank name to standard format"""
+    name_lower = name.lower().strip()
+    for alias, standard in BANK_ALIASES.items():
+        if alias in name_lower:
+            return standard
+    return name.strip()
 
 
-def scrape_rewards_canada_cashback():
-    """Scrape cash back cards from Rewards Canada"""
-    url = "https://www.rewardscanada.ca/topcashback/"
-    cards = []
+def detect_card_type(card_name: str, bank: str) -> str:
+    """Detect card type from name"""
+    name_lower = card_name.lower()
+    bank_lower = bank.lower()
 
-    try:
-        response = requests.get(url, headers=HEADERS, timeout=30)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'lxml')
+    for card_type, patterns in CARD_TYPE_PATTERNS.items():
+        for pattern in patterns:
+            if pattern in name_lower or pattern in bank_lower:
+                return card_type
 
-        # Find card containers
-        card_divs = soup.find_all('div', class_=re.compile(r'card|credit'))
+    # Default based on bank
+    if 'amex' in bank_lower or 'american express' in bank_lower:
+        return 'AMEX'
 
-        for div in card_divs:
-            name_elem = div.find(['h2', 'h3', 'h4'], class_=re.compile(r'card-name|title'))
-            if name_elem:
-                print(f"Found card: {name_elem.text.strip()}")
-
-    except requests.RequestException as e:
-        print(f"Error scraping {url}: {e}")
-
-    return cards
+    return 'VISA'  # Default
 
 
-def generate_sql_insert(card: CreditCard, card_id: int) -> str:
-    """Generate SQL INSERT statement for a credit card"""
+def parse_percentage(text: str) -> Optional[float]:
+    """Parse percentage from text like '5%' or '5x' to decimal"""
+    if not text:
+        return None
 
-    # Escape single quotes in strings
-    name = card.name.replace("'", "''")
-    bank = card.bank.replace("'", "''")
+    # Match patterns like "5%", "5.5%", "5x", "5X"
+    match = re.search(r'(\d+\.?\d*)\s*[%xX]', text)
+    if match:
+        value = float(match.group(1))
+        # If it's "x" points, assume 1x = 1%
+        if 'x' in text.lower():
+            return value / 100
+        return value / 100
 
-    signup_bonus = f"'{card.signup_bonus_json}'" if card.signup_bonus_json else "NULL"
-    image_url = f"'{card.image_url}'" if card.image_url else "NULL"
-    apply_url = f"'{card.apply_url}'" if card.apply_url else "NULL"
+    return None
 
-    sql = f"""INSERT INTO credit_cards (bank, name, card_type, annual_fee, base_reward_rate, signup_bonus_json, image_url, apply_url, no_fx_fee, is_active) VALUES
-('{bank}', '{name}', '{card.card_type}', {card.annual_fee}, {card.base_reward_rate}, {signup_bonus}, {image_url}, {apply_url}, {str(card.no_fx_fee).lower()}, true);
+
+def parse_annual_fee(text: str) -> float:
+    """Parse annual fee from text"""
+    if not text:
+        return 0.0
+
+    text_lower = text.lower()
+    if 'no annual fee' in text_lower or 'no fee' in text_lower or '$0' in text:
+        return 0.0
+
+    # Match patterns like "$120", "$120.00", "$120/year"
+    match = re.search(r'\$(\d+\.?\d*)', text)
+    if match:
+        return float(match.group(1))
+
+    return 0.0
+
+
+def parse_monthly_cap(text: str) -> Optional[float]:
+    """Parse monthly spending cap from text"""
+    if not text:
+        return None
+
+    # Match patterns like "$2,500/month", "up to $2500", "$30,000/year"
+    match = re.search(r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:/|per)?\s*(month|year)?', text, re.IGNORECASE)
+    if match:
+        amount = float(match.group(1).replace(',', ''))
+        period = match.group(2)
+        if period and 'year' in period.lower():
+            return amount / 12  # Convert to monthly
+        return amount
+
+    return None
+
+
+def categorize_reward(description: str) -> str:
+    """Determine category from reward description"""
+    desc_lower = description.lower()
+
+    for category, keywords in CATEGORY_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword in desc_lower:
+                return category
+
+    return 'OTHER'
+
+
+# ============================================
+# Scrapers
+# ============================================
+
+class BaseScraper:
+    """Base class for scrapers"""
+
+    def __init__(self, use_selenium: bool = True):
+        self.use_selenium = use_selenium and SELENIUM_AVAILABLE
+        self.driver = None
+
+    def init_driver(self):
+        """Initialize Selenium WebDriver"""
+        if not SELENIUM_AVAILABLE:
+            print("Selenium not available, using requests fallback")
+            return
+
+        options = Options()
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        options.add_argument(f'user-agent={HEADERS["User-Agent"]}')
+
+        try:
+            self.driver = webdriver.Chrome(options=options)
+            self.driver.set_page_load_timeout(30)
+        except Exception as e:
+            print(f"Failed to initialize Chrome driver: {e}")
+            print("Trying with default settings...")
+            try:
+                self.driver = webdriver.Chrome()
+            except Exception as e2:
+                print(f"Chrome driver not available: {e2}")
+                self.use_selenium = False
+
+    def close_driver(self):
+        """Close WebDriver"""
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+
+    def get_page(self, url: str, wait_selector: str = None) -> Optional[str]:
+        """Get page content"""
+        if self.use_selenium and self.driver:
+            try:
+                self.driver.get(url)
+                if wait_selector:
+                    WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector))
+                    )
+                time.sleep(2)  # Additional wait for dynamic content
+                return self.driver.page_source
+            except TimeoutException:
+                print(f"Timeout loading {url}")
+                return None
+        else:
+            try:
+                response = requests.get(url, headers=HEADERS, timeout=30)
+                response.raise_for_status()
+                return response.text
+            except requests.RequestException as e:
+                print(f"Request failed for {url}: {e}")
+                return None
+
+    def scrape(self) -> List[CreditCard]:
+        """Override in subclass"""
+        raise NotImplementedError
+
+
+class CreditCardGeniusScraper(BaseScraper):
+    """Scraper for Credit Card Genius"""
+
+    BASE_URL = "https://creditcardgenius.ca"
+
+    CARD_PAGES = [
+        "/best-credit-cards/cash-back",
+        "/best-credit-cards/rewards",
+        "/best-credit-cards/travel",
+        "/best-credit-cards/no-fee",
+        "/best-credit-cards/low-interest",
+    ]
+
+    def scrape(self) -> List[CreditCard]:
+        """Scrape all cards from Credit Card Genius"""
+        cards = []
+        seen_hashes = set()
+
+        if self.use_selenium:
+            self.init_driver()
+
+        try:
+            for page_path in self.CARD_PAGES:
+                url = f"{self.BASE_URL}{page_path}"
+                print(f"Scraping: {url}")
+
+                page_cards = self._scrape_page(url)
+
+                for card in page_cards:
+                    card_hash = card.get_hash()
+                    if card_hash not in seen_hashes:
+                        seen_hashes.add(card_hash)
+                        cards.append(card)
+                        print(f"  Found: {card.bank} {card.name}")
+
+                time.sleep(2)  # Rate limiting
+
+        finally:
+            self.close_driver()
+
+        return cards
+
+    def _scrape_page(self, url: str) -> List[CreditCard]:
+        """Scrape a single page"""
+        cards = []
+        html = self.get_page(url, wait_selector=".card-item, .credit-card, [class*='card']")
+
+        if not html:
+            return cards
+
+        soup = BeautifulSoup(html, 'lxml')
+
+        # Try multiple selectors for card containers
+        card_selectors = [
+            'div[class*="card-item"]',
+            'div[class*="credit-card"]',
+            'article[class*="card"]',
+            'div[class*="product-card"]',
+            'div[class*="CardItem"]',
+        ]
+
+        card_elements = []
+        for selector in card_selectors:
+            elements = soup.select(selector)
+            if elements:
+                card_elements = elements
+                break
+
+        for element in card_elements:
+            card = self._parse_card_element(element)
+            if card:
+                card.source = "creditcardgenius.ca"
+                cards.append(card)
+
+        return cards
+
+    def _parse_card_element(self, element) -> Optional[CreditCard]:
+        """Parse a single card element"""
+        try:
+            # Extract card name
+            name_elem = element.select_one('h2, h3, h4, [class*="card-name"], [class*="title"]')
+            if not name_elem:
+                return None
+
+            full_name = name_elem.get_text(strip=True)
+            if not full_name or len(full_name) < 3:
+                return None
+
+            # Parse bank and card name
+            bank, name = self._parse_card_name(full_name)
+
+            # Extract annual fee
+            fee_elem = element.select_one('[class*="fee"], [class*="annual"]')
+            annual_fee = 0.0
+            if fee_elem:
+                annual_fee = parse_annual_fee(fee_elem.get_text())
+
+            # Extract apply URL
+            apply_url = None
+            link_elem = element.select_one('a[href*="apply"], a[class*="apply"], a[href*="redirect"]')
+            if link_elem and link_elem.get('href'):
+                apply_url = link_elem['href']
+                if not apply_url.startswith('http'):
+                    apply_url = f"{self.BASE_URL}{apply_url}"
+
+            # Extract image URL
+            image_url = None
+            img_elem = element.select_one('img[src*="card"], img[class*="card"]')
+            if img_elem and img_elem.get('src'):
+                image_url = img_elem['src']
+                if not image_url.startswith('http'):
+                    image_url = f"{self.BASE_URL}{image_url}"
+
+            # Extract reward rates
+            reward_rules = self._parse_rewards(element)
+
+            # Determine base rate
+            base_rate = 0.01
+            if reward_rules:
+                other_rules = [r for r in reward_rules if r.category == 'OTHER']
+                if other_rules:
+                    base_rate = other_rules[0].reward_rate
+
+            # Check for no FX fee
+            text = element.get_text().lower()
+            no_fx_fee = 'no foreign' in text or 'no fx' in text or 'no currency' in text
+
+            card = CreditCard(
+                bank=bank,
+                name=name,
+                card_type=detect_card_type(full_name, bank),
+                annual_fee=annual_fee,
+                base_reward_rate=base_rate,
+                apply_url=apply_url,
+                image_url=image_url,
+                no_fx_fee=no_fx_fee,
+                reward_rules=reward_rules
+            )
+
+            return card
+
+        except Exception as e:
+            print(f"Error parsing card element: {e}")
+            return None
+
+    def _parse_card_name(self, full_name: str) -> tuple:
+        """Parse full card name into bank and card name"""
+        # Common patterns: "TD Cash Back Visa Infinite", "AMEX Cobalt Card"
+
+        # Try to identify bank first
+        full_lower = full_name.lower()
+
+        for alias, standard_bank in BANK_ALIASES.items():
+            if alias in full_lower:
+                # Remove bank name from card name
+                pattern = re.compile(re.escape(alias), re.IGNORECASE)
+                card_name = pattern.sub('', full_name).strip()
+                # Clean up card name
+                card_name = re.sub(r'^[\s\-–—]+', '', card_name)
+                card_name = re.sub(r'[\s\-–—]+$', '', card_name)
+                return standard_bank, card_name if card_name else full_name
+
+        # If no bank found, try splitting by common separators
+        parts = re.split(r'\s+[-–—]\s+|\s{2,}', full_name, maxsplit=1)
+        if len(parts) == 2:
+            return normalize_bank_name(parts[0]), parts[1]
+
+        return "Unknown", full_name
+
+    def _parse_rewards(self, element) -> List[RewardRule]:
+        """Parse reward rules from element"""
+        rules = []
+
+        # Look for reward rate text
+        reward_elems = element.select('[class*="reward"], [class*="rate"], [class*="earn"], li')
+
+        for elem in reward_elems:
+            text = elem.get_text(strip=True)
+            rate = parse_percentage(text)
+
+            if rate:
+                category = categorize_reward(text)
+                cap = parse_monthly_cap(text)
+
+                rule = RewardRule(
+                    category=category,
+                    reward_rate=rate,
+                    monthly_cap=cap,
+                    description=text[:255]  # Truncate to DB limit
+                )
+                rules.append(rule)
+
+        return rules
+
+
+class RatehubScraper(BaseScraper):
+    """Scraper for Ratehub.ca"""
+
+    BASE_URL = "https://www.ratehub.ca"
+
+    CARD_PAGES = [
+        "/credit-cards/cash-back",
+        "/credit-cards/rewards",
+        "/credit-cards/travel",
+        "/credit-cards/no-fee",
+    ]
+
+    def scrape(self) -> List[CreditCard]:
+        """Scrape all cards from Ratehub"""
+        cards = []
+        seen_hashes = set()
+
+        if self.use_selenium:
+            self.init_driver()
+
+        try:
+            for page_path in self.CARD_PAGES:
+                url = f"{self.BASE_URL}{page_path}"
+                print(f"Scraping: {url}")
+
+                page_cards = self._scrape_page(url)
+
+                for card in page_cards:
+                    card_hash = card.get_hash()
+                    if card_hash not in seen_hashes:
+                        seen_hashes.add(card_hash)
+                        cards.append(card)
+                        print(f"  Found: {card.bank} {card.name}")
+
+                time.sleep(2)
+
+        finally:
+            self.close_driver()
+
+        return cards
+
+    def _scrape_page(self, url: str) -> List[CreditCard]:
+        """Scrape a single page"""
+        cards = []
+        html = self.get_page(url, wait_selector="[class*='card'], [class*='Card']")
+
+        if not html:
+            return cards
+
+        soup = BeautifulSoup(html, 'lxml')
+
+        # Similar parsing logic to CreditCardGenius
+        card_selectors = [
+            'div[class*="CardProduct"]',
+            'div[class*="card-product"]',
+            'article[class*="card"]',
+            'div[class*="ProductCard"]',
+        ]
+
+        card_elements = []
+        for selector in card_selectors:
+            elements = soup.select(selector)
+            if elements:
+                card_elements = elements
+                break
+
+        for element in card_elements:
+            card = self._parse_card_element(element)
+            if card:
+                card.source = "ratehub.ca"
+                cards.append(card)
+
+        return cards
+
+    def _parse_card_element(self, element) -> Optional[CreditCard]:
+        """Parse similar to CreditCardGenius"""
+        # Implementation similar to CreditCardGeniusScraper._parse_card_element
+        # Adjusted for Ratehub's specific HTML structure
+        try:
+            name_elem = element.select_one('h2, h3, h4, [class*="name"], [class*="title"]')
+            if not name_elem:
+                return None
+
+            full_name = name_elem.get_text(strip=True)
+            if not full_name or len(full_name) < 3:
+                return None
+
+            bank, name = self._parse_card_name(full_name)
+
+            fee_elem = element.select_one('[class*="fee"]')
+            annual_fee = parse_annual_fee(fee_elem.get_text() if fee_elem else "")
+
+            apply_url = None
+            link_elem = element.select_one('a[href]')
+            if link_elem:
+                href = link_elem.get('href', '')
+                if href and not href.startswith('#'):
+                    apply_url = href if href.startswith('http') else f"{self.BASE_URL}{href}"
+
+            card = CreditCard(
+                bank=bank,
+                name=name,
+                card_type=detect_card_type(full_name, bank),
+                annual_fee=annual_fee,
+                base_reward_rate=0.01,
+                apply_url=apply_url,
+            )
+
+            return card
+
+        except Exception as e:
+            return None
+
+    def _parse_card_name(self, full_name: str) -> tuple:
+        """Same as CreditCardGeniusScraper"""
+        full_lower = full_name.lower()
+
+        for alias, standard_bank in BANK_ALIASES.items():
+            if alias in full_lower:
+                pattern = re.compile(re.escape(alias), re.IGNORECASE)
+                card_name = pattern.sub('', full_name).strip()
+                card_name = re.sub(r'^[\s\-–—]+', '', card_name)
+                card_name = re.sub(r'[\s\-–—]+$', '', card_name)
+                return standard_bank, card_name if card_name else full_name
+
+        return "Unknown", full_name
+
+
+# ============================================
+# SQL Generator
+# ============================================
+
+class SQLGenerator:
+    """Generate incremental SQL statements"""
+
+    def __init__(self, cards: List[CreditCard], existing_cards: List[Dict] = None):
+        self.cards = cards
+        self.existing_cards = existing_cards or []
+        self.existing_map = {
+            f"{c['bank'].lower()}|{c['name'].lower()}": c
+            for c in self.existing_cards
+        }
+
+    def generate_incremental_sql(self) -> str:
+        """Generate SQL for new and updated cards"""
+        lines = []
+        lines.append(f"-- SaveVia Credit Card Data Update")
+        lines.append(f"-- Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"-- Cards processed: {len(self.cards)}")
+        lines.append("")
+
+        new_cards = []
+        updated_cards = []
+
+        for card in self.cards:
+            key = f"{card.bank.lower()}|{card.name.lower()}"
+            if key in self.existing_map:
+                # Check if update needed
+                existing = self.existing_map[key]
+                if self._needs_update(card, existing):
+                    updated_cards.append((card, existing))
+            else:
+                new_cards.append(card)
+
+        # Generate INSERT for new cards
+        if new_cards:
+            lines.append("-- ============================================")
+            lines.append("-- NEW CARDS")
+            lines.append("-- ============================================")
+            lines.append("")
+
+            for card in new_cards:
+                lines.append(self._generate_insert(card))
+                lines.append("")
+
+        # Generate UPDATE for changed cards
+        if updated_cards:
+            lines.append("-- ============================================")
+            lines.append("-- UPDATED CARDS")
+            lines.append("-- ============================================")
+            lines.append("")
+
+            for card, existing in updated_cards:
+                lines.append(self._generate_update(card, existing))
+                lines.append("")
+
+        if not new_cards and not updated_cards:
+            lines.append("-- No changes detected")
+
+        return "\n".join(lines)
+
+    def _needs_update(self, card: CreditCard, existing: Dict) -> bool:
+        """Check if card data has changed"""
+        if card.annual_fee != existing.get('annual_fee', 0):
+            return True
+        if card.apply_url and card.apply_url != existing.get('apply_url'):
+            return True
+        return False
+
+    def _generate_insert(self, card: CreditCard) -> str:
+        """Generate INSERT statement for a card"""
+        name = card.name.replace("'", "''")
+        bank = card.bank.replace("'", "''")
+
+        signup_json = f"'{json.dumps(card.signup_bonus)}'" if card.signup_bonus else "NULL"
+        image_url = f"'{card.image_url}'" if card.image_url else "NULL"
+        apply_url = f"'{card.apply_url}'" if card.apply_url else "NULL"
+
+        sql = f"""-- {card.bank} {card.name}
+INSERT INTO credit_cards (bank, name, card_type, annual_fee, base_reward_rate, signup_bonus_json, image_url, apply_url, no_fx_fee, is_active) VALUES
+('{bank}', '{name}', '{card.card_type}', {card.annual_fee}, {card.base_reward_rate}, {signup_json}, {image_url}, {apply_url}, {str(card.no_fx_fee).lower()}, true);
+
+-- Get the card ID for reward rules
+SET @card_id = LAST_INSERT_ID();
 """
 
-    # Generate reward rules
-    for rule in card.reward_rules:
-        desc = rule.description.replace("'", "''")
-        monthly_cap = str(rule.monthly_cap) if rule.monthly_cap else "NULL"
-        sql += f"""INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-({card_id}, '{rule.category}', {rule.reward_rate}, {monthly_cap}, '{desc}');
+        # Generate reward rules
+        for rule in card.reward_rules:
+            desc = rule.description.replace("'", "''")
+            cap = str(rule.monthly_cap) if rule.monthly_cap else "NULL"
+            sql += f"""
+INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
+(@card_id, '{rule.category}', {rule.reward_rate}, {cap}, '{desc}');"""
+
+        return sql
+
+    def _generate_update(self, card: CreditCard, existing: Dict) -> str:
+        """Generate UPDATE statement for a card"""
+        card_id = existing.get('id', '?')
+        updates = []
+
+        if card.annual_fee != existing.get('annual_fee'):
+            updates.append(f"annual_fee = {card.annual_fee}")
+        if card.apply_url and card.apply_url != existing.get('apply_url'):
+            updates.append(f"apply_url = '{card.apply_url}'")
+        if card.image_url and card.image_url != existing.get('image_url'):
+            updates.append(f"image_url = '{card.image_url}'")
+
+        if not updates:
+            return f"-- No changes for {card.bank} {card.name}"
+
+        sql = f"""-- Update {card.bank} {card.name}
+UPDATE credit_cards SET
+    {', '.join(updates)},
+    updated_at = NOW()
+WHERE id = {card_id};  -- OR: WHERE bank = '{card.bank}' AND name = '{card.name}'
 """
-
-    return sql
-
-
-# Pre-defined card data based on research
-# This data is manually curated from Rewards Canada and other sources
-KNOWN_CARDS = [
-    # ============================================
-    # Cards that may be missing or need updates
-    # ============================================
-
-    CreditCard(
-        bank="Scotiabank",
-        name="Passport Visa Infinite",
-        card_type="VISA",
-        annual_fee=Decimal("150.00"),
-        base_reward_rate=Decimal("0.01"),
-        signup_bonus_json='{"bonusAmount": 45000, "minSpend": 1000, "daysToComplete": 90, "description": "Up to 45,000 Scene+ points + 10,000 annual bonus at $40K spend"}',
-        apply_url="https://www.scotiabank.com/ca/en/personal/credit-cards/visa/passport-infinite-card.html",
-        no_fx_fee=True,
-        reward_rules=[
-            RewardRule("GROCERY", Decimal("0.03"), None, "3x Scene+ points at Empire stores (Sobeys/Safeway/IGA)"),
-            RewardRule("DINING", Decimal("0.02"), None, "2x Scene+ points on dining"),
-            RewardRule("TRANSIT", Decimal("0.02"), None, "2x Scene+ points on transit"),
-            RewardRule("ENTERTAINMENT", Decimal("0.02"), None, "2x Scene+ points on entertainment"),
-            RewardRule("FOREIGN", Decimal("0.01"), None, "No FX fee on foreign purchases"),
-        ]
-    ),
-
-    CreditCard(
-        bank="Rogers",
-        name="World Elite Mastercard",
-        card_type="MASTERCARD",
-        annual_fee=Decimal("0"),
-        base_reward_rate=Decimal("0.015"),
-        signup_bonus_json='{"bonusAmount": 25, "minSpend": 500, "daysToComplete": 90, "description": "$25 bonus on first $500 spent"}',
-        apply_url="https://www.rogersbank.com/en/rogers_world_elite_mastercard",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("FOREIGN", Decimal("0.03"), None, "3% on U.S. dollar purchases"),
-            RewardRule("TELECOM", Decimal("0.03"), None, "3% on Rogers/Fido/Shaw services"),
-        ]
-    ),
-
-    CreditCard(
-        bank="Neo",
-        name="World Elite Mastercard",
-        card_type="MASTERCARD",
-        annual_fee=Decimal("125.00"),
-        base_reward_rate=Decimal("0.01"),
-        signup_bonus_json='{"bonusAmount": 50, "minSpend": 500, "daysToComplete": 90, "description": "$50 welcome bonus"}',
-        apply_url="https://www.neofinancial.com/credit",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("GROCERY", Decimal("0.05"), Decimal("1000"), "5% on groceries (up to $1,000/month)"),
-            RewardRule("RECURRING", Decimal("0.04"), Decimal("1000"), "4% on recurring bills (up to $1,000/month)"),
-            RewardRule("GAS", Decimal("0.03"), Decimal("1000"), "3% on gas (up to $1,000/month)"),
-            RewardRule("EV_CHARGING", Decimal("0.03"), Decimal("1000"), "3% on EV charging (up to $1,000/month)"),
-            RewardRule("TELECOM", Decimal("0.04"), Decimal("1000"), "4% on telecom/internet (up to $1,000/month)"),
-            RewardRule("INSURANCE", Decimal("0.04"), Decimal("1000"), "4% on insurance (up to $1,000/month)"),
-            RewardRule("STREAMING", Decimal("0.04"), Decimal("1000"), "4% on streaming (up to $1,000/month)"),
-        ]
-    ),
-
-    CreditCard(
-        bank="CIBC",
-        name="Dividend Visa Infinite",
-        card_type="VISA",
-        annual_fee=Decimal("120.00"),
-        base_reward_rate=Decimal("0.01"),
-        signup_bonus_json='{"bonusAmount": 300, "minSpend": 3000, "daysToComplete": 120, "description": "10% cashback first 4 statements up to $3,000"}',
-        apply_url="https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/dividend-visa-infinite-card.html",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("GROCERY", Decimal("0.04"), Decimal("1667"), "4% on groceries (up to $20,000/year)"),
-            RewardRule("GAS", Decimal("0.04"), Decimal("1667"), "4% on gas (up to $20,000/year)"),
-            RewardRule("EV_CHARGING", Decimal("0.04"), Decimal("1667"), "4% on EV charging (up to $20,000/year)"),
-            RewardRule("TRANSIT", Decimal("0.02"), Decimal("1667"), "2% on transit (up to $20,000/year)"),
-            RewardRule("DINING", Decimal("0.02"), Decimal("1667"), "2% on dining (up to $20,000/year)"),
-            RewardRule("RECURRING", Decimal("0.02"), Decimal("1667"), "2% on recurring bills (up to $20,000/year)"),
-            RewardRule("TELECOM", Decimal("0.02"), Decimal("1667"), "2% on telecom (up to $20,000/year)"),
-            RewardRule("STREAMING", Decimal("0.02"), Decimal("1667"), "2% on streaming (up to $20,000/year)"),
-        ]
-    ),
-
-    CreditCard(
-        bank="Simplii",
-        name="Cash Back Visa Card",
-        card_type="VISA",
-        annual_fee=Decimal("0"),
-        base_reward_rate=Decimal("0.005"),
-        signup_bonus_json='{"bonusAmount": 400, "minSpend": 5000, "daysToComplete": 120, "description": "$400 + 8% cashback on restaurants first 3 months"}',
-        apply_url="https://www.simplii.com/en/credit-cards/cash-back-visa.html",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("DINING", Decimal("0.04"), Decimal("417"), "4% on restaurants (up to $5,000/year)"),
-            RewardRule("GROCERY", Decimal("0.015"), Decimal("1250"), "1.5% on groceries (up to $15,000/year)"),
-            RewardRule("GAS", Decimal("0.015"), Decimal("1250"), "1.5% on gas (up to $15,000/year)"),
-            RewardRule("PHARMACY", Decimal("0.015"), Decimal("1250"), "1.5% on pharmacies (up to $15,000/year)"),
-            RewardRule("RECURRING", Decimal("0.015"), Decimal("1250"), "1.5% on pre-authorized payments (up to $15,000/year)"),
-        ]
-    ),
-
-    CreditCard(
-        bank="Tangerine",
-        name="Money-Back Credit Card",
-        card_type="MASTERCARD",
-        annual_fee=Decimal("0"),
-        base_reward_rate=Decimal("0.005"),
-        signup_bonus_json='{"bonusAmount": 100, "minSpend": 1000, "daysToComplete": 60, "description": "10% cashback first 2 months up to $1,000"}',
-        apply_url="https://www.tangerine.ca/en/products/spending/creditcard/money-back",
-        no_fx_fee=False,
-        reward_rules=[
-            # User can select 2-3 categories at 2%
-            RewardRule("GROCERY", Decimal("0.02"), None, "2% on groceries (if selected as bonus category)"),
-            RewardRule("GAS", Decimal("0.02"), None, "2% on gas (if selected as bonus category)"),
-            RewardRule("DINING", Decimal("0.02"), None, "2% on dining (if selected as bonus category)"),
-            RewardRule("RECURRING", Decimal("0.02"), None, "2% on recurring bills (if selected as bonus category)"),
-            RewardRule("PHARMACY", Decimal("0.02"), None, "2% on pharmacy (if selected as bonus category)"),
-            RewardRule("ENTERTAINMENT", Decimal("0.02"), None, "2% on entertainment (if selected as bonus category)"),
-            RewardRule("HOME_IMPROVEMENT", Decimal("0.02"), None, "2% on home improvement (if selected as bonus category)"),
-            RewardRule("TRANSIT", Decimal("0.02"), None, "2% on public transit (if selected as bonus category)"),
-        ]
-    ),
-
-    CreditCard(
-        bank="BMO",
-        name="CashBack World Elite Mastercard",
-        card_type="MASTERCARD",
-        annual_fee=Decimal("120.00"),
-        base_reward_rate=Decimal("0.015"),
-        signup_bonus_json='{"bonusAmount": 335, "minSpend": 3000, "daysToComplete": 90, "description": "10% cashback first 3 months + $120 fee waived year 1"}',
-        apply_url="https://www.bmo.com/main/personal/credit-cards/bmo-cashback-world-elite-mastercard/",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("GROCERY", Decimal("0.05"), Decimal("500"), "5% on groceries (up to $500/month)"),
-            RewardRule("TRANSIT", Decimal("0.04"), Decimal("300"), "4% on transit (up to $300/month)"),
-            RewardRule("GAS", Decimal("0.03"), Decimal("300"), "3% on gas (up to $300/month)"),
-            RewardRule("EV_CHARGING", Decimal("0.03"), Decimal("300"), "3% on EV charging (up to $300/month)"),
-            RewardRule("RECURRING", Decimal("0.02"), Decimal("500"), "2% on recurring bills (up to $500/month)"),
-            RewardRule("TELECOM", Decimal("0.02"), Decimal("500"), "2% on telecom (up to $500/month)"),
-            RewardRule("STREAMING", Decimal("0.02"), Decimal("500"), "2% on streaming (up to $500/month)"),
-        ]
-    ),
-
-    CreditCard(
-        bank="AMEX",
-        name="Cobalt Card",
-        card_type="AMEX",
-        annual_fee=Decimal("191.88"),
-        base_reward_rate=Decimal("0.01"),
-        signup_bonus_json='{"bonusAmount": 15000, "minSpend": 750, "daysToComplete": 30, "description": "1,250 MR points/month when spending $750+, for 12 months"}',
-        apply_url="https://www.americanexpress.com/ca/en/credit-cards/cobalt-card/",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("DINING", Decimal("0.05"), Decimal("2500"), "5x points on dining (up to $2,500/month)"),
-            RewardRule("GROCERY", Decimal("0.05"), Decimal("2500"), "5x points on groceries (up to $2,500/month)"),
-            RewardRule("STREAMING", Decimal("0.03"), None, "3x points on streaming"),
-            RewardRule("TRAVEL", Decimal("0.02"), None, "2x points on travel"),
-            RewardRule("TRANSIT", Decimal("0.02"), None, "2x points on transit & rideshare"),
-            RewardRule("GAS", Decimal("0.02"), None, "2x points on gas"),
-            RewardRule("ENTERTAINMENT", Decimal("0.02"), None, "2x points on entertainment"),
-            RewardRule("PERSONAL_SERVICES", Decimal("0.05"), Decimal("2500"), "5x points on personal services (beauty, spa)"),
-        ]
-    ),
-
-    CreditCard(
-        bank="TD",
-        name="Cash Back Visa Infinite",
-        card_type="VISA",
-        annual_fee=Decimal("139.00"),
-        base_reward_rate=Decimal("0.01"),
-        signup_bonus_json='{"bonusAmount": 350, "minSpend": 3500, "daysToComplete": 90, "description": "10% cashback first 3 months on bonus categories"}',
-        apply_url="https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("GROCERY", Decimal("0.03"), Decimal("1250"), "3% on groceries (up to $15,000/year)"),
-            RewardRule("GAS", Decimal("0.03"), Decimal("1250"), "3% on gas (up to $15,000/year)"),
-            RewardRule("EV_CHARGING", Decimal("0.03"), Decimal("1250"), "3% on EV charging (up to $15,000/year)"),
-            RewardRule("TRANSIT", Decimal("0.03"), Decimal("1250"), "3% on transit (up to $15,000/year)"),
-            RewardRule("RECURRING", Decimal("0.03"), Decimal("1250"), "3% on recurring bills (up to $15,000/year)"),
-            RewardRule("STREAMING", Decimal("0.03"), Decimal("1250"), "3% on streaming (up to $15,000/year)"),
-            RewardRule("TELECOM", Decimal("0.03"), Decimal("1250"), "3% on telecom (up to $15,000/year)"),
-        ]
-    ),
-
-    CreditCard(
-        bank="PC Financial",
-        name="World Elite Mastercard",
-        card_type="MASTERCARD",
-        annual_fee=Decimal("0"),
-        base_reward_rate=Decimal("0.01"),
-        signup_bonus_json='{"bonusAmount": 20000, "minSpend": 1000, "daysToComplete": 30, "description": "20,000 PC Optimum points"}',
-        apply_url="https://www.pcfinancial.ca/en/credit-cards/pc-world-elite-mastercard",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("GROCERY", Decimal("0.03"), None, "30 PC Optimum points per $1 at Loblaw stores (~3%)"),
-            RewardRule("PHARMACY", Decimal("0.045"), None, "45 PC Optimum points per $1 at Shoppers (~4.5%)"),
-            RewardRule("GAS", Decimal("0.03"), None, "30 PC Optimum points per $1 at Esso/Mobil"),
-        ]
-    ),
-
-    CreditCard(
-        bank="Home Trust",
-        name="Preferred Visa",
-        card_type="VISA",
-        annual_fee=Decimal("0"),
-        base_reward_rate=Decimal("0.01"),
-        signup_bonus_json=None,
-        apply_url="https://www.hometrust.ca/credit-cards/preferred-visa-card/",
-        no_fx_fee=True,
-        reward_rules=[
-            RewardRule("FOREIGN", Decimal("0.01"), None, "1% on all purchases + no FX fee"),
-            RewardRule("TRAVEL", Decimal("0.01"), None, "1% on travel with no FX fee"),
-        ]
-    ),
-
-    CreditCard(
-        bank="Marriott Bonvoy",
-        name="American Express Card",
-        card_type="AMEX",
-        annual_fee=Decimal("120.00"),
-        base_reward_rate=Decimal("0.02"),
-        signup_bonus_json='{"bonusAmount": 50000, "minSpend": 1500, "daysToComplete": 90, "description": "50,000 Marriott points + free night annually"}',
-        apply_url="https://www.americanexpress.com/ca/en/credit-cards/marriott-bonvoy/",
-        no_fx_fee=False,
-        reward_rules=[
-            RewardRule("TRAVEL", Decimal("0.05"), None, "5 points per $1 at Marriott hotels"),
-            RewardRule("DINING", Decimal("0.02"), None, "2 points per $1 on dining"),
-        ]
-    ),
-]
+        return sql
 
 
-def generate_update_sql():
-    """Generate SQL to update existing cards and add new reward rules for extended categories"""
+# ============================================
+# Main
+# ============================================
 
-    sql = """-- SaveVia Extended Categories Update
--- Adds reward rules for new categories: RETAIL, ENTERTAINMENT, PERSONAL_SERVICES,
--- HOME_IMPROVEMENT, WHOLESALE, INSURANCE, TELECOM, EV_CHARGING
-
--- ============================================
--- Update existing cards with new category rules
--- ============================================
-
--- AMEX Cobalt (ID 1) - Add ENTERTAINMENT and PERSONAL_SERVICES
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(1, 'ENTERTAINMENT', 0.02, NULL, '2x points on entertainment')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(1, 'PERSONAL_SERVICES', 0.05, 2500, '5x points on personal services (beauty, spa)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.05;
-
--- TD Cash Back Visa Infinite (ID 8) - Add EV_CHARGING and TELECOM
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(8, 'EV_CHARGING', 0.03, 1250, '3% on EV charging (up to $15,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.03;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(8, 'TELECOM', 0.03, 1250, '3% on telecom (up to $15,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.03;
-
--- Scotiabank Passport (ID 19) - Add ENTERTAINMENT
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(19, 'ENTERTAINMENT', 0.02, NULL, '2x Scene+ points on entertainment')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
--- Scotiabank Momentum (ID 20) - Already has transit, gas - add EV_CHARGING
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(20, 'EV_CHARGING', 0.02, 2083, '2% on EV charging (up to $25,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(20, 'TELECOM', 0.04, 2083, '4% on telecom (up to $25,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.04;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(20, 'INSURANCE', 0.04, 2083, '4% on insurance (up to $25,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.04;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(20, 'STREAMING', 0.04, 2083, '4% on streaming (up to $25,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.04;
-
--- CIBC Dividend Visa Infinite (ID 25) - Add EV_CHARGING, TELECOM, STREAMING
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(25, 'EV_CHARGING', 0.04, 1667, '4% on EV charging (up to $20,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.04;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(25, 'TELECOM', 0.02, 1667, '2% on telecom (up to $20,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(25, 'STREAMING', 0.02, 1667, '2% on streaming (up to $20,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(25, 'INSURANCE', 0.02, 1667, '2% on insurance (up to $20,000/year)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
--- BMO CashBack World Elite (ID 28) - Add EV_CHARGING, TELECOM, STREAMING
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(28, 'EV_CHARGING', 0.03, 300, '3% on EV charging (up to $300/month)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.03;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(28, 'TELECOM', 0.02, 500, '2% on telecom (up to $500/month)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(28, 'STREAMING', 0.02, 500, '2% on streaming (up to $500/month)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
--- Rogers World Elite (ID 31) - Add TELECOM
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(31, 'TELECOM', 0.03, NULL, '3% on Rogers/Fido/Shaw services')
-ON DUPLICATE KEY UPDATE reward_rate = 0.03;
-
--- Neo World Elite (ID 35) - Add EV_CHARGING, TELECOM, INSURANCE, STREAMING
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(35, 'EV_CHARGING', 0.03, NULL, '3% on EV charging')
-ON DUPLICATE KEY UPDATE reward_rate = 0.03;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(35, 'TELECOM', 0.04, NULL, '4% on telecom/internet')
-ON DUPLICATE KEY UPDATE reward_rate = 0.04;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(35, 'INSURANCE', 0.04, NULL, '4% on insurance')
-ON DUPLICATE KEY UPDATE reward_rate = 0.04;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(35, 'STREAMING', 0.04, NULL, '4% on streaming')
-ON DUPLICATE KEY UPDATE reward_rate = 0.04;
-
--- Neo World Mastercard (ID 36) - Add EV_CHARGING, TELECOM
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(36, 'EV_CHARGING', 0.02, NULL, '2% on EV charging')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(36, 'TELECOM', 0.02, NULL, '2% on telecom/internet')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
--- PC Financial World Elite (ID 37) - Add RETAIL (for PC stores)
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(37, 'RETAIL', 0.01, NULL, '10 PC Optimum points per $1 at other retail')
-ON DUPLICATE KEY UPDATE reward_rate = 0.01;
-
--- Simplii Cash Back (ID 39) - Add RECURRING
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(39, 'RECURRING', 0.015, NULL, '1.5% on pre-authorized payments')
-ON DUPLICATE KEY UPDATE reward_rate = 0.015;
-
--- MBNA Rewards World Elite (ID 40) - Already has STREAMING, RECURRING - add TELECOM
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(40, 'TELECOM', 0.05, NULL, '5x points on telecom')
-ON DUPLICATE KEY UPDATE reward_rate = 0.05;
-
--- National Bank World Elite (ID 42) - Add TELECOM, INSURANCE
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(42, 'TELECOM', 0.02, NULL, '2x points on telecom')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(42, 'INSURANCE', 0.02, NULL, '2x points on insurance')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(42, 'STREAMING', 0.02, NULL, '2x points on streaming')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
--- Tangerine Money-Back (ID 33) - Add more selectable categories
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(33, 'RECURRING', 0.02, NULL, '2% on recurring bills (if selected)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(33, 'PHARMACY', 0.02, NULL, '2% on pharmacy (if selected)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(33, 'ENTERTAINMENT', 0.02, NULL, '2% on entertainment (if selected)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(33, 'HOME_IMPROVEMENT', 0.02, NULL, '2% on home improvement (if selected)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
-INSERT INTO reward_rules (card_id, category, reward_rate, monthly_cap_amount, description) VALUES
-(33, 'TRANSIT', 0.02, NULL, '2% on public transit (if selected)')
-ON DUPLICATE KEY UPDATE reward_rate = 0.02;
-
--- ============================================
--- Update no_fx_fee for cards that have it
--- ============================================
-UPDATE credit_cards SET no_fx_fee = true WHERE id = 19; -- Scotiabank Passport
-UPDATE credit_cards SET no_fx_fee = true WHERE id = 43; -- Home Trust Preferred
-
-"""
-    return sql
+def load_existing_cards(db_export_path: str = None) -> List[Dict]:
+    """Load existing cards from database export or hardcoded list"""
+    # This would ideally connect to the database or read from an export
+    # For now, return empty list
+    return []
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Scrape Canadian credit card data')
+    parser.add_argument('--dry-run', action='store_true', help='Print results without saving')
+    parser.add_argument('--output', '-o', default='incremental_cards.sql', help='Output SQL file')
+    parser.add_argument('--json', '-j', help='Also save as JSON file')
+    parser.add_argument('--no-selenium', action='store_true', help='Use requests only (limited)')
+    parser.add_argument('--source', choices=['all', 'ccgenius', 'ratehub'], default='all', help='Data source')
+    args = parser.parse_args()
+
+    print("=" * 60)
     print("Canadian Credit Card Scraper")
-    print("=" * 50)
+    print("=" * 60)
+    print()
 
-    # Generate SQL for extended categories
-    sql = generate_update_sql()
+    all_cards = []
+    use_selenium = not args.no_selenium
 
-    # Write to file
-    output_file = "/Users/aisenyc/savevia/docker/mysql/init/11-extended-category-rules.sql"
-    with open(output_file, 'w') as f:
+    # Scrape Credit Card Genius
+    if args.source in ['all', 'ccgenius']:
+        print("Scraping Credit Card Genius...")
+        try:
+            scraper = CreditCardGeniusScraper(use_selenium=use_selenium)
+            cards = scraper.scrape()
+            all_cards.extend(cards)
+            print(f"Found {len(cards)} cards from Credit Card Genius")
+        except Exception as e:
+            print(f"Error scraping Credit Card Genius: {e}")
+
+    # Scrape Ratehub
+    if args.source in ['all', 'ratehub']:
+        print("\nScraping Ratehub...")
+        try:
+            scraper = RatehubScraper(use_selenium=use_selenium)
+            cards = scraper.scrape()
+            all_cards.extend(cards)
+            print(f"Found {len(cards)} cards from Ratehub")
+        except Exception as e:
+            print(f"Error scraping Ratehub: {e}")
+
+    # Deduplicate
+    seen = set()
+    unique_cards = []
+    for card in all_cards:
+        h = card.get_hash()
+        if h not in seen:
+            seen.add(h)
+            unique_cards.append(card)
+
+    print(f"\nTotal unique cards: {len(unique_cards)}")
+
+    if args.dry_run:
+        print("\n[DRY RUN] Would generate SQL for:")
+        for card in unique_cards:
+            print(f"  - {card.bank} {card.name} (${card.annual_fee}/yr)")
+        return
+
+    # Load existing cards for comparison
+    existing_cards = load_existing_cards()
+
+    # Generate SQL
+    generator = SQLGenerator(unique_cards, existing_cards)
+    sql = generator.generate_incremental_sql()
+
+    # Save SQL
+    output_path = f"/Users/aisenyc/savevia/scripts/scraper/{args.output}"
+    with open(output_path, 'w') as f:
         f.write(sql)
+    print(f"\nSQL saved to: {output_path}")
 
-    print(f"\nGenerated SQL file: {output_file}")
-    print("\nTo apply, run:")
-    print(f"  mysql -u root -p savevia < {output_file}")
+    # Save JSON if requested
+    if args.json:
+        json_path = f"/Users/aisenyc/savevia/scripts/scraper/{args.json}"
+        with open(json_path, 'w') as f:
+            json.dump([c.to_dict() for c in unique_cards], f, indent=2)
+        print(f"JSON saved to: {json_path}")
 
-    # Also try to scrape live data (may fail due to site structure)
-    print("\n" + "=" * 50)
-    print("Attempting to scrape live data...")
-
-    try:
-        scrape_rewards_canada_travel()
-        scrape_rewards_canada_cashback()
-    except Exception as e:
-        print(f"Scraping failed: {e}")
-        print("Using pre-defined card data instead.")
+    print("\nDone!")
 
 
 if __name__ == "__main__":
