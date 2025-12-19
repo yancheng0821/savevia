@@ -127,7 +127,12 @@
     "copyLink": "复制",
     "copied": "已复制!",
     "aiInsight": "AI 解读",
-    "aiTip": "小贴士"
+    "aiTip": "小贴士",
+    "recommendedCard": "推荐申请",
+    "rewardRateIncrease": "总体返现率提升",
+    "annualSavings": "年度节省",
+    "viewCardDetails": "查看卡片详情",
+    "bestFor": "最适合"
   },
   "categoryGroups": {
     "daily": "日常消费",

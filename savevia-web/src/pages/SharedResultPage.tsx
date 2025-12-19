@@ -155,10 +155,12 @@ function SharedResultPage() {
   useEffect(() => {
     const loadSharedResult = async () => {
       if (!shareId) {
-        setError('Invalid share link')
-        setLoading(false)
+        // Wait for shareId to be available, keep loading state
         return
       }
+
+      setLoading(true)
+      setError(null)
 
       try {
         const response = await optimizerApi.getSharedResult(shareId)

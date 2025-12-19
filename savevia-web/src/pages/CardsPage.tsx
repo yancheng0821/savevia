@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Spin } from 'antd'
 import { useNavigate, Link } from 'react-router-dom'
+import Loading from '../components/Loading'
 import { useTranslation } from 'react-i18next'
 import { CheckOutlined, ArrowRightOutlined, DownOutlined, RightOutlined } from '@ant-design/icons'
 import { cardApi, userApi } from '../services/api'
@@ -207,7 +207,7 @@ function CardsPage() {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <Spin size="large" />
+        <Loading size="large" />
       </div>
     )
   }

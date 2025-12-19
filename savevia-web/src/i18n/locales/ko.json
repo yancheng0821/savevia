@@ -115,7 +115,12 @@
     "rewardRate": "적립률",
     "monthlyRewardCol": "월 적립금",
     "aiInsight": "AI 분석",
-    "aiTip": "팁"
+    "aiTip": "팁",
+    "recommendedCard": "추천 카드",
+    "rewardRateIncrease": "전체 적립률 상승",
+    "annualSavings": "연간 절약액",
+    "viewCardDetails": "카드 상세 정보 보기",
+    "bestFor": "추천 사용처"
   },
   "categoryGroups": {
     "daily": "일상",

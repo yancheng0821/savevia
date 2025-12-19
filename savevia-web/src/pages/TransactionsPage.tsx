@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { message, Spin, Empty, Progress, Modal, Pagination } from 'antd'
+import { message, Empty, Progress, Modal, Pagination } from 'antd'
+import Loading from '../components/Loading'
 import {
   SyncOutlined,
   RightOutlined,
@@ -469,8 +470,7 @@ function TransactionsPage() {
     return (
       <div className="sv-transactions-page">
         <div className="sv-txn-loading">
-          <Spin size="large" />
-          <p>{t('common.loading')}</p>
+          <Loading size="large" text={t('common.loading')} />
         </div>
         <style>{styles}</style>
       </div>
@@ -602,8 +602,7 @@ function TransactionsPage() {
               <div className="sv-flinks-iframe-container">
                 {iframeLoading && (
                   <div className="sv-flinks-loading">
-                    <Spin size="large" />
-                    <p>{t('transactions.connectingBank')}</p>
+                    <Loading size="large" text={t('transactions.connectingBank')} />
                   </div>
                 )}
                 <iframe
@@ -1000,8 +999,7 @@ function TransactionsPage() {
             <div className="sv-flinks-iframe-container">
               {iframeLoading && (
                 <div className="sv-flinks-loading">
-                  <Spin size="large" />
-                  <p>{t('transactions.connectingBank')}</p>
+                  <Loading size="large" text={t('transactions.connectingBank')} />
                 </div>
               )}
               <iframe

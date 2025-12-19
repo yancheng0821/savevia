@@ -124,7 +124,6 @@ function AuthPanel() {
         }
 
         const result = await GoogleAuth.signIn({ scopes: ['profile', 'email'] })
-        console.log('Google login: sending credential to backend...')
 
         // Priority: idToken > accessToken > serverAuthCode
         const credential = result.authentication?.idToken

@@ -100,9 +100,7 @@ export const useAuthStore = create<AuthState>()(
       loginWithGoogle: async (credential) => {
         set({ isLoading: true })
         try {
-          console.log('Google login: sending credential to backend...')
           const response = await authApi.googleLogin({ credential })
-          console.log('Google login: backend response:', JSON.stringify(response, null, 2))
           if (response.code === 200 && response.data) {
             tokenManager.setToken(response.data.token)
             if (response.data.refreshToken) {

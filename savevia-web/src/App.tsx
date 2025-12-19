@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useRef } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { Capacitor } from '@capacitor/core'
 import { SplashScreen } from '@capacitor/splash-screen'
 import HomePage from './pages/HomePage'
 import CardsPage from './pages/CardsPage'
@@ -20,6 +19,7 @@ import AppHeader from './components/AppHeader'
 import AuthPanel from './components/AuthPanel'
 import Paywall from './components/Paywall'
 import Onboarding from './components/Onboarding'
+import AnimatedSplash from './components/AnimatedSplash'
 import { useAuthStore } from './stores/useAuthStore'
 import { useOptimizerStore } from './stores/useOptimizerStore'
 import { useSubscriptionStore } from './stores/useSubscriptionStore'
@@ -75,7 +75,7 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPaywall, setShowPaywall] = useState(false)
   const [iapReady, setIapReady] = useState(false)
-  const [appReady, setAppReady] = useState(false)
+  const [showAnimatedSplash, setShowAnimatedSplash] = useState(true)
   const splashHidden = useRef(false)
   const isNative = isNativePlatform()
 
@@ -102,9 +102,6 @@ function App() {
         .catch((error) => {
           console.error('App: IAP initialization error:', error)
         })
-    } else {
-      // For web, mark as ready immediately
-      setAppReady(true)
     }
   }, [isNative])
 
@@ -114,14 +111,12 @@ function App() {
     // Web: show onboarding for first-time users
     if (!isNative && !hasSeenOnboarding) {
       setShowOnboarding(true)
-      setAppReady(true)
       return
     }
 
     // Web: already seen onboarding, go to app
     if (!isNative && hasSeenOnboarding) {
       setShowOnboarding(false)
-      setAppReady(true)
       return
     }
 
@@ -131,30 +126,16 @@ function App() {
         // First time user - show onboarding
         setShowOnboarding(true)
         setShowPaywall(false)
-        setAppReady(true)
       } else {
         // After onboarding, go directly to app (no paywall here)
         // Paywall will be triggered when user hits AI usage limit
         setShowOnboarding(false)
         setShowPaywall(false)
-        setAppReady(true)
       }
     }
   }, [isNative, iapReady, hasSeenOnboarding])
 
-  // Hide splash screen when app is ready (with delay to ensure UI is painted)
-  useEffect(() => {
-    if (appReady && Capacitor.isNativePlatform() && !splashHidden.current) {
-      splashHidden.current = true
-      // Wait for next frame to ensure UI is fully painted
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          SplashScreen.hide()
-        }, 100)
-      })
-    }
-  }, [appReady])
-
+  
   // Load user data from backend when app starts with authenticated user
   useEffect(() => {
     if (isAuthenticated) {
@@ -175,18 +156,18 @@ function App() {
     setShowPaywall(false)
   }
 
-  // Show loading screen while app initializes (native only)
-  if (isNative && !appReady) {
+  // Show animated splash screen on native platforms
+  if (isNative && showAnimatedSplash) {
+    // Hide native splash immediately when showing animated splash
+    if (!splashHidden.current) {
+      splashHidden.current = true
+      SplashScreen.hide()
+    }
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: '#FFFCF5',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        {/* Empty loading screen - splash screen covers this */}
-      </div>
+      <AnimatedSplash
+        duration={2800}
+        onComplete={() => setShowAnimatedSplash(false)}
+      />
     )
   }
 

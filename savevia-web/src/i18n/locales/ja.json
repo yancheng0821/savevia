@@ -115,7 +115,12 @@
     "rewardRate": "還元率",
     "monthlyRewardCol": "月間還元額",
     "aiInsight": "AI 解説",
-    "aiTip": "ヒント"
+    "aiTip": "ヒント",
+    "recommendedCard": "推奨カード",
+    "rewardRateIncrease": "全体の還元率の上昇",
+    "annualSavings": "年間節約額",
+    "viewCardDetails": "カード詳細を表示",
+    "bestFor": "おすすめの用途"
   },
   "categoryGroups": {
     "daily": "日常",

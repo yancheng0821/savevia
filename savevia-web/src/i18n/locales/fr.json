@@ -115,7 +115,12 @@
     "rewardRate": "Taux de remise",
     "monthlyRewardCol": "Remise mensuelle",
     "aiInsight": "Analyse IA",
-    "aiTip": "Conseil"
+    "aiTip": "Conseil",
+    "recommendedCard": "Carte recommandée",
+    "rewardRateIncrease": "Augmentation globale du taux",
+    "annualSavings": "Économies annuelles",
+    "viewCardDetails": "Voir les détails de la carte",
+    "bestFor": "Meilleur pour"
   },
   "categoryGroups": {
     "daily": "Quotidien",

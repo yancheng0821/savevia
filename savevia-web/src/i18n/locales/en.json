@@ -127,7 +127,12 @@
     "copyLink": "Copy",
     "copied": "Copied!",
     "aiInsight": "AI Insight",
-    "aiTip": "Tip"
+    "aiTip": "Tip",
+    "recommendedCard": "Recommended Card",
+    "rewardRateIncrease": "Overall Rate Increase",
+    "annualSavings": "Savings/Year",
+    "viewCardDetails": "View Card Details",
+    "bestFor": "Best for"
   },
   "categoryGroups": {
     "daily": "Daily Essentials",

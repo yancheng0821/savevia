@@ -7,6 +7,7 @@ import { Share } from '@capacitor/share'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
 import { optimizerApi } from '../services/api'
+import CardUpgradeRecommendation from '../components/CardUpgradeRecommendation'
 import type { SpendingCategory } from '../types'
 
 // Check if running on native platform
@@ -142,7 +143,7 @@ const RedditIcon = () => (
 function ResultPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { result, reset } = useOptimizerStore()
+  const { result, reset, selectedCards, monthlySpending } = useOptimizerStore()
   const { isAuthenticated } = useAuthStore()
   const [sharing, setSharing] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
@@ -418,34 +419,71 @@ function ResultPage() {
         </div>
       </div>
 
-      {/* Big Number */}
-      <div className="sv-result-hero" style={{ marginBottom: '48px' }}>
-        <div className="sv-result-savings-label">
-          {t('result.netSavings')}
+      {/* Net Annual Savings + Stats Row + Card Upgrade Recommendation */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 340px',
+        gap: isMobile ? '0' : '32px',
+        marginBottom: isMobile ? '24px' : '48px'
+      }}>
+        {/* Left Column - Net Savings + Stats */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: isMobile ? '24px' : '48px'
+        }}>
+          {/* Net Annual Savings */}
+          <div className="sv-result-hero">
+            <div className="sv-result-savings-label">
+              {t('result.netSavings')}
+            </div>
+            <div className="sv-result-amount">
+              ${result.netAnnualSavings.toFixed(0)}
+              <span className="sv-result-unit">{t('common.perYear')}</span>
+            </div>
+          </div>
+
+          {/* Stats Row */}
+          <div className="sv-result-stats-row">
+            <div className="sv-result-stat-item">
+              <div className="sv-result-stat-label">{t('result.monthlyReward')}</div>
+              <div className="sv-result-stat-value">${result.monthlyReward.toFixed(2)}</div>
+            </div>
+            <div className="sv-result-stat-divider" />
+            <div className="sv-result-stat-item">
+              <div className="sv-result-stat-label">{t('result.annualReward')}</div>
+              <div className="sv-result-stat-value">${result.annualReward.toFixed(0)}</div>
+            </div>
+            <div className="sv-result-stat-divider" />
+            <div className="sv-result-stat-item">
+              <div className="sv-result-stat-label">{t('result.annualFees')}</div>
+              <div className="sv-result-stat-value sv-result-stat-fees">-${result.totalAnnualFees.toFixed(0)}</div>
+            </div>
+          </div>
         </div>
-        <div className="sv-result-amount">
-          ${result.netAnnualSavings.toFixed(0)}
-          <span className="sv-result-unit">{t('common.perYear')}</span>
-        </div>
+
+        {/* Right Column - Card Upgrade Recommendation on Desktop */}
+        {result && !isMobile && (
+          <CardUpgradeRecommendation
+            result={result}
+            selectedCardIds={selectedCards.map(c => c.id)}
+            monthlySpending={monthlySpending}
+            compact={true}
+          />
+        )}
       </div>
 
-      {/* Stats Row */}
-      <div className="sv-result-stats-row">
-        <div className="sv-result-stat-item">
-          <div className="sv-result-stat-label">{t('result.monthlyReward')}</div>
-          <div className="sv-result-stat-value">${result.monthlyReward.toFixed(2)}</div>
+      {/* Card Upgrade Recommendation - Card style on Mobile */}
+      {result && isMobile && (
+        <div style={{ marginBottom: '48px' }}>
+          <CardUpgradeRecommendation
+            result={result}
+            selectedCardIds={selectedCards.map(c => c.id)}
+            monthlySpending={monthlySpending}
+            compact={true}
+          />
         </div>
-        <div className="sv-result-stat-divider" />
-        <div className="sv-result-stat-item">
-          <div className="sv-result-stat-label">{t('result.annualReward')}</div>
-          <div className="sv-result-stat-value">${result.annualReward.toFixed(0)}</div>
-        </div>
-        <div className="sv-result-stat-divider" />
-        <div className="sv-result-stat-item">
-          <div className="sv-result-stat-label">{t('result.annualFees')}</div>
-          <div className="sv-result-stat-value sv-result-stat-fees">-${result.totalAnnualFees.toFixed(0)}</div>
-        </div>
-      </div>
+      )}
 
       {/* Recommendations - Simple List */}
       <div style={{ marginBottom: '48px' }}>

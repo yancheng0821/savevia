@@ -115,7 +115,12 @@
     "rewardRate": "Tasa de reembolso",
     "monthlyRewardCol": "Reembolso mensual",
     "aiInsight": "Análisis IA",
-    "aiTip": "Consejo"
+    "aiTip": "Consejo",
+    "recommendedCard": "Tarjeta recomendada",
+    "rewardRateIncrease": "Aumento general de tasa",
+    "annualSavings": "Ahorros anuales",
+    "viewCardDetails": "Ver detalles de la tarjeta",
+    "bestFor": "Mejor para"
   },
   "categoryGroups": {
     "daily": "Diario",
