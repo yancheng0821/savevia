@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import Loading from '../components/Loading'
@@ -183,7 +183,8 @@ function CardsPage() {
   }, [])
 
   // Restore scroll position when page loads (if returning from another page)
-  useEffect(() => {
+  // Use useLayoutEffect to restore scroll before paint
+  useLayoutEffect(() => {
     if (cards && cards.length > 0) {
       // Check if there's a saved scroll position that's recent (within 5 minutes)
       const saved = localStorage.getItem('cardsPageScrollState')
@@ -193,9 +194,7 @@ function CardsPage() {
           const now = Date.now()
           // If saved less than 5 minutes ago, restore it (means we just returned from another page)
           if (now - timestamp < 5 * 60 * 1000) {
-            requestAnimationFrame(() => {
-              window.scrollTo(0, position)
-            })
+            window.scrollTo(0, position)
             // Clear after restoring so next refresh starts at top
             localStorage.removeItem('cardsPageScrollState')
           } else {

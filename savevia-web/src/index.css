@@ -2124,8 +2124,6 @@ button:active, .sv-btn:active {
   .sv-quick-select {
     padding: 40px;
     margin-bottom: 48px;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, rgba(13, 148, 136, 0.02) 100%);
-    border-radius: 20px;
   }
 }
 
@@ -2144,13 +2142,10 @@ button:active, .sv-btn:active {
 
 @media (min-width: 641px) {
   .sv-quick-select-title {
-    font-size: 32px;
-    font-weight: 800;
+    font-size: 28px;
+    font-weight: 700;
     margin-bottom: 12px;
-    background: linear-gradient(90deg, var(--primary) 0%, #0d9488 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--gray-900);
   }
 }
 
@@ -2209,13 +2204,14 @@ button:active, .sv-btn:active {
 
 @media (min-width: 641px) {
   .sv-quick-select-group-label {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--gray-800);
-    margin-bottom: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 14px;
     text-align: center;
     padding-left: 0;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 }
 
@@ -2254,13 +2250,11 @@ button:active, .sv-btn:active {
     border-radius: 16px;
     background: transparent;
     border: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.2s ease;
   }
 
   .sv-quick-select-item:hover {
-    background: rgba(37, 99, 235, 0.05);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.08);
+    background: rgba(37, 99, 235, 0.08);
   }
 }
 
@@ -2275,13 +2269,12 @@ button:active, .sv-btn:active {
 }
 
 .sv-quick-select-item.selected {
-  background: var(--gray-100);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(13, 148, 136, 0.1) 100%);
 }
 
 @media (min-width: 641px) {
   .sv-quick-select-item.selected {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(13, 148, 136, 0.05) 100%);
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12), inset 0 0 0 1px rgba(37, 99, 235, 0.1);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(13, 148, 136, 0.15) 100%);
   }
 }
 
@@ -2293,15 +2286,11 @@ button:active, .sv-btn:active {
 @media (min-width: 641px) {
   .sv-quick-select-icon {
     font-size: 32px;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .sv-quick-select-item:hover .sv-quick-select-icon {
-    transform: scale(1.15);
+    transition: color 0.2s ease;
   }
 
   .sv-quick-select-item.selected .sv-quick-select-icon {
-    filter: brightness(1.2);
+    color: var(--primary);
   }
 }
 
@@ -2311,7 +2300,7 @@ button:active, .sv-btn:active {
   color: var(--gray-500);
   text-align: center;
   line-height: 1.4;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 @media (min-width: 641px) {
@@ -2327,7 +2316,10 @@ button:active, .sv-btn:active {
 }
 
 .sv-quick-select-item.selected .sv-quick-select-label {
-  color: var(--primary);
+  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-weight: 700;
 }
 
