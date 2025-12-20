@@ -54,11 +54,15 @@ function preloadImages(urls: string[]) {
   }
 }
 
-// Scroll to top on route change
+// Scroll to top on route change (except CardsPage which manages its own scroll)
 function ScrollToTop() {
   const { pathname } = useLocation()
 
   useLayoutEffect(() => {
+    // Skip auto-scroll for CardsPage to preserve scroll position when returning from other pages
+    if (pathname === '/cards') {
+      return
+    }
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
   }, [pathname])
 

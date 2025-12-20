@@ -34,7 +34,7 @@ export const TermsContent = () => (
     <p>By using SaveVia, you agree to these Terms of Service. If you do not agree, please do not use our services.</p>
 
     <h2>2. Service Description</h2>
-    <p>SaveVia provides credit card cashback optimization recommendations. Our recommendations are for informational purposes only and should not be considered financial advice.</p>
+    <p>SaveVia provides credit card cashback optimization recommendations. Our recommendations are for informational purposes only and should not be considered financial advice. We do not issue credit cards. Applications are handled by the card issuer.</p>
 
     <h2>3. Subscription</h2>
     <p>SaveVia Pro subscription provides access to premium features. Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period. You can manage your subscription in your Apple ID account settings.</p>

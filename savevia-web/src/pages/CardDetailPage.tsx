@@ -4,8 +4,9 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
 import { ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined, DollarOutlined, CreditCardOutlined } from '@ant-design/icons'
-import { cardApi } from '../services/api'
+import { cardApi, affiliateApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
+import { useAuthStore } from '../stores/useAuthStore'
 import type { SpendingCategory, CreditCard } from '../types'
 
 // Swipe back gesture for Android only (iOS uses native gesture)
@@ -177,6 +178,7 @@ function CardDetailPage() {
   const location = useLocation()
   const { t } = useTranslation()
   const { selectedCards, addCard, removeCard } = useOptimizerStore()
+  const { user } = useAuthStore()
 
   // Get card from router state if available (passed from CardsPage)
   const passedCard = (location.state as { card?: CreditCard })?.card
@@ -184,6 +186,38 @@ function CardDetailPage() {
   // Android swipe back gesture
   const handleSwipeBack = useCallback(() => navigate(-1), [navigate])
   useAndroidSwipeBack(handleSwipeBack)
+
+  // 处理申卡链接点击
+  const handleApplyClick = useCallback(async (card: CreditCard) => {
+    try {
+      // 异步追踪点击，不阻塞用户跳转
+      if (card.affiliateLink?.id) {
+        affiliateApi.trackClick(
+          Number(card.id),
+          Number(card.affiliateLink.id),
+          card.bank,
+          user?.id
+        ).catch(err => console.error('Failed to track click:', err))
+      }
+
+      // 获取联盟链接或使用原始 applyUrl
+      let applyUrl = card.applyUrl
+
+      if (card.affiliateLink?.affiliateUrl) {
+        applyUrl = card.affiliateLink.affiliateUrl
+      }
+
+      if (applyUrl) {
+        window.open(applyUrl, '_blank', 'noopener,noreferrer')
+      }
+    } catch (error) {
+      console.error('Error in apply click:', error)
+      // 如果追踪失败，仍然打开链接
+      if (card.applyUrl) {
+        window.open(card.applyUrl, '_blank', 'noopener,noreferrer')
+      }
+    }
+  }, [user?.id])
 
   const { data: fetchedCard, isLoading, error } = useQuery({
     queryKey: ['card', id],
@@ -521,11 +555,25 @@ function CardDetailPage() {
       </div>
 
       {/* Apply URL */}
-      {card.applyUrl && (
+      {(card.applyUrl || card.affiliateLink?.affiliateUrl) && (
         <a
-          href={card.applyUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault()
+            handleApplyClick(card)
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#e5e7eb'
+            e.currentTarget.style.color = '#1f2937'
+            e.currentTarget.style.transform = 'translateY(-2px)'
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#f3f4f6'
+            e.currentTarget.style.color = '#374151'
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
           style={{
             display: 'block',
             textAlign: 'center',
@@ -536,7 +584,9 @@ function CardDetailPage() {
             fontSize: '14px',
             fontWeight: '600',
             textDecoration: 'none',
-            marginBottom: '16px'
+            marginBottom: '16px',
+            transition: 'all 0.3s ease',
+            cursor: 'pointer'
           }}
         >
           {t('cardDetail.applyNow')} →

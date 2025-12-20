@@ -247,6 +247,7 @@ function CardUpgradeRecommendation({
 
         {/* Card face - matching CardsPage style */}
         <div
+          className="sv-card-upgrade-compact"
           onClick={() => navigate(`/cards/${card.id}`, { state: { card } })}
           style={{
             position: 'relative',
@@ -255,7 +256,7 @@ function CardUpgradeRecommendation({
             borderRadius: '12px',
             padding: '16px',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
+            transition: 'all 0.3s ease',
             boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
             overflow: 'hidden'
           }}
@@ -378,7 +379,7 @@ function CardUpgradeRecommendation({
       </h2>
 
       {/* Card Item - matching quick reference style */}
-      <div className="sv-result-rec-item">
+      <div className="sv-card-upgrade-item">
         <div className="sv-result-rec-row">
           <div style={{
             display: 'flex',

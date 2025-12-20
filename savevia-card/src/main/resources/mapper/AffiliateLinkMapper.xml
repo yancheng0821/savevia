@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.card.mapper.AffiliateLinkMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="AffiliateLinkResultMap" type="com.savevia.card.entity.AffiliateLink">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="card_id" property="cardId" jdbcType="BIGINT"/>
+        <result column="bank_name" property="bankName" jdbcType="VARCHAR"/>
+        <result column="affiliate_type" property="affiliateType" jdbcType="VARCHAR"/>
+        <result column="affiliate_url" property="affiliateUrl" jdbcType="VARCHAR"/>
+        <result column="commission_amount" property="commissionAmount" jdbcType="DECIMAL"/>
+        <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 列定义 -->
+    <sql id="Base_Column_List">
+        id, card_id, bank_name, affiliate_type, affiliate_url, commission_amount, is_active, created_at, updated_at
+    </sql>
+
+    <!-- 根据卡片ID获取所有活跃的联盟链接 -->
+    <select id="selectByCardIdActive" parameterType="java.lang.Long" resultMap="AffiliateLinkResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM affiliate_links
+        WHERE card_id = #{cardId} AND is_active = TRUE
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 根据ID获取联盟链接 -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="AffiliateLinkResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM affiliate_links
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据卡片ID和联盟类型获取 -->
+    <select id="selectByCardIdAndType" resultMap="AffiliateLinkResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM affiliate_links
+        WHERE card_id = #{cardId} AND affiliate_type = #{affiliateType} AND is_active = TRUE
+        LIMIT 1
+    </select>
+
+    <!-- 获取所有活跃的联盟链接 -->
+    <select id="selectAllActive" resultMap="AffiliateLinkResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM affiliate_links
+        WHERE is_active = TRUE
+        ORDER BY card_id, created_at ASC
+    </select>
+
+    <!-- 获取特定银行的所有活跃链接 -->
+    <select id="selectByBankNameActive" parameterType="java.lang.String" resultMap="AffiliateLinkResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM affiliate_links
+        WHERE bank_name = #{bankName} AND is_active = TRUE
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- 获取卡片的第一个活跃联盟链接（优先使用的链接） -->
+    <select id="selectFirstActiveByCardId" parameterType="java.lang.Long" resultMap="AffiliateLinkResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM affiliate_links
+        WHERE card_id = #{cardId} AND is_active = TRUE
+        ORDER BY created_at ASC
+        LIMIT 1
+    </select>
+
+    <!-- 批量获取 -->
+    <select id="selectByCardIds" resultMap="AffiliateLinkResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM affiliate_links
+        WHERE card_id IN
+        <foreach collection="cardIds" item="cardId" open="(" separator="," close=")">
+            #{cardId}
+        </foreach>
+        AND is_active = TRUE
+        ORDER BY card_id, created_at ASC
+    </select>
+
+    <!-- 插入联盟链接 -->
+    <insert id="insert" parameterType="com.savevia.card.entity.AffiliateLink"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO affiliate_links (
+            card_id, bank_name, affiliate_type, affiliate_url, commission_amount, is_active, created_at, updated_at
+        ) VALUES (
+            #{cardId}, #{bankName}, #{affiliateType}, #{affiliateUrl}, #{commissionAmount}, #{isActive}, NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 更新联盟链接 -->
+    <update id="update" parameterType="com.savevia.card.entity.AffiliateLink">
+        UPDATE affiliate_links
+        SET
+            bank_name = #{bankName},
+            affiliate_type = #{affiliateType},
+            affiliate_url = #{affiliateUrl},
+            commission_amount = #{commissionAmount},
+            is_active = #{isActive},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除（物理删除） -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM affiliate_links
+        WHERE id = #{id}
+    </delete>
+
+</mapper>

@@ -214,8 +214,8 @@ function HomePage() {
         gridTemplateColumns: '1fr 1fr',
         gap: '60px',
         alignItems: 'center',
-        minHeight: '70vh',
-        marginBottom: '100px'
+        minHeight: '55vh',
+        marginBottom: '60px'
       }}>
         {/* Left - Text Content (order 1 on mobile) */}
         <div className="sv-home-text">
@@ -275,8 +275,18 @@ function HomePage() {
                 fontSize: '16px',
                 fontWeight: '600',
                 textDecoration: 'none',
-                transition: 'transform 0.2s',
+                transition: 'all 0.3s ease',
                 whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#1f2937'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#111827'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
               }}
             >
               {t('home.getStarted')}
@@ -548,7 +558,18 @@ function HomePage() {
             ⚠️ {t('home.bankConnect.demoNotice')}
           </div>
 
-          <Link to={isAuthenticated ? "/transactions" : "/me"} className="sv-bank-connect-link">
+          <Link
+            to={isAuthenticated ? "/transactions" : "/me"}
+            className="sv-bank-connect-link"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#1f2937'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#111827'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
+          >
             {t('home.bankConnect.cta')} <ArrowRightOutlined />
           </Link>
 
@@ -682,93 +703,96 @@ function HomePage() {
           color: #9ca3af;
         }
 
-        /* Mobile: Bank connect section hidden on desktop */
-        .sv-bank-connect {
+        /* Hide bank group button - show bank connect section instead */
+        .sv-home-bank-group {
           display: none;
         }
 
+        /* Show bank connect section on all devices */
+        .sv-bank-connect {
+          display: block;
+          text-align: center;
+          padding: 40px 20px;
+          max-width: 1200px;
+          margin: 0 auto 48px;
+        }
+
+        .sv-bank-connect-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #111827;
+          margin-bottom: 8px;
+        }
+
+        .sv-bank-connect-desc {
+          font-size: 14px;
+          color: #6b7280;
+          line-height: 1.6;
+          margin-bottom: 12px;
+        }
+
+        .sv-bank-connect-demo {
+          display: block;
+          font-size: 12px;
+          color: #d97706;
+          background: #fef3c7;
+          padding: 8px 14px;
+          border-radius: 8px;
+          margin: 0 auto 16px;
+          max-width: fit-content;
+        }
+
+        .sv-bank-connect-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #111827;
+          font-size: 15px;
+          font-weight: 600;
+          text-decoration: none;
+          margin-bottom: 16px;
+          transition: all 0.2s;
+        }
+
+        .sv-bank-connect-meta {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+        }
+
+        .sv-bank-connect-security {
+          display: flex;
+          align-items: flex-start;
+          gap: 5px;
+          color: #059669;
+          text-align: left;
+        }
+
+        .sv-bank-connect-security .anticon {
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+
+        .sv-bank-connect-powered {
+          color: #9ca3af;
+        }
+
+        .sv-bank-connect-powered strong {
+          color: #6b7280;
+        }
+
         @media (max-width: 640px) {
-          /* Hide desktop bank button on mobile */
-          .sv-home-bank-group {
-            display: none;
-          }
 
           .sv-home-cta-group {
             flex-direction: column;
             gap: 16px;
           }
 
-          /* Show mobile bank connect section */
+          /* Mobile bank connect section styling */
           .sv-bank-connect {
-            display: block;
-            text-align: center;
             padding: 40px 20px 100px;
-          }
-
-          .sv-bank-connect-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 8px;
-          }
-
-          .sv-bank-connect-desc {
-            font-size: 14px;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 12px;
-          }
-
-          .sv-bank-connect-demo {
-            display: block;
-            font-size: 12px;
-            color: #d97706;
-            background: #fef3c7;
-            padding: 8px 14px;
-            border-radius: 8px;
-            margin: 0 auto 16px;
-            max-width: fit-content;
-          }
-
-          .sv-bank-connect-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: #111827;
-            font-size: 15px;
-            font-weight: 600;
-            text-decoration: none;
-            margin-bottom: 16px;
-            transition: all 0.2s;
-          }
-
-          .sv-bank-connect-meta {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-          }
-
-          .sv-bank-connect-security {
-            display: flex;
-            align-items: flex-start;
-            gap: 5px;
-            color: #059669;
-            text-align: left;
-          }
-
-          .sv-bank-connect-security .anticon {
-            flex-shrink: 0;
-            margin-top: 2px;
-          }
-
-          .sv-bank-connect-powered {
-            color: #9ca3af;
-          }
-
-          .sv-bank-connect-powered strong {
-            color: #6b7280;
           }
         }
 
@@ -866,6 +890,14 @@ function HomePage() {
           animation: slideUp 0.3s ease;
         }
 
+        @media (min-width: 641px) {
+          .sv-card-modal {
+            max-width: 500px;
+            padding: 32px;
+            border-radius: 24px;
+          }
+        }
+
         @keyframes slideUp {
           from { transform: translateY(20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
@@ -908,6 +940,14 @@ function HomePage() {
           border-radius: 10px;
         }
 
+        @media (min-width: 641px) {
+          .sv-card-modal-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+          }
+        }
+
         .sv-card-modal-title h3 {
           font-size: 18px;
           font-weight: 700;
@@ -915,9 +955,21 @@ function HomePage() {
           margin: 0 0 4px;
         }
 
+        @media (min-width: 641px) {
+          .sv-card-modal-title h3 {
+            font-size: 22px;
+          }
+        }
+
         .sv-card-modal-title span {
           font-size: 14px;
           color: #6b7280;
+        }
+
+        @media (min-width: 641px) {
+          .sv-card-modal-title span {
+            font-size: 15px;
+          }
         }
 
         .sv-card-modal-info {
@@ -928,6 +980,13 @@ function HomePage() {
           border-radius: 12px;
           padding: 16px;
           margin-bottom: 16px;
+        }
+
+        @media (min-width: 641px) {
+          .sv-card-modal-info {
+            padding: 20px;
+            border-radius: 16px;
+          }
         }
 
         .sv-card-modal-category {
@@ -952,10 +1011,22 @@ function HomePage() {
           color: #059669;
         }
 
+        @media (min-width: 641px) {
+          .sv-card-modal-rate-value {
+            font-size: 32px;
+          }
+        }
+
         .sv-card-modal-rate-label {
           display: block;
           font-size: 12px;
           color: #6b7280;
+        }
+
+        @media (min-width: 641px) {
+          .sv-card-modal-rate-label {
+            font-size: 13px;
+          }
         }
 
         .sv-card-modal-hint {
@@ -966,6 +1037,13 @@ function HomePage() {
           color: #6b7280;
           margin-bottom: 20px;
           padding: 0 4px;
+        }
+
+        @media (min-width: 641px) {
+          .sv-card-modal-hint {
+            font-size: 14px;
+            margin-bottom: 24px;
+          }
         }
 
         .sv-card-modal-hint .anticon {
@@ -990,8 +1068,23 @@ function HomePage() {
           margin-bottom: 12px;
         }
 
+        @media (min-width: 641px) {
+          .sv-card-modal-wallet-btn {
+            padding: 16px 28px;
+            font-size: 17px;
+          }
+        }
+
         .sv-card-modal-wallet-btn:hover {
           background: #374151;
+        }
+
+        @media (min-width: 641px) {
+          .sv-card-modal-wallet-btn:hover {
+            background: #1f2937;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          }
         }
 
         .sv-card-modal-detail-link {
@@ -1004,6 +1097,17 @@ function HomePage() {
           text-decoration: none;
           padding: 8px;
           transition: all 0.2s;
+        }
+
+        @media (min-width: 641px) {
+          .sv-card-modal-detail-link {
+            font-size: 15px;
+            padding: 10px;
+          }
+
+          .sv-card-modal-detail-link:hover {
+            color: #111827;
+          }
         }
 
         .sv-card-modal-detail-link:hover {

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.card.mapper.AffiliateClickTrackingMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="AffiliateClickTrackingResultMap" type="com.savevia.card.entity.AffiliateClickTracking">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="user_id" property="userId" jdbcType="BIGINT"/>
+        <result column="card_id" property="cardId" jdbcType="BIGINT"/>
+        <result column="affiliate_link_id" property="affiliateLinkId" jdbcType="BIGINT"/>
+        <result column="bank_name" property="bankName" jdbcType="VARCHAR"/>
+        <result column="clicked_at" property="clickedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 列定义 -->
+    <sql id="Base_Column_List">
+        id, user_id, card_id, affiliate_link_id, bank_name, clicked_at
+    </sql>
+
+    <!-- 插入点击记录 -->
+    <insert id="insert" parameterType="com.savevia.card.entity.AffiliateClickTracking"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO affiliate_click_tracking (
+            user_id, card_id, affiliate_link_id, bank_name, clicked_at
+        ) VALUES (
+            #{userId}, #{cardId}, #{affiliateLinkId}, #{bankName}, NOW()
+        )
+    </insert>
+
+    <!-- 获取卡片的今日点击数 -->
+    <select id="getClickCountToday" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(*) FROM affiliate_click_tracking
+        WHERE card_id = #{cardId} AND DATE(clicked_at) = CURDATE()
+    </select>
+
+    <!-- 获取特定银行的今日点击数 -->
+    <select id="getClickCountTodayByBank" resultType="int">
+        SELECT COUNT(*) FROM affiliate_click_tracking
+        WHERE card_id = #{cardId} AND bank_name = #{bankName} AND DATE(clicked_at) = CURDATE()
+    </select>
+
+    <!-- 获取特定联盟链接的今日点击数 -->
+    <select id="getClickCountTodayByAffiliate" parameterType="java.lang.Long" resultType="int">
+        SELECT COUNT(*) FROM affiliate_click_tracking
+        WHERE affiliate_link_id = #{affiliateLinkId} AND DATE(clicked_at) = CURDATE()
+    </select>
+
+</mapper>

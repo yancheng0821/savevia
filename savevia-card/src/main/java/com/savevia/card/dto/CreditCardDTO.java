@@ -25,4 +25,7 @@ public class CreditCardDTO {
     private Boolean noFxFee;
     private SignupBonusDTO signupBonus;
     private List<RewardRuleDTO> rewardRules;
+
+    // 联盟链接信息
+    private AffiliateLinkDTO affiliateLink;
 }

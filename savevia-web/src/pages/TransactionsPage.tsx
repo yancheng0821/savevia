@@ -508,7 +508,23 @@ function TransactionsPage() {
             <p>{t('transactions.startupNotice')}</p>
           </div>
 
-          <button className="sv-txn-connect-btn" onClick={handleConnectBank} disabled={flinksLoading}>
+          <button
+            className="sv-txn-connect-btn"
+            onClick={handleConnectBank}
+            disabled={flinksLoading}
+            onMouseEnter={(e) => {
+              if (!flinksLoading) {
+                e.currentTarget.style.background = '#1f2937'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)'
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#111827'
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
+          >
             {flinksLoading ? t('common.loading') : t('transactions.connectBankBtn')}
           </button>
 

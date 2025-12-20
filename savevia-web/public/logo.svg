@@ -15,10 +15,10 @@
   <line x1="36.5" y1="47" x2="36.5" y2="57" stroke="#c9a227" stroke-width="0.5" opacity="0.5"/>
 
   <!-- CASHBACK label -->
-  <text x="30" y="66" fill="rgba(255,255,255,0.7)" font-family="Inter, Arial, sans-serif" font-size="5" font-weight="600" letter-spacing="0.3">CASHBACK</text>
+  <text x="30" y="66" fill="rgba(255,255,255,0.7)" font-family="Arial, sans-serif" font-size="5" font-weight="600" letter-spacing="0.3">CASHBACK</text>
 
   <!-- 5% rate -->
-  <text x="30" y="78" fill="white" font-family="Inter, Arial, sans-serif" font-size="10" font-weight="700">5%</text>
+  <text x="30" y="78" fill="white" font-family="Arial, sans-serif" font-size="10" font-weight="700">5%</text>
 
   <!-- Small sparkle - positioned to the right top of the card -->
   <path d="M88 45 L89 48 L92 49 L89 50 L88 53 L87 50 L84 49 L87 48 Z" fill="white" opacity="0.7"/>

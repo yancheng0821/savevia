@@ -9,7 +9,6 @@ import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useSubscriptionStore } from '../stores/useSubscriptionStore'
 import Paywall from '../components/Paywall'
-import { isNativePlatform } from '../services/iap'
 import type { SpendingCategory } from '../types'
 
 // Category config with icons
@@ -72,7 +71,6 @@ function OptimizerPage() {
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isInitialLoadRef = useRef(true)
-  const isNative = isNativePlatform()
 
   // Auto-save with debounce
   const debouncedSave = useCallback((spending: Record<string, number>) => {
@@ -187,16 +185,10 @@ function OptimizerPage() {
           executeOptimization(true)
         } else {
           // User has hit the limit
-          console.log('AI usage limit reached:', { isProUser, isNative, remaining })
-          if (isProUser) {
-            // Pro user hit limit - just show message, no redirect
-            message.warning(t('subscription.limitReachedPro'))
-          } else {
-            // Free user hit limit - show paywall directly (no message needed)
-            // Native: can purchase in-app
-            // Web: paywall shows "download app" message
-            setShowPaywall(true)
-          }
+          console.log('AI usage limit reached:', { isProUser, remaining })
+          // Both Free and Pro users see the same warning message
+          // Paywall/Subscription will be available for bank connection analysis in future
+          message.warning(t('subscription.limitReachedPro'))
         }
       } else {
         // If we can't check usage, allow AI optimization

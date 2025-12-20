@@ -126,6 +126,7 @@ function CardsPage() {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isInitialLoadRef = useRef(true)
   const tabsRef = useRef<HTMLDivElement>(null)
+  const scrollPositionRef = useRef(0)
 
   const toggleBank = (bank: string) => {
     setCollapsedBanks(prev => ({ ...prev, [bank]: !prev[bank] }))
@@ -177,6 +178,63 @@ function CardsPage() {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Restore scroll position when page loads (if returning from another page)
+  useEffect(() => {
+    if (cards && cards.length > 0) {
+      // Check if there's a saved scroll position that's recent (within 5 minutes)
+      const saved = localStorage.getItem('cardsPageScrollState')
+      if (saved) {
+        try {
+          const { position, timestamp } = JSON.parse(saved)
+          const now = Date.now()
+          // If saved less than 5 minutes ago, restore it (means we just returned from another page)
+          if (now - timestamp < 5 * 60 * 1000) {
+            requestAnimationFrame(() => {
+              window.scrollTo(0, position)
+            })
+            // Clear after restoring so next refresh starts at top
+            localStorage.removeItem('cardsPageScrollState')
+          } else {
+            // Old save, clear it
+            localStorage.removeItem('cardsPageScrollState')
+          }
+        } catch (e) {
+          // Invalid saved data, clear it
+          localStorage.removeItem('cardsPageScrollState')
+        }
+      }
+    }
+  }, [cards])
+
+  // Track scroll position in real-time
+  useEffect(() => {
+    const handleScroll = () => {
+      scrollPositionRef.current = window.scrollY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
+  // Save scroll position before unmounting (when user navigates away)
+  useEffect(() => {
+    return () => {
+      // Save current scroll position with timestamp when leaving the page
+      if (scrollPositionRef.current > 0) {
+        localStorage.setItem(
+          'cardsPageScrollState',
+          JSON.stringify({
+            position: scrollPositionRef.current,
+            timestamp: Date.now()
+          })
+        )
       }
     }
   }, [])
@@ -427,7 +485,16 @@ function CardsPage() {
                           fontWeight: '600',
                           color: style.textColor,
                           opacity: 0.7,
-                          textDecoration: 'none'
+                          textDecoration: 'none',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '1'
+                          e.currentTarget.style.transform = 'translateX(2px)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '0.7'
+                          e.currentTarget.style.transform = 'translateX(0)'
                         }}
                       >
                         {t('cards.details')} →
@@ -464,7 +531,18 @@ function CardsPage() {
               fontWeight: '600',
               border: 'none',
               cursor: 'pointer',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.15)'
+              boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#1f2937'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.2)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#111827'
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.15)'
             }}
           >
             {t('cards.continueWith', { count: selectedCards.length })} <ArrowRightOutlined />

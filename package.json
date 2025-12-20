@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "sharp": "^0.34.5",
+    "svgexport": "^0.4.2"
+  }
+}

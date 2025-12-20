@@ -518,22 +518,53 @@ function ResultPage() {
                     )}
                   </div>
                   <div className="sv-result-rec-details">
-                    {BANK_LOGOS[rec.recommendedCard.bank] && (
-                      <img
-                        src={BANK_LOGOS[rec.recommendedCard.bank]}
-                        alt={rec.recommendedCard.bank}
-                        style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px' }}
-                      />
-                    )}
-                    <span className="sv-result-card-name">
-                      {rec.recommendedCard.name}
-                    </span>
-                    <span className="sv-result-rate">
-                      {(rec.rewardRate * 100).toFixed(0)}%
-                    </span>
-                    <span className="sv-result-reward">
-                      ${rec.monthlyReward.toFixed(2)}/mo
-                    </span>
+                    {/* Left part: Logo + Card Name (clickable in all views) */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => navigate(`/cards/${rec.recommendedCard.id}`)}
+                    >
+                      {BANK_LOGOS[rec.recommendedCard.bank] && (
+                        <img
+                          src={BANK_LOGOS[rec.recommendedCard.bank]}
+                          alt={rec.recommendedCard.bank}
+                          style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px' }}
+                        />
+                      )}
+                      <span className="sv-result-card-name">
+                        {rec.recommendedCard.name}
+                      </span>
+                    </div>
+                    {/* Right part: Rate + Reward (for mobile: toggles AI tips, for desktop: clickable) */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: isMobile && rec.aiExplanation ? 'pointer' : 'pointer'
+                      }}
+                      onClick={(e) => {
+                        // On mobile with AI explanation, toggle tips instead of navigating
+                        if (isMobile && rec.aiExplanation) {
+                          e.stopPropagation()
+                          toggleAiExpanded(rec.category as SpendingCategory)
+                        } else {
+                          // On desktop, navigate to card details
+                          navigate(`/cards/${rec.recommendedCard.id}`)
+                        }
+                      }}
+                    >
+                      <span className="sv-result-rate">
+                        {(rec.rewardRate * 100).toFixed(0)}%
+                      </span>
+                      <span className="sv-result-reward">
+                        ${rec.monthlyReward.toFixed(2)}/mo
+                      </span>
+                    </div>
                   </div>
                 </div>
                 {rec.aiExplanation && (

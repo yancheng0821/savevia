@@ -26,6 +26,7 @@ public class CreditCardService {
 
     private final CreditCardMapper creditCardMapper;
     private final RewardRuleMapper rewardRuleMapper;
+    private final AffiliateService affiliateService;
 
     @Cacheable(value = "cards", key = "'all'")
     public List<CreditCardDTO> getAllCards() {
@@ -100,6 +101,9 @@ public class CreditCardService {
                 ? rules.stream().map(this::toRuleDTO).toList()
                 : List.of();
 
+        // 获取联盟链接（如果存在）
+        var affiliateLink = affiliateService.getAffiliateLink(card.getId()).orElse(null);
+
         return CreditCardDTO.builder()
                 .id(card.getId())
                 .bank(card.getBank())
@@ -112,6 +116,7 @@ public class CreditCardService {
                 .noFxFee(card.getNoFxFee() != null && card.getNoFxFee())
                 .signupBonus(signupBonus)
                 .rewardRules(ruleDTOs)
+                .affiliateLink(affiliateLink)
                 .build();
     }
 

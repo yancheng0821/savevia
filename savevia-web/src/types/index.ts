@@ -23,6 +23,16 @@ export type SpendingCategory =
   // Catch-all
   | 'OTHER'
 
+export interface AffiliateLink {
+  id: number
+  cardId: number
+  bankName: string
+  affiliateType: string
+  affiliateUrl: string
+  commissionAmount?: number
+  isActive?: boolean
+}
+
 export interface CreditCard {
   id: number
   bank: string
@@ -35,6 +45,7 @@ export interface CreditCard {
   noFxFee?: boolean
   signupBonus?: SignupBonus
   rewardRules: RewardRule[]
+  affiliateLink?: AffiliateLink
 }
 
 export interface SignupBonus {

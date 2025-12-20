@@ -704,6 +704,121 @@ export const subscriptionApi = {
   },
 }
 
+/**
+ * 联盟链接 API
+ */
+export const affiliateApi = {
+  // 获取卡片的联盟申卡链接（返回第一个活跃的）
+  getAffiliateLink: async (cardId: number): Promise<any> => {
+    const response = await createRequest(`/api/v1/affiliate/links/${cardId}`, {
+      method: 'GET',
+    })
+    return response.data
+  },
+
+  // 获取卡片的所有联盟申卡链接
+  getAllAffiliateLinks: async (cardId: number): Promise<any[]> => {
+    const response = await createRequest(`/api/v1/affiliate/links-all/${cardId}`, {
+      method: 'GET',
+    })
+    return response.data || []
+  },
+
+  // 追踪用户点击申卡链接
+  trackClick: async (
+    cardId: number,
+    affiliateLinkId: number,
+    bankName: string,
+    userId?: number
+  ): Promise<void> => {
+    await createRequest('/api/v1/affiliate/track-click', {
+      method: 'POST',
+      body: JSON.stringify({
+        cardId,
+        affiliateLinkId,
+        bankName,
+        userId: userId || null,
+      }),
+    })
+  },
+
+  // 获取卡片的今日点击统计
+  getClickCountToday: async (cardId: number): Promise<number> => {
+    const response = await createRequest(`/api/v1/affiliate/stats/${cardId}/today`, {
+      method: 'GET',
+    })
+    return response.data || 0
+  },
+
+  // 获取特定银行的今日点击统计
+  getClickCountTodayByBank: async (cardId: number, bankName: string): Promise<number> => {
+    const response = await createRequest(
+      `/api/v1/affiliate/stats/${cardId}/bank/${bankName}/today`,
+      {
+        method: 'GET',
+      }
+    )
+    return response.data || 0
+  },
+
+  // ==================== 管理接口 ====================
+
+  // 添加新的联盟链接
+  addAffiliateLink: async (data: {
+    cardId: number
+    bankName: string
+    affiliateType: string
+    affiliateUrl: string
+    commissionAmount?: number
+  }): Promise<number> => {
+    const response = await createRequest('/api/v1/affiliate/admin/links', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+    return response.data
+  },
+
+  // 更新联盟链接
+  updateAffiliateLink: async (
+    id: number,
+    data: {
+      bankName: string
+      affiliateType: string
+      affiliateUrl: string
+      commissionAmount?: number
+      isActive?: boolean
+    }
+  ): Promise<void> => {
+    await createRequest(`/api/v1/affiliate/admin/links/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  // 删除联盟链接
+  deleteAffiliateLink: async (id: number): Promise<void> => {
+    await createRequest(`/api/v1/affiliate/admin/links/${id}`, {
+      method: 'DELETE',
+    })
+  },
+
+  // 获取所有活跃的联盟链接
+  getAllActiveLinks: async (): Promise<any[]> => {
+    const response = await createRequest('/api/v1/affiliate/admin/links-all', {
+      method: 'GET',
+    })
+    return response.data || []
+  },
+
+  // 获取特定银行的所有活跃链接
+  getLinksByBank: async (bankName: string): Promise<any[]> => {
+    const response = await createRequest(`/api/v1/affiliate/admin/bank/${bankName}`, {
+      method: 'GET',
+    })
+    return response.data || []
+  },
+}
+
 export default {
   auth: authApi,
   card: cardApi,
@@ -712,4 +827,5 @@ export default {
   bank: bankApi,
   transaction: transactionApi,
   subscription: subscriptionApi,
+  affiliate: affiliateApi,
 }

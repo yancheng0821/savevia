@@ -404,13 +404,15 @@ function AppHeader() {
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s ease;
           text-decoration: none;
         }
 
         .header-login-btn:hover {
           background: #1f2937;
           text-decoration: none;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
 
         .header-user-btn {
