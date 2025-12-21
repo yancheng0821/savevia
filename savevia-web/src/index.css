@@ -2204,13 +2204,13 @@ button:active, .sv-btn:active {
 
 @media (min-width: 641px) {
   .sv-quick-select-group-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gray-600);
-    margin-bottom: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-400);
+    margin-bottom: 16px;
     text-align: center;
     padding-left: 0;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     text-transform: uppercase;
   }
 }
@@ -2305,16 +2305,9 @@ button:active, .sv-btn:active {
 
 @media (min-width: 641px) {
   .sv-quick-select-label {
-    font-size: 14px;
-    font-weight: 500;
-  }
-
-  .sv-quick-select-item:hover .sv-quick-select-label {
-    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 13px;
     font-weight: 600;
+    color: var(--gray-700);
   }
 }
 
@@ -3847,4 +3840,55 @@ html.dark-mode .sv-bank-tab.active .sv-bank-tab-name {
 
 html.dark-mode .sv-bank-tab-icon-all {
   color: var(--text-secondary);
+}
+
+/* Scroll Buttons - Minimal floating style */
+.sv-scroll-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #6b7280;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.sv-scroll-btn:active {
+  transform: scale(0.92);
+  background: rgba(245, 245, 245, 0.95);
+}
+
+@media (hover: hover) {
+  .sv-scroll-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    color: #111827;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+/* Dark mode scroll buttons */
+html.dark-mode .sv-scroll-btn {
+  background: rgba(40, 40, 40, 0.9);
+  color: #a0a0a0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+html.dark-mode .sv-scroll-btn:active {
+  background: rgba(50, 50, 50, 0.95);
+}
+
+@media (hover: hover) {
+  html.dark-mode .sv-scroll-btn:hover {
+    background: rgba(50, 50, 50, 0.95);
+    color: #f5f5f5;
+  }
 }

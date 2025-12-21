@@ -24,6 +24,7 @@ import { useAuthStore } from './stores/useAuthStore'
 import { useOptimizerStore } from './stores/useOptimizerStore'
 import { useSubscriptionStore } from './stores/useSubscriptionStore'
 import { useOnboardingStore } from './stores/useOnboardingStore'
+import { useHomePageStore } from './stores/useHomePageStore'
 import { isNativePlatform, initializeIAP } from './services/iap'
 
 // Preload bank logos to prevent flicker on navigation (lazy loaded)
@@ -54,25 +55,65 @@ function preloadImages(urls: string[]) {
   }
 }
 
-// Scroll to top on route change (except CardsPage which manages its own scroll)
+// Create a global scroll position manager
+const scrollPositions = new Map<string, number>()
+
+// Scroll handler for route change
 function ScrollToTop() {
   const { pathname } = useLocation()
   const prevPathnameRef = useRef<string>('')
+  const { setShowCardModal } = useHomePageStore()
 
+  // Save scroll position before leaving a route
+  useEffect(() => {
+    const handleScroll = () => {
+      if (prevPathnameRef.current) {
+        scrollPositions.set(prevPathnameRef.current, window.scrollY)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [pathname])
+
+  // Restore or reset scroll position on route change
+  // Close home page modal when navigating away (not swipe back)
   useLayoutEffect(() => {
-    // Only scroll if pathname actually changed
+    // Only process when pathname actually changes
     if (prevPathnameRef.current === pathname) {
       return
     }
-    prevPathnameRef.current = pathname
 
-    // Skip auto-scroll for CardsPage to preserve scroll position when returning from other pages
-    if (pathname === '/cards') {
-      return
+    // Save scroll position of the page we're leaving
+    if (prevPathnameRef.current) {
+      scrollPositions.set(prevPathnameRef.current, window.scrollY)
     }
 
-    window.scrollTo(0, 0)
-  }, [pathname])
+    // Close modal when leaving home page via navigation (prevents flicker when returning)
+    // Swipe back doesn't trigger this because it uses iOS native gesture
+    if (prevPathnameRef.current === '/' && pathname !== '/') {
+      setShowCardModal(false)
+    }
+
+    prevPathnameRef.current = pathname
+
+    // For home and cards routes, restore previous scroll position if it exists
+    if (pathname === '/' || pathname === '/cards') {
+      // For home page, prefer the manually saved position (from modal view details click)
+      let savedPosition = scrollPositions.get(pathname) || 0
+      if (pathname === '/' && (window as any).__savedHomeScrollPosition !== undefined) {
+        savedPosition = (window as any).__savedHomeScrollPosition
+        delete (window as any).__savedHomeScrollPosition
+      }
+      // Use setTimeout to ensure scroll happens after React render
+      setTimeout(() => {
+        window.scrollTo(0, savedPosition)
+      }, 0)
+    } else {
+      // For all other routes, scroll to top
+      window.scrollTo(0, 0)
+    }
+  }, [pathname, setShowCardModal])
 
   return null
 }

@@ -1,9 +1,9 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { useTranslation } from 'react-i18next'
-import { CheckOutlined, ArrowRightOutlined, DownOutlined, RightOutlined } from '@ant-design/icons'
+import { CheckOutlined, ArrowRightOutlined, DownOutlined, RightOutlined, VerticalAlignTopOutlined, VerticalAlignBottomOutlined } from '@ant-design/icons'
 import { cardApi, userApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -123,10 +123,10 @@ function CardsPage() {
   const { isAuthenticated } = useAuthStore()
   const [collapsedBanks, setCollapsedBanks] = useState<Record<string, boolean>>({})
   const [activeBank, setActiveBank] = useState<string | null>(null) // null = show all
+  const [showScrollButtons, setShowScrollButtons] = useState(false)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isInitialLoadRef = useRef(true)
   const tabsRef = useRef<HTMLDivElement>(null)
-  const scrollPositionRef = useRef(0)
 
   const toggleBank = (bank: string) => {
     setCollapsedBanks(prev => ({ ...prev, [bank]: !prev[bank] }))
@@ -182,61 +182,6 @@ function CardsPage() {
     }
   }, [])
 
-  // Restore scroll position when page loads (if returning from another page)
-  // Use useLayoutEffect to restore scroll before paint
-  useLayoutEffect(() => {
-    if (cards && cards.length > 0) {
-      // Check if there's a saved scroll position that's recent (within 5 minutes)
-      const saved = localStorage.getItem('cardsPageScrollState')
-      if (saved) {
-        try {
-          const { position, timestamp } = JSON.parse(saved)
-          const now = Date.now()
-          // If saved less than 5 minutes ago, restore it (means we just returned from another page)
-          if (now - timestamp < 5 * 60 * 1000) {
-            window.scrollTo(0, position)
-            // Clear after restoring so next refresh starts at top
-            localStorage.removeItem('cardsPageScrollState')
-          } else {
-            // Old save, clear it
-            localStorage.removeItem('cardsPageScrollState')
-          }
-        } catch (e) {
-          // Invalid saved data, clear it
-          localStorage.removeItem('cardsPageScrollState')
-        }
-      }
-    }
-  }, [cards])
-
-  // Track scroll position in real-time
-  useEffect(() => {
-    const handleScroll = () => {
-      scrollPositionRef.current = window.scrollY
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
-
-  // Save scroll position before unmounting (when user navigates away)
-  useEffect(() => {
-    return () => {
-      // Save current scroll position with timestamp when leaving the page
-      if (scrollPositionRef.current > 0) {
-        localStorage.setItem(
-          'cardsPageScrollState',
-          JSON.stringify({
-            position: scrollPositionRef.current,
-            timestamp: Date.now()
-          })
-        )
-      }
-    }
-  }, [])
 
   const isSelected = (cardId: number) => selectedCards.some((c) => c.id === cardId)
 
@@ -259,6 +204,30 @@ function CardsPage() {
     if (selectedCards.length > 0) {
       navigate('/optimizer')
     }
+  }
+
+  // Monitor scroll position to show/hide scroll buttons
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show buttons if scrolled more than 300px
+      setShowScrollButtons(window.scrollY > 300)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Scroll to top
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Scroll to bottom
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth'
+    })
   }
 
   if (isLoading) {
@@ -508,13 +477,14 @@ function CardsPage() {
           );
         })}
 
-      {/* Fixed Bottom */}
+      {/* Fixed Bottom - Continue button */}
       {selectedCards.length > 0 && (
         <div className="sv-cards-bottom-btn" style={{
           position: 'fixed',
           bottom: '32px',
           left: '50%',
-          transform: 'translateX(-50%)'
+          transform: 'translateX(-50%)',
+          zIndex: 20
         }}>
           <button
             onClick={handleContinue}
@@ -545,6 +515,34 @@ function CardsPage() {
             }}
           >
             {t('cards.continueWith', { count: selectedCards.length })} <ArrowRightOutlined />
+          </button>
+        </div>
+      )}
+
+      {/* Scroll to Top/Bottom Buttons - Minimal floating style */}
+      {showScrollButtons && (
+        <div className="sv-scroll-buttons" style={{
+          position: 'fixed',
+          right: '16px',
+          bottom: selectedCards.length > 0 ? '110px' : '90px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '6px',
+          zIndex: 20
+        }}>
+          <button
+            onClick={scrollToTop}
+            className="sv-scroll-btn"
+            title={t('common.scrollTop') || 'Scroll to top'}
+          >
+            <VerticalAlignTopOutlined />
+          </button>
+          <button
+            onClick={scrollToBottom}
+            className="sv-scroll-btn"
+            title={t('common.scrollBottom') || 'Scroll to bottom'}
+          >
+            <VerticalAlignBottomOutlined />
           </button>
         </div>
       )}

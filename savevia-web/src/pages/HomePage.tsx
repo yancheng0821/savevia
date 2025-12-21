@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightOutlined, SafetyOutlined, CloseOutlined, WalletOutlined, CreditCardOutlined } from '@ant-design/icons'
 import { Capacitor } from '@capacitor/core'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
+import { useHomePageStore } from '../stores/useHomePageStore'
 import { cardApi, userApi, bankApi } from '../services/api'
 import type { SpendingCategory, CreditCard } from '../types'
 
@@ -100,14 +101,35 @@ const CATEGORY_GROUPS = [
 ]
 
 function HomePage() {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { isAuthenticated } = useAuthStore()
   const { selectedCards, setSelectedCards } = useOptimizerStore()
-  const [selectedCategory, setSelectedCategory] = useState<SpendingCategory | null>(null)
+
+  // Use global store for modal and category state - persists across navigation
+  const { showCardModal, setShowCardModal, selectedCategory, setSelectedCategory } = useHomePageStore()
+
+  // Track if modal is closing (for fade-out animation)
+  const [isModalClosing, setIsModalClosing] = useState(false)
+
+  // Sync selectedCategory with localStorage on first mount
+  useEffect(() => {
+    if (selectedCategory === null) {
+      try {
+        const saved = localStorage.getItem('homePageSelectedCategory')
+        if (saved) {
+          setSelectedCategory(saved as SpendingCategory)
+        }
+      } catch {
+        // Ignore
+      }
+    }
+  }, [])
+
   const [hasBankConnection, setHasBankConnection] = useState(false)
   const [bankConnectionChecked, setBankConnectionChecked] = useState(false)
-  const [showCardModal, setShowCardModal] = useState(false)
   const resultRef = useRef<HTMLDivElement>(null)
+
 
   // Check if user has bank connection
   useEffect(() => {
@@ -133,7 +155,8 @@ function HomePage() {
 
   const handleCategorySelect = (category: SpendingCategory) => {
     const isSelected = selectedCategory === category
-    setSelectedCategory(isSelected ? null : category)
+    const newCategory = isSelected ? null : category
+    setSelectedCategory(newCategory)
     // Scroll to result after a short delay if selecting (not deselecting)
     if (!isSelected) {
       setTimeout(() => {
@@ -141,6 +164,16 @@ function HomePage() {
       }, 100)
     }
   }
+
+  // Sync selectedCategory to localStorage whenever it changes
+  useEffect(() => {
+    if (selectedCategory) {
+      localStorage.setItem('homePageSelectedCategory', selectedCategory)
+    } else {
+      localStorage.removeItem('homePageSelectedCategory')
+    }
+  }, [selectedCategory])
+
 
   // Load saved cards for authenticated users
   useEffect(() => {
@@ -201,9 +234,25 @@ function HomePage() {
     setShowCardModal(false)
   }
 
-  // Handle card click
+  // Handle card click - open modal
   const handleCardClick = () => {
     setShowCardModal(true)
+  }
+
+  // Handle view details click - fade out modal, then navigate
+  const handleViewDetails = () => {
+    // Save scroll position immediately before any animation
+    // This is stored in window for App.tsx to read
+    (window as any).__savedHomeScrollPosition = window.scrollY
+    // Start fade-out animation
+    setIsModalClosing(true)
+    // After animation completes, close modal and navigate
+    setTimeout(() => {
+      setShowCardModal(false)
+      setIsModalClosing(false)
+      // Pass card data to avoid loading delay on detail page
+      navigate(`/cards/${bestCard!.card.id}`, { state: { card: bestCard!.card } })
+    }, 150)
   }
 
   return (
@@ -471,7 +520,7 @@ function HomePage() {
         </Link>
       </section>
 
-      {/* Mobile Quick Select - Always show on mobile */}
+      {/* Mobile Quick Select */}
       <section className="sv-quick-select">
         <h2 className="sv-quick-select-title">{t('home.quickSelect.title')}</h2>
         <p className="sv-quick-select-desc">{t('home.quickSelect.description')}</p>
@@ -587,8 +636,8 @@ function HomePage() {
 
       {/* Card Detail Modal */}
       {showCardModal && bestCard && (
-        <div className="sv-card-modal-overlay" onClick={() => setShowCardModal(false)}>
-          <div className="sv-card-modal" onClick={e => e.stopPropagation()}>
+        <div className={`sv-card-modal-overlay ${isModalClosing ? 'closing' : ''}`} onClick={() => setShowCardModal(false)}>
+          <div className={`sv-card-modal ${isModalClosing ? 'closing' : ''}`} onClick={e => e.stopPropagation()}>
             <button className="sv-card-modal-close" onClick={() => setShowCardModal(false)}>
               <CloseOutlined />
             </button>
@@ -633,13 +682,12 @@ function HomePage() {
               </button>
             )}
 
-            <Link
-              to={`/cards/${bestCard.card.id}`}
+            <button
               className="sv-card-modal-detail-link"
-              onClick={() => setShowCardModal(false)}
+              onClick={handleViewDetails}
             >
               {t('home.cardModal.viewDetails')} <ArrowRightOutlined />
-            </Link>
+            </button>
           </div>
         </div>
       )}
@@ -850,13 +898,9 @@ function HomePage() {
           position: relative;
         }
 
-        .sv-quick-result:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-        }
-
         .sv-quick-result:active {
-          transform: translateY(0);
+          opacity: 0.8;
+          transform: scale(0.98);
         }
 
         /* Card Modal */
@@ -884,7 +928,7 @@ function HomePage() {
           background: white;
           border-radius: 20px;
           padding: 24px;
-          width: 100%;
+          width: calc(100% - 40px);
           max-width: 360px;
           position: relative;
           animation: slideUp 0.3s ease;
@@ -892,6 +936,7 @@ function HomePage() {
 
         @media (min-width: 641px) {
           .sv-card-modal {
+            width: auto;
             max-width: 500px;
             padding: 32px;
             border-radius: 24px;
@@ -901,6 +946,25 @@ function HomePage() {
         @keyframes slideUp {
           from { transform: translateY(20px); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Closing animation */
+        .sv-card-modal-overlay.closing {
+          animation: fadeOut 0.15s ease forwards;
+        }
+
+        .sv-card-modal.closing {
+          animation: slideDown 0.15s ease forwards;
+        }
+
+        @keyframes fadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+
+        @keyframes slideDown {
+          from { transform: translateY(0); opacity: 1; }
+          to { transform: translateY(20px); opacity: 0; }
         }
 
         .sv-card-modal-close {
@@ -1095,8 +1159,13 @@ function HomePage() {
           color: #6b7280;
           font-size: 14px;
           text-decoration: none;
-          padding: 8px;
+          padding: 12px 8px;
           transition: all 0.2s;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-family: inherit;
+          width: 100%;
         }
 
         @media (min-width: 641px) {
@@ -1104,14 +1173,11 @@ function HomePage() {
             font-size: 15px;
             padding: 10px;
           }
-
-          .sv-card-modal-detail-link:hover {
-            color: #111827;
-          }
         }
 
-        .sv-card-modal-detail-link:hover {
-          color: #111827;
+        .sv-card-modal-detail-link:active {
+          opacity: 0.7;
+          transform: scale(0.98);
         }
 
         /* Dark mode modal */
@@ -1170,8 +1236,9 @@ function HomePage() {
           color: #a0a0a0;
         }
 
-        html.dark-mode .sv-card-modal-detail-link:hover {
-          color: #f5f5f5;
+        html.dark-mode .sv-card-modal-detail-link:active {
+          opacity: 0.7;
+          transform: scale(0.98);
         }
       `}</style>
     </div>
