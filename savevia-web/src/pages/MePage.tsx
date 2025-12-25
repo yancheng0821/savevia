@@ -42,8 +42,8 @@ const isIOS = platform === 'ios'
 const isAndroid = platform === 'android'
 
 // App Store URLs (update these when apps are published)
-const IOS_APP_STORE_URL = 'https://apps.apple.com/app/savevia/id0000000000'
-const ANDROID_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.savevia.app'
+const IOS_APP_STORE_URL = 'https://apps.apple.com/app/id6756332569'
+const ANDROID_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=app.savevia'
 
 // Support email
 const SUPPORT_EMAIL = 'support@savevia.app'
@@ -215,6 +215,11 @@ function MePage() {
           source: CameraSource.Prompt, // Let user choose camera or gallery
           width: 512,
           height: 512,
+          // Internationalized prompt labels
+          promptLabelHeader: t('me.camera.header'),
+          promptLabelPhoto: t('me.camera.photo'),
+          promptLabelPicture: t('me.camera.picture'),
+          promptLabelCancel: t('me.camera.cancel'),
         })
 
         if (image.base64String) {
@@ -332,7 +337,7 @@ function MePage() {
     message.success(t('nav.logout'))
   }
 
-  // Handle Rate Us - open app store on native, show message on web
+  // Handle Rate Us - open app store based on platform
   const handleRateUs = () => {
     if (isNativeApp) {
       if (isIOS) {
@@ -341,8 +346,16 @@ function MePage() {
         window.open(ANDROID_PLAY_STORE_URL, '_blank')
       }
     } else {
-      // On web, open feedback modal instead
-      setFeedbackModalOpen(true)
+      // On web, detect device and open appropriate store
+      const userAgent = navigator.userAgent.toLowerCase()
+      if (/iphone|ipad|ipod/.test(userAgent)) {
+        window.open(IOS_APP_STORE_URL, '_blank')
+      } else if (/android/.test(userAgent)) {
+        window.open(ANDROID_PLAY_STORE_URL, '_blank')
+      } else {
+        // Desktop - default to iOS App Store
+        window.open(IOS_APP_STORE_URL, '_blank')
+      }
     }
   }
 
@@ -351,10 +364,10 @@ function MePage() {
     setFeedbackModalOpen(true)
   }
 
-  // Handle share app
+  // Handle share app - share website link (uses OG image and description)
   const handleShare = async () => {
-    const shareText = t('me.shareText')
     const shareUrl = 'https://savevia.app'
+    const shareText = t('me.shareText')
 
     if (isNativeApp) {
       // Use Capacitor Share for native apps
@@ -363,7 +376,7 @@ function MePage() {
           title: 'SaveVia',
           text: shareText,
           url: shareUrl,
-          dialogTitle: 'Share SaveVia'
+          dialogTitle: t('me.shareApp')
         })
       } catch (e) {
         // User cancelled or error

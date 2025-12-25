@@ -228,6 +228,12 @@
   },
   "me": {
     "settings": "Configuración",
+    "camera": {
+      "header": "Cambiar foto",
+      "photo": "Elegir de la galería",
+      "picture": "Tomar foto",
+      "cancel": "Cancelar"
+    },
     "language": "Idioma",
     "notifications": "Notificaciones",
     "darkMode": "Modo oscuro",
@@ -291,7 +297,29 @@
     "cardAdded": "Agregada a mis tarjetas",
     "viewDetails": "Ver detalles",
     "add": "Agregar",
-    "added": "Agregada"
+    "added": "Agregada",
+    "usageGuide": {
+      "title": "Cómo maximizar esta tarjeta",
+      "rewardType": "Tipo de recompensa",
+      "pointValue": "Valor del punto",
+      "centsPerPoint": "centavos/punto",
+      "point": "pt",
+      "pointUnit": "punto",
+      "cents": "¢",
+      "transferPartners": "Socios de transferencia",
+      "tipTypes": {
+        "BEST_USE": "Mejor uso",
+        "REDEMPTION": "Consejos de canje",
+        "TRANSFER_PARTNER": "Socios de transferencia",
+        "STACKING": "Consejos de acumulación",
+        "AVOID": "Qué evitar"
+      },
+      "rewardTypes": {
+        "CASHBACK": "Reembolso",
+        "POINTS": "Puntos",
+        "MILES": "Millas"
+      }
+    }
   },
   "subscription": {
     "title": "SaveVia Pro",
@@ -329,7 +357,11 @@
     "expiredOrNotExist": "Este resultado compartido puede haber expirado o no existe.",
     "getStarted": "Comenzar",
     "wantToOptimize": "¿Quieres optimizar tus recompensas de tarjeta de crédito?",
-    "freeToUse": "SaveVia es gratis. ¡Comienza a ahorrar hoy!"
+    "freeToUse": "SaveVia es gratis. ¡Comienza a ahorrar hoy!",
+    "downloadApp": "Descarga nuestra aplicación para la mejor experiencia",
+    "downloadFromAppStore": "Descargar en App Store",
+    "wechatTip": "Toca para descargar SaveVia desde App Store",
+    "openAppStore": "App Store"
   },
   "transactions": {
     "title": "Transacciones",

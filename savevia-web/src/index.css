@@ -208,7 +208,7 @@ html, body, #root,
 .sv-header {
   background: transparent;
   position: absolute;
-  top: 0;
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
   z-index: 100;
@@ -1160,30 +1160,40 @@ html.dark-mode .sv-header-lang-btn:hover {
 
 /* Safe area support for iPhone notch & home indicator */
 @supports (padding-top: env(safe-area-inset-top)) {
+  /* Apply safe area padding for all devices with notch (Safari, Chrome on iPhone, native apps) */
   body {
-    /* Use max() to ensure minimum 24px padding on Android where env() may return small values */
-    padding-top: max(24px, env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
 
-  /* Fixed status bar background - prevents content showing behind status bar */
+  /* Native Capacitor apps: ensure minimum padding for Android status bar */
+  html.plt-capacitor body {
+    padding-top: max(24px, env(safe-area-inset-top));
+  }
+
+  /* Fixed status bar background - for ALL devices with safe area (Safari, Chrome, native apps) */
   body::before {
     content: '';
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    /* Minimum 24px height for Android status bar */
-    height: max(24px, env(safe-area-inset-top));
+    height: env(safe-area-inset-top);
     background: #fffcf5;
     z-index: 9999;
+    pointer-events: none;
+  }
+
+  /* Native Capacitor apps: ensure minimum height for Android */
+  html.plt-capacitor body::before {
+    height: max(24px, env(safe-area-inset-top));
   }
 
   /* Dark mode status bar background */
   html.dark body::before,
   html.dark-mode body::before {
-    background: #111827;
+    background: #0f0f0f;
   }
 
   .sv-footer-actions {
@@ -3669,6 +3679,151 @@ html.dark-mode .sv-share-menu-divider {
   color: #6b7280;
 }
 
+/* Card Usage Guide - Collapsible */
+.sv-card-detail-usage-guide {
+  margin-bottom: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sv-card-detail-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.sv-card-detail-guide-icon {
+  margin-right: 8px;
+}
+
+.sv-card-detail-guide-header:active {
+  opacity: 0.7;
+}
+
+.sv-card-detail-guide-arrow {
+  font-size: 12px;
+  color: #9ca3af;
+  transition: transform 0.2s ease;
+}
+
+.sv-card-detail-guide-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.sv-card-detail-guide-content {
+  margin-top: 20px;
+}
+
+/* Reward Program Info */
+.sv-card-detail-reward-program-info {
+  margin-bottom: 24px;
+}
+
+.sv-card-detail-reward-program-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.sv-card-detail-reward-program-icon {
+  font-size: 14px;
+}
+
+.sv-card-detail-reward-program-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Highlight numbers in green */
+.sv-highlight-number {
+  color: #059669;
+  font-weight: 600;
+}
+
+/* Tips Section */
+.sv-card-detail-tip-section {
+  margin-bottom: 28px;
+}
+
+.sv-card-detail-tip-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.sv-card-detail-tip-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.sv-card-detail-tip-section-icon {
+  font-size: 12px;
+  font-style: normal;
+}
+
+.sv-card-detail-tip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sv-card-detail-tip-entry {
+  padding-left: 12px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.sv-card-detail-tip-entry-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.sv-card-detail-tip-entry-content {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* Transfer Partners */
+.sv-card-detail-partners-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sv-card-detail-partner-tag {
+  font-size: 14px;
+  color: #374151;
+}
+
+.sv-card-detail-partner-tag-name {
+  font-weight: 500;
+}
+
+.sv-card-detail-partner-tag-ratio {
+  margin-left: 4px;
+}
+
+.sv-card-detail-partner-tag-ratio::before {
+  content: '';
+  margin-right: 4px;
+  color: #9ca3af;
+}
+
 /* ========================================
    Dark Mode - Card Detail Page
    ======================================== */
@@ -3714,6 +3869,35 @@ html.dark-mode .sv-card-detail-no-rules {
 
 html.dark-mode .sv-card-detail-rule-item {
   border-color: var(--border-color) !important;
+}
+
+/* Card Usage Guide - Dark Mode */
+html.dark-mode .sv-card-detail-usage-guide {
+  border-color: var(--border-color);
+}
+
+html.dark-mode .sv-card-detail-reward-program-value {
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-card-detail-tip-entry {
+  border-color: var(--border-color);
+}
+
+html.dark-mode .sv-card-detail-tip-entry-title {
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-card-detail-tip-entry-content {
+  color: var(--text-secondary);
+}
+
+html.dark-mode .sv-card-detail-partner-tag-name {
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-card-detail-partner-tag-ratio {
+  color: var(--text-secondary);
 }
 
 /* Card detail - text colors for remaining inline styles */
@@ -3847,7 +4031,7 @@ html.dark-mode .sv-bank-tab-icon-all {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   color: #6b7280;
   border: none;
   cursor: pointer;
@@ -3855,10 +4039,8 @@ html.dark-mode .sv-bank-tab-icon-all {
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .sv-scroll-btn:active {
@@ -3877,7 +4059,7 @@ html.dark-mode .sv-bank-tab-icon-all {
 
 /* Dark mode scroll buttons */
 html.dark-mode .sv-scroll-btn {
-  background: rgba(40, 40, 40, 0.9);
+  background: #282828;
   color: #a0a0a0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }

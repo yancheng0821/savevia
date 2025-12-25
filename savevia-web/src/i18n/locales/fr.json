@@ -228,6 +228,12 @@
   },
   "me": {
     "settings": "Paramètres",
+    "camera": {
+      "header": "Changer la photo",
+      "photo": "Choisir dans la galerie",
+      "picture": "Prendre une photo",
+      "cancel": "Annuler"
+    },
     "language": "Langue",
     "notifications": "Notifications",
     "darkMode": "Mode sombre",
@@ -291,7 +297,29 @@
     "cardAdded": "Ajouté à mes cartes",
     "viewDetails": "Voir les détails",
     "add": "Ajouter",
-    "added": "Ajouté"
+    "added": "Ajouté",
+    "usageGuide": {
+      "title": "Comment maximiser cette carte",
+      "rewardType": "Type de récompense",
+      "pointValue": "Valeur du point",
+      "centsPerPoint": "cents/point",
+      "point": "pt",
+      "pointUnit": "point",
+      "cents": "¢",
+      "transferPartners": "Partenaires de transfert",
+      "tipTypes": {
+        "BEST_USE": "Meilleure utilisation",
+        "REDEMPTION": "Conseils d'échange",
+        "TRANSFER_PARTNER": "Partenaires de transfert",
+        "STACKING": "Conseils de cumul",
+        "AVOID": "À éviter"
+      },
+      "rewardTypes": {
+        "CASHBACK": "Remise en argent",
+        "POINTS": "Points",
+        "MILES": "Miles"
+      }
+    }
   },
   "subscription": {
     "title": "SaveVia Pro",
@@ -329,7 +357,11 @@
     "expiredOrNotExist": "Ce résultat partagé a peut-être expiré ou n'existe pas.",
     "getStarted": "Commencer",
     "wantToOptimize": "Voulez-vous optimiser vos remises en argent ?",
-    "freeToUse": "SaveVia est gratuit. Commencez à économiser dès aujourd'hui !"
+    "freeToUse": "SaveVia est gratuit. Commencez à économiser dès aujourd'hui !",
+    "downloadApp": "Téléchargez notre application pour la meilleure expérience",
+    "downloadFromAppStore": "Télécharger sur App Store",
+    "wechatTip": "Appuyez pour télécharger SaveVia depuis l'App Store",
+    "openAppStore": "App Store"
   },
   "transactions": {
     "title": "Transactions",

@@ -34,6 +34,14 @@ public class CreditCard {
 
     private Boolean noFxFee;
 
+    private String rewardType;
+
+    private BigDecimal pointValue;
+
+    private String pointProgram;
+
+    private String transferPartnersJson;
+
     private Boolean isActive;
 
     private LocalDateTime createdAt;

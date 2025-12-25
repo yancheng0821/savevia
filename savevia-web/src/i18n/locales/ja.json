@@ -228,6 +228,12 @@
   },
   "me": {
     "settings": "設定",
+    "camera": {
+      "header": "写真を変更",
+      "photo": "ライブラリから選択",
+      "picture": "写真を撮る",
+      "cancel": "キャンセル"
+    },
     "language": "言語",
     "notifications": "通知",
     "darkMode": "ダークモード",
@@ -291,7 +297,29 @@
     "cardAdded": "追加済み",
     "viewDetails": "詳細を見る",
     "add": "追加",
-    "added": "追加済"
+    "added": "追加済",
+    "usageGuide": {
+      "title": "このカードを最大限活用する方法",
+      "rewardType": "リワードタイプ",
+      "pointValue": "ポイント価値",
+      "centsPerPoint": "セント/ポイント",
+      "point": "pt",
+      "pointUnit": "ポイント",
+      "cents": "セント",
+      "transferPartners": "ポイント移行先",
+      "tipTypes": {
+        "BEST_USE": "おすすめの使い方",
+        "REDEMPTION": "交換のヒント",
+        "TRANSFER_PARTNER": "移行パートナー",
+        "STACKING": "併用テクニック",
+        "AVOID": "避けるべきこと"
+      },
+      "rewardTypes": {
+        "CASHBACK": "キャッシュバック",
+        "POINTS": "ポイント",
+        "MILES": "マイル"
+      }
+    }
   },
   "subscription": {
     "title": "SaveVia Pro",
@@ -329,7 +357,11 @@
     "expiredOrNotExist": "この共有された結果は期限切れまたは存在しません。",
     "getStarted": "始める",
     "wantToOptimize": "クレジットカードのリワードを最適化しませんか？",
-    "freeToUse": "SaveViaは無料です。今日から節約を始めましょう！"
+    "freeToUse": "SaveViaは無料です。今日から節約を始めましょう！",
+    "downloadApp": "最高の体験のためにアプリをダウンロード",
+    "downloadFromAppStore": "App Storeでダウンロード",
+    "wechatTip": "タップしてApp StoreからSaveViaをダウンロード",
+    "openAppStore": "App Store"
   },
   "transactions": {
     "title": "取引履歴",

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.card.mapper.CardUsageTipMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CardUsageTipResultMap" type="com.savevia.card.entity.CardUsageTip">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="card_id" property="cardId" jdbcType="BIGINT"/>
+        <result column="tip_type" property="tipType" jdbcType="VARCHAR"/>
+        <result column="title_json" property="titleJson" jdbcType="VARCHAR"/>
+        <result column="content_json" property="contentJson" jdbcType="VARCHAR"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="priority" property="priority" jdbcType="INTEGER"/>
+        <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 列定义 -->
+    <sql id="Base_Column_List">
+        id, card_id, tip_type, title_json, content_json, icon, priority, is_active, created_at, updated_at
+    </sql>
+
+    <!-- 根据卡片ID查询 -->
+    <select id="selectByCardId" parameterType="java.lang.Long" resultMap="CardUsageTipResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM card_usage_tips
+        WHERE card_id = #{cardId} AND is_active = TRUE
+        ORDER BY priority ASC, id ASC
+    </select>
+
+    <!-- 根据卡片ID和类型查询 -->
+    <select id="selectByCardIdAndType" resultMap="CardUsageTipResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM card_usage_tips
+        WHERE card_id = #{cardId} AND tip_type = #{tipType} AND is_active = TRUE
+        ORDER BY priority ASC, id ASC
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.savevia.card.entity.CardUsageTip"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO card_usage_tips (
+            card_id, tip_type, title_json, content_json, icon, priority, is_active
+        ) VALUES (
+            #{cardId}, #{tipType}, #{titleJson}, #{contentJson}, #{icon}, #{priority}, #{isActive}
+        )
+    </insert>
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        INSERT INTO card_usage_tips (
+            card_id, tip_type, title_json, content_json, icon, priority, is_active
+        ) VALUES
+        <foreach collection="tips" item="tip" separator=",">
+            (#{tip.cardId}, #{tip.tipType}, #{tip.titleJson}, #{tip.contentJson},
+             #{tip.icon}, #{tip.priority}, #{tip.isActive})
+        </foreach>
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.savevia.card.entity.CardUsageTip">
+        UPDATE card_usage_tips
+        SET tip_type = #{tipType},
+            title_json = #{titleJson},
+            content_json = #{contentJson},
+            icon = #{icon},
+            priority = #{priority},
+            is_active = #{isActive}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除 -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM card_usage_tips WHERE id = #{id}
+    </delete>
+
+    <!-- 删除卡片的所有使用指南 -->
+    <delete id="deleteByCardId" parameterType="java.lang.Long">
+        DELETE FROM card_usage_tips WHERE card_id = #{cardId}
+    </delete>
+
+</mapper>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightOutlined } from '@ant-design/icons'
 
@@ -93,31 +93,30 @@ function Onboarding({ onComplete }: OnboardingProps) {
   const [annualSpending, setAnnualSpending] = useState<number | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
 
-  // Swipe gesture handling
-  const touchStartX = useRef<number>(0)
-  const touchEndX = useRef<number>(0)
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX
-  }
-
-  const handleTouchEnd = () => {
-    const swipeDistance = touchEndX.current - touchStartX.current
-    const minSwipeDistance = 80
-
-    // Swipe right to go back
-    if (swipeDistance > minSwipeDistance && step > 0) {
-      setStep(step - 1)
+  // Prevent iOS swipe-back gesture during onboarding
+  useEffect(() => {
+    // Prevent browser back gesture by blocking edge swipe
+    const preventBackGesture = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      // If touch starts near left edge (within 30px), prevent default
+      if (touch && touch.clientX < 30) {
+        e.preventDefault()
+      }
     }
 
-    // Reset
-    touchStartX.current = 0
-    touchEndX.current = 0
-  }
+    // Add passive: false to allow preventDefault
+    document.addEventListener('touchstart', preventBackGesture, { passive: false })
+    document.addEventListener('touchmove', preventBackGesture, { passive: false })
+
+    // Disable body scroll while onboarding is shown
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.removeEventListener('touchstart', preventBackGesture)
+      document.removeEventListener('touchmove', preventBackGesture)
+      document.body.style.overflow = ''
+    }
+  }, [])
 
   // Calculate estimated savings based on user input
   // Before: 1.5-2.5%, After: 3-5%
@@ -302,12 +301,7 @@ function Onboarding({ onComplete }: OnboardingProps) {
   }
 
   return (
-    <div
-      className="sv-onboarding"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="sv-onboarding">
       {/* Header with Logo */}
       <div className="sv-onboarding-header">
         <img src="/logo-full.svg" alt="SaveVia" className="sv-onboarding-logo" />
@@ -354,6 +348,10 @@ function Onboarding({ onComplete }: OnboardingProps) {
           background: #FFFCF5;
           padding-top: env(safe-area-inset-top, 0px);
           padding-bottom: env(safe-area-inset-bottom, 0px);
+          /* Prevent iOS swipe-back gesture */
+          touch-action: pan-y pinch-zoom;
+          overscroll-behavior-x: none;
+          -webkit-overflow-scrolling: touch;
         }
 
         .sv-onboarding-header {

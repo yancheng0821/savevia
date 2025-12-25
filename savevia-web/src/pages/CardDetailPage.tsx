@@ -1,13 +1,13 @@
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
-import { ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined, DollarOutlined, CreditCardOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined, DollarOutlined, CreditCardOutlined, RightOutlined } from '@ant-design/icons'
 import { cardApi, affiliateApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
-import type { SpendingCategory, CreditCard } from '../types'
+import type { SpendingCategory, CreditCard, TipType } from '../types'
 
 // Swipe back gesture for Android only (iOS uses native gesture)
 function useAndroidSwipeBack(onSwipeBack: () => void) {
@@ -127,7 +127,6 @@ const BANK_LOGOS: Record<string, string> = {
   'Walmart': '/logos/walmart.png',
 }
 
-
 // Category icons
 const CATEGORY_ICONS: Record<SpendingCategory, string> = {
   // Core categories
@@ -176,9 +175,10 @@ function CardDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { selectedCards, addCard, removeCard } = useOptimizerStore()
   const { user } = useAuthStore()
+  const [isGuideExpanded, setIsGuideExpanded] = useState(false)
 
   // Get card from router state if available (passed from CardsPage)
   const passedCard = (location.state as { card?: CreditCard })?.card
@@ -225,6 +225,15 @@ function CardDetailPage() {
     enabled: !!id && !passedCard, // Skip fetch if we have card from state
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+  })
+
+  // Fetch usage guide
+  const { data: usageGuide } = useQuery({
+    queryKey: ['cardUsageGuide', id, i18n.language],
+    queryFn: () => cardApi.getUsageGuide(Number(id), i18n.language),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   })
 
   // Use passed card if available, otherwise use fetched card
@@ -553,6 +562,99 @@ function CardDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Usage Guide - Collapsible */}
+      {usageGuide && (usageGuide.tips?.length > 0 || (usageGuide.transferPartners && usageGuide.transferPartners.length > 0)) && (
+        <div className="sv-card-detail-usage-guide">
+          <div
+            className="sv-card-detail-guide-header"
+            onClick={() => setIsGuideExpanded(!isGuideExpanded)}
+          >
+            <h2 className="sv-card-detail-section-title" style={{ marginBottom: 0 }}>
+              <span className="sv-card-detail-guide-icon">💡</span>
+              {t('cardDetail.usageGuide.title')}
+            </h2>
+            <RightOutlined className={`sv-card-detail-guide-arrow ${isGuideExpanded ? 'expanded' : ''}`} />
+          </div>
+
+          {isGuideExpanded && (
+            <div className="sv-card-detail-guide-content">
+              {/* Reward Program Info */}
+              {usageGuide.pointProgram && usageGuide.pointValue && (
+                <div className="sv-card-detail-reward-program-info">
+                  <div className="sv-card-detail-reward-program-name">
+                    <span className="sv-card-detail-reward-program-icon">💎</span>
+                    {usageGuide.pointProgram}
+                  </div>
+                  <div className="sv-card-detail-reward-program-value">
+                    1 {t('cardDetail.usageGuide.pointUnit')} ≈ {(usageGuide.pointValue * 100).toFixed(1)}{t('cardDetail.usageGuide.cents')}
+                  </div>
+                </div>
+              )}
+
+              {/* Tips by type */}
+              {usageGuide.tips && usageGuide.tips.length > 0 && (() => {
+                const tipsByType = usageGuide.tips.reduce((acc, tip) => {
+                  if (!acc[tip.tipType]) acc[tip.tipType] = []
+                  acc[tip.tipType].push(tip)
+                  return acc
+                }, {} as Record<TipType, typeof usageGuide.tips>)
+
+                const typeOrder: TipType[] = ['BEST_USE', 'REDEMPTION', 'STACKING', 'AVOID']
+                const typeIcons: Record<TipType, string> = {
+                  BEST_USE: '✦',
+                  REDEMPTION: '↗',
+                  STACKING: '⚡',
+                  AVOID: '✗',
+                  TRANSFER_PARTNER: '→'
+                }
+
+                return typeOrder.map(tipType => {
+                  const tips = tipsByType[tipType]
+                  if (!tips || tips.length === 0) return null
+
+                  return (
+                    <div key={tipType} className="sv-card-detail-tip-section">
+                      <div className="sv-card-detail-tip-section-title">
+                        <span className="sv-card-detail-tip-section-icon">{typeIcons[tipType]}</span>
+                        {t(`cardDetail.usageGuide.tipTypes.${tipType}`)}
+                      </div>
+                      <div className="sv-card-detail-tip-list">
+                        {tips.map(tip => (
+                          <div key={tip.id} className="sv-card-detail-tip-entry">
+                            <div className="sv-card-detail-tip-entry-title">{tip.title}</div>
+                            {tip.content && (
+                              <div className="sv-card-detail-tip-entry-content">{tip.content}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })
+              })()}
+
+              {/* Transfer Partners */}
+              {usageGuide.transferPartners && usageGuide.transferPartners.length > 0 && (
+                <div className="sv-card-detail-tip-section">
+                  <div className="sv-card-detail-tip-section-title">
+                    <span className="sv-card-detail-tip-section-icon">→</span>
+                    {t('cardDetail.usageGuide.transferPartners')}
+                  </div>
+                  <div className="sv-card-detail-partners-list">
+                    {usageGuide.transferPartners.map((partner, idx) => (
+                      <div key={idx} className="sv-card-detail-partner-tag">
+                        <span className="sv-card-detail-partner-tag-name">{partner.name}</span>
+                        <span className="sv-card-detail-partner-tag-ratio sv-highlight-number">{partner.ratio}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Apply URL */}
       {(card.applyUrl || card.affiliateLink?.affiliateUrl) && (

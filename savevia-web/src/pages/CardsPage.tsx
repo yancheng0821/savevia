@@ -7,6 +7,7 @@ import { CheckOutlined, ArrowRightOutlined, DownOutlined, RightOutlined, Vertica
 import { cardApi, userApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
+import { useCardsPageStore } from '../stores/useCardsPageStore'
 import type { CreditCard } from '../types'
 
 // Default card style fallback
@@ -116,16 +117,33 @@ function getCardNumberPrefix(cardName: string): string {
   return '4XXX'
 }
 
+// Sync read from localStorage to get scroll position before hydration
+const getStoredScrollPosition = (): number => {
+  try {
+    const stored = localStorage.getItem('sv-cards-page-storage')
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      return parsed.state?.scrollPosition || 0
+    }
+  } catch {
+    // Ignore errors
+  }
+  return 0
+}
+
 function CardsPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { selectedCards, addCard, removeCard, setSelectedCards } = useOptimizerStore()
   const { isAuthenticated } = useAuthStore()
+  const { activeBank, setActiveBank, scrollPosition, setScrollPosition } = useCardsPageStore()
   const [collapsedBanks, setCollapsedBanks] = useState<Record<string, boolean>>({})
-  const [activeBank, setActiveBank] = useState<string | null>(null) // null = show all
-  const [showScrollButtons, setShowScrollButtons] = useState(false)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isInitialLoadRef = useRef(true)
+  // Get initial scroll position from localStorage synchronously to prevent flicker
+  const initialScrollPosition = useRef(getStoredScrollPosition())
+  // Initialize to true if we need to restore scroll - prevents early scroll events from resetting position
+  const isRestoringScrollRef = useRef(initialScrollPosition.current > 0)
   const tabsRef = useRef<HTMLDivElement>(null)
 
   const toggleBank = (bank: string) => {
@@ -206,16 +224,37 @@ function CardsPage() {
     }
   }
 
-  // Monitor scroll position to show/hide scroll buttons
+  // Restore scroll position on mount using the synchronously read value
+  useEffect(() => {
+    const storedPosition = initialScrollPosition.current
+    if (storedPosition > 0) {
+      // Restore scroll position immediately
+      window.scrollTo(0, storedPosition)
+      // Mark restoration complete after scroll settles
+      setTimeout(() => {
+        isRestoringScrollRef.current = false
+      }, 100)
+    } else {
+      isRestoringScrollRef.current = false
+    }
+  }, []) // Only run on mount
+
+  // Monitor scroll position and save in real-time
   useEffect(() => {
     const handleScroll = () => {
-      // Show buttons if scrolled more than 300px
-      setShowScrollButtons(window.scrollY > 300)
+      // Skip updating during scroll restoration
+      if (isRestoringScrollRef.current) return
+      const newScrollY = window.scrollY
+      // Don't save near-zero positions - prevents losing scroll position when
+      // App.tsx ScrollToTop scrolls to 0 during navigation to detail page
+      if (newScrollY > 50) {
+        setScrollPosition(newScrollY)
+      }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [setScrollPosition])
 
   // Scroll to top
   const scrollToTop = () => {
@@ -519,31 +558,34 @@ function CardsPage() {
         </div>
       )}
 
-      {/* Scroll to Top/Bottom Buttons - Minimal floating style */}
-      {showScrollButtons && (
-        <div className="sv-scroll-buttons" style={{
-          position: 'fixed',
-          right: '16px',
-          bottom: selectedCards.length > 0 ? '110px' : '90px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px',
-          zIndex: 20
-        }}>
-          <button
-            onClick={scrollToTop}
-            className="sv-scroll-btn"
-            title={t('common.scrollTop') || 'Scroll to top'}
-          >
-            <VerticalAlignTopOutlined />
-          </button>
-          <button
-            onClick={scrollToBottom}
-            className="sv-scroll-btn"
-            title={t('common.scrollBottom') || 'Scroll to bottom'}
-          >
-            <VerticalAlignBottomOutlined />
-          </button>
+      {/* Scroll to Top/Bottom Buttons - Use sync-read value before hydration, store value after */}
+      {(scrollPosition > 300 || (scrollPosition === 0 && initialScrollPosition.current > 300)) && (
+        <div
+          className="sv-scroll-buttons"
+          style={{
+            position: 'fixed',
+            right: '16px',
+            bottom: selectedCards.length > 0 ? '110px' : '90px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            zIndex: 20
+          }}
+        >
+        <button
+          onClick={scrollToTop}
+          className="sv-scroll-btn"
+          title={t('common.scrollTop') || 'Scroll to top'}
+        >
+          <VerticalAlignTopOutlined />
+        </button>
+        <button
+          onClick={scrollToBottom}
+          className="sv-scroll-btn"
+          title={t('common.scrollBottom') || 'Scroll to bottom'}
+        >
+          <VerticalAlignBottomOutlined />
+        </button>
         </div>
       )}
     </div>

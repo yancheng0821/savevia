@@ -228,6 +228,12 @@
   },
   "me": {
     "settings": "설정",
+    "camera": {
+      "header": "사진 변경",
+      "photo": "라이브러리에서 선택",
+      "picture": "사진 찍기",
+      "cancel": "취소"
+    },
     "language": "언어",
     "notifications": "알림",
     "darkMode": "다크 모드",
@@ -291,7 +297,29 @@
     "cardAdded": "추가됨",
     "viewDetails": "상세보기",
     "add": "추가",
-    "added": "추가됨"
+    "added": "추가됨",
+    "usageGuide": {
+      "title": "이 카드 최대한 활용하기",
+      "rewardType": "리워드 유형",
+      "pointValue": "포인트 가치",
+      "centsPerPoint": "센트/포인트",
+      "point": "pt",
+      "pointUnit": "포인트",
+      "cents": "센트",
+      "transferPartners": "포인트 전환 파트너",
+      "tipTypes": {
+        "BEST_USE": "최적의 사용처",
+        "REDEMPTION": "교환 팁",
+        "TRANSFER_PARTNER": "전환 파트너",
+        "STACKING": "적립 팁",
+        "AVOID": "피해야 할 것"
+      },
+      "rewardTypes": {
+        "CASHBACK": "캐시백",
+        "POINTS": "포인트",
+        "MILES": "마일리지"
+      }
+    }
   },
   "subscription": {
     "title": "SaveVia Pro",
@@ -329,7 +357,11 @@
     "expiredOrNotExist": "이 공유된 결과는 만료되었거나 존재하지 않습니다.",
     "getStarted": "시작하기",
     "wantToOptimize": "신용카드 리워드를 최적화하시겠어요?",
-    "freeToUse": "SaveVia는 무료입니다. 지금 바로 절약을 시작하세요!"
+    "freeToUse": "SaveVia는 무료입니다. 지금 바로 절약을 시작하세요!",
+    "downloadApp": "최고의 경험을 위해 앱을 다운로드하세요",
+    "downloadFromAppStore": "App Store에서 다운로드",
+    "wechatTip": "탭하여 App Store에서 SaveVia 다운로드",
+    "openAppStore": "App Store"
   },
   "transactions": {
     "title": "거래내역",

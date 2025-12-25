@@ -240,6 +240,12 @@
   },
   "me": {
     "settings": "设置",
+    "camera": {
+      "header": "更换头像",
+      "photo": "从相册选择",
+      "picture": "拍照",
+      "cancel": "取消"
+    },
     "language": "语言",
     "notifications": "通知",
     "darkMode": "深色模式",
@@ -306,7 +312,29 @@
     "cardAdded": "已添加",
     "viewDetails": "查看详情",
     "add": "添加",
-    "added": "已添加"
+    "added": "已添加",
+    "usageGuide": {
+      "title": "如何最大化这张卡的价值",
+      "rewardType": "奖励类型",
+      "pointValue": "积分价值",
+      "centsPerPoint": "分/积分",
+      "point": "分",
+      "pointUnit": "积分",
+      "cents": "美分",
+      "transferPartners": "积分转换伙伴",
+      "tipTypes": {
+        "BEST_USE": "最佳使用场景",
+        "REDEMPTION": "兑换建议",
+        "TRANSFER_PARTNER": "转换伙伴",
+        "STACKING": "叠加技巧",
+        "AVOID": "避免事项"
+      },
+      "rewardTypes": {
+        "CASHBACK": "现金返还",
+        "POINTS": "积分",
+        "MILES": "里程"
+      }
+    }
   },
   "subscription": {
     "title": "SaveVia Pro",
@@ -347,7 +375,9 @@
     "wantToOptimize": "想要优化您的信用卡返现？",
     "freeToUse": "SaveVia 免费使用，立即开始省钱！",
     "downloadApp": "下载我们的 App 获得最佳体验",
-    "downloadFromAppStore": "前往 App Store 下载"
+    "downloadFromAppStore": "前往 App Store 下载",
+    "wechatTip": "点击前往 App Store 下载 SaveVia",
+    "openAppStore": "App Store"
   },
   "onboarding": {
     "welcome": "让我们为您定制体验",

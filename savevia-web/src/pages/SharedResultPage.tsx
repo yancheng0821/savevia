@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightOutlined, DownOutlined } from '@ant-design/icons'
+import { DownOutlined } from '@ant-design/icons'
 import { optimizerApi } from '../services/api'
 import type { OptimizationResult, SpendingCategory } from '../types'
 
@@ -179,7 +179,8 @@ function SharedResultPage() {
     loadSharedResult()
   }, [shareId])
 
-  if (loading) {
+  // Show loading while fetching or if shareId not yet available
+  if (loading || (!error && !result)) {
     return (
       <div style={{
         display: 'flex',
@@ -200,7 +201,8 @@ function SharedResultPage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '60vh',
-        textAlign: 'center'
+        textAlign: 'center',
+        padding: '0 24px'
       }}>
         <h2 style={{
           fontSize: '24px',
@@ -217,27 +219,51 @@ function SharedResultPage() {
         }}>
           {t('share.expiredOrNotExist')}
         </p>
-        <Link
-          to="/cards"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: '#111827',
-            color: 'white',
-            padding: '14px 28px',
-            borderRadius: '50px',
-            fontSize: '15px',
-            fontWeight: '600',
-            textDecoration: 'none'
-          }}
-        >
-          {t('share.getStarted')} <ArrowRightOutlined />
-        </Link>
+        {/* Download App CTA */}
+        <div style={{ textAlign: 'center' }}>
+          <p style={{
+            fontSize: '16px',
+            fontWeight: '500',
+            color: '#374151',
+            marginBottom: '20px'
+          }}>
+            {t('share.downloadApp')}
+          </p>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '16px',
+            flexWrap: 'wrap'
+          }}>
+            <a
+              href="https://apps.apple.com/app/id6756332569"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/badges/app-store.svg"
+                alt="Download on App Store"
+                style={{ height: '44px' }}
+              />
+            </a>
+            <a
+              href="https://play.google.com/store/apps/details?id=app.savevia"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src="/badges/google-play.svg"
+                alt="Get it on Google Play"
+                style={{ height: '44px' }}
+              />
+            </a>
+          </div>
+        </div>
       </div>
     )
   }
 
+  // At this point, result is guaranteed to be non-null
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
       {/* Top Bar - Logo and Shared Badge */}
@@ -397,7 +423,7 @@ function SharedResultPage() {
           flexWrap: 'wrap'
         }}>
           <a
-            href="https://apps.apple.com/app/savevia"
+            href="https://apps.apple.com/app/id6756332569"
             target="_blank"
             rel="noopener noreferrer"
           >

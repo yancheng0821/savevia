@@ -261,8 +261,9 @@ function AppHeader() {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation - hide on share page */}
-      {!location.pathname.startsWith('/share') && (
+      {/* Mobile Bottom Navigation - hide on share page and static pages (privacy/support/terms) in mobile browser */}
+      {!location.pathname.startsWith('/share') &&
+       !((!isNativeApp) && ['/privacy', '/support', '/terms'].includes(location.pathname)) && (
       <nav className="sv-mobile-nav">
         {navItems.map((item) => {
           // If result exists and clicking optimizer, go to result page instead

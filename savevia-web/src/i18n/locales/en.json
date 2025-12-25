@@ -240,6 +240,12 @@
   },
   "me": {
     "settings": "Settings",
+    "camera": {
+      "header": "Change Photo",
+      "photo": "Choose from Library",
+      "picture": "Take Photo",
+      "cancel": "Cancel"
+    },
     "language": "Language",
     "notifications": "Notifications",
     "darkMode": "Dark Mode",
@@ -306,7 +312,29 @@
     "cardAdded": "Added to My Cards",
     "viewDetails": "View Details",
     "add": "Add",
-    "added": "Added"
+    "added": "Added",
+    "usageGuide": {
+      "title": "How to Maximize This Card",
+      "rewardType": "Reward Type",
+      "pointValue": "Point Value",
+      "centsPerPoint": "cents/point",
+      "point": "pt",
+      "pointUnit": "point",
+      "cents": "¢",
+      "transferPartners": "Transfer Partners",
+      "tipTypes": {
+        "BEST_USE": "Best For",
+        "REDEMPTION": "Redemption Tips",
+        "TRANSFER_PARTNER": "Transfer Partners",
+        "STACKING": "Stacking Tips",
+        "AVOID": "Things to Avoid"
+      },
+      "rewardTypes": {
+        "CASHBACK": "Cash Back",
+        "POINTS": "Points",
+        "MILES": "Miles"
+      }
+    }
   },
   "subscription": {
     "title": "SaveVia Pro",
@@ -347,7 +375,9 @@
     "wantToOptimize": "Want to optimize your credit card rewards?",
     "freeToUse": "SaveVia is free to use. Start saving today!",
     "downloadApp": "Download our app for the best experience",
-    "downloadFromAppStore": "Download on App Store"
+    "downloadFromAppStore": "Download on App Store",
+    "wechatTip": "Tap to download SaveVia from App Store",
+    "openAppStore": "App Store"
   },
   "onboarding": {
     "welcome": "Let's personalize your experience",

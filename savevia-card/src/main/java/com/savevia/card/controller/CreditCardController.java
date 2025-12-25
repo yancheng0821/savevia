@@ -1,6 +1,8 @@
 package com.savevia.card.controller;
 
+import com.savevia.card.dto.CardUsageGuideDTO;
 import com.savevia.card.dto.CreditCardDTO;
+import com.savevia.card.service.CardUsageTipService;
 import com.savevia.card.service.CreditCardService;
 import com.savevia.common.response.Result;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import java.util.List;
 public class CreditCardController {
 
     private final CreditCardService creditCardService;
+    private final CardUsageTipService cardUsageTipService;
 
     @GetMapping
     public Result<List<CreditCardDTO>> getAllCards() {
@@ -33,5 +36,12 @@ public class CreditCardController {
     @PostMapping("/batch")
     public Result<List<CreditCardDTO>> getCardsByIds(@RequestBody List<Long> ids) {
         return Result.success(creditCardService.getCardsByIds(ids));
+    }
+
+    @GetMapping("/{id}/usage-guide")
+    public Result<CardUsageGuideDTO> getCardUsageGuide(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "en") String lang) {
+        return Result.success(cardUsageTipService.getUsageGuide(id, lang));
     }
 }

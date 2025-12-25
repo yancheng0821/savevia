@@ -10,3 +10,7 @@ selenium>=4.15.0
 
 # Data processing
 pandas>=2.0.0
+
+# AI Translation (for usage guide scraper)
+openai>=1.0.0
+python-dotenv>=1.0.0

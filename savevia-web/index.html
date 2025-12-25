@@ -4,10 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <!-- Prevent caching for SPA -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#fffcf5" />
     <meta name="format-detection" content="telephone=no" />
+    <!-- Smart App Banner - iOS Safari will show "Open in App Store" banner -->
+    <meta name="apple-itunes-app" content="app-id=6756332569" />
     <title>SaveVia - Canadian Credit Card Cashback Optimizer</title>
 
     <!-- Open Graph / Facebook -->
@@ -32,6 +38,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body style="background-color: #fffcf5;">
+    <!-- Impact Affiliate Verification -->
+    <div style="display:none;">Impact-Site-Verification: e6b9adb1-41d0-4da7-bdad-37d680474e30</div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

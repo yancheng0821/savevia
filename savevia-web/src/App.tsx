@@ -25,6 +25,7 @@ import { useOptimizerStore } from './stores/useOptimizerStore'
 import { useSubscriptionStore } from './stores/useSubscriptionStore'
 import { useOnboardingStore } from './stores/useOnboardingStore'
 import { useHomePageStore } from './stores/useHomePageStore'
+import { useCardsPageStore } from './stores/useCardsPageStore'
 import { isNativePlatform, initializeIAP } from './services/iap'
 
 // Preload bank logos to prevent flicker on navigation (lazy loaded)
@@ -97,11 +98,12 @@ function ScrollToTop() {
 
     prevPathnameRef.current = pathname
 
-    // For home and cards routes, restore previous scroll position if it exists
-    if (pathname === '/' || pathname === '/cards') {
+    // For home route, restore previous scroll position if it exists
+    // Note: /cards uses its own scroll restoration in CardsPage via useCardsPageStore
+    if (pathname === '/') {
       // For home page, prefer the manually saved position (from modal view details click)
       let savedPosition = scrollPositions.get(pathname) || 0
-      if (pathname === '/' && (window as any).__savedHomeScrollPosition !== undefined) {
+      if ((window as any).__savedHomeScrollPosition !== undefined) {
         savedPosition = (window as any).__savedHomeScrollPosition
         delete (window as any).__savedHomeScrollPosition
       }
@@ -109,6 +111,8 @@ function ScrollToTop() {
       setTimeout(() => {
         window.scrollTo(0, savedPosition)
       }, 0)
+    } else if (pathname === '/cards') {
+      // CardsPage handles its own scroll restoration - do nothing here
     } else {
       // For all other routes, scroll to top
       window.scrollTo(0, 0)
@@ -123,6 +127,8 @@ function App() {
   const { loadUserData } = useOptimizerStore()
   const { isSubscribed, checkSubscription } = useSubscriptionStore()
   const { hasSeenOnboarding, setHasSeenOnboarding } = useOnboardingStore()
+  // Pre-hydrate CardsPageStore to prevent scroll button flicker on iOS swipe back
+  useCardsPageStore()
 
   // Show onboarding and paywall state - only for native platforms
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -158,30 +164,23 @@ function App() {
     }
   }, [isNative])
 
-  // Show onboarding for first-time users, then go directly to app
-  // Paywall is now shown when user hits AI usage limit (not after onboarding)
+  // Show onboarding only for native app first-time users
+  // Web: never show onboarding
   useEffect(() => {
-    // Web: show onboarding for first-time users
-    if (!isNative && !hasSeenOnboarding) {
-      setShowOnboarding(true)
-      return
-    }
-
-    // Web: already seen onboarding, go to app
-    if (!isNative && hasSeenOnboarding) {
+    // Web: never show onboarding
+    if (!isNative) {
       setShowOnboarding(false)
       return
     }
 
-    // Native: wait for IAP to be ready (but not for subscription check)
+    // Native: wait for IAP to be ready, then show onboarding for first-time users
     if (isNative && iapReady) {
       if (!hasSeenOnboarding) {
         // First time user - show onboarding
         setShowOnboarding(true)
         setShowPaywall(false)
       } else {
-        // After onboarding, go directly to app (no paywall here)
-        // Paywall will be triggered when user hits AI usage limit
+        // After onboarding, go directly to app
         setShowOnboarding(false)
         setShowPaywall(false)
       }

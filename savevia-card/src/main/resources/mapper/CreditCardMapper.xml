@@ -14,6 +14,11 @@
         <result column="signup_bonus_json" property="signupBonusJson" jdbcType="VARCHAR"/>
         <result column="image_url" property="imageUrl" jdbcType="VARCHAR"/>
         <result column="apply_url" property="applyUrl" jdbcType="VARCHAR"/>
+        <result column="no_fx_fee" property="noFxFee" jdbcType="BOOLEAN"/>
+        <result column="reward_type" property="rewardType" jdbcType="VARCHAR"/>
+        <result column="point_value" property="pointValue" jdbcType="DECIMAL"/>
+        <result column="point_program" property="pointProgram" jdbcType="VARCHAR"/>
+        <result column="transfer_partners_json" property="transferPartnersJson" jdbcType="VARCHAR"/>
         <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
         <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
@@ -22,7 +27,8 @@
     <!-- 列定义 -->
     <sql id="Base_Column_List">
         id, bank, name, card_type, annual_fee, base_reward_rate, signup_bonus_json,
-        image_url, apply_url, is_active, created_at, updated_at
+        image_url, apply_url, no_fx_fee, reward_type, point_value, point_program,
+        transfer_partners_json, is_active, created_at, updated_at
     </sql>
 
     <!-- 根据ID查询 -->

@@ -22,7 +22,7 @@
     <select id="selectByShareId" resultMap="BaseResultMap">
         SELECT * FROM saved_results
         WHERE share_id = #{shareId}
-        AND (expires_at IS NULL OR expires_at > NOW())
+        AND (expires_at IS NULL OR expires_at > UTC_TIMESTAMP())
     </select>
 
     <select id="selectByUserIdLatest" resultMap="BaseResultMap">

@@ -245,3 +245,30 @@ export interface VerifyReceiptResponse {
   message: string
   subscription?: UserSubscription
 }
+
+// Card Usage Guide Types
+export type TipType = 'BEST_USE' | 'REDEMPTION' | 'TRANSFER_PARTNER' | 'STACKING' | 'AVOID'
+export type RewardType = 'CASHBACK' | 'POINTS' | 'MILES'
+
+export interface CardUsageTip {
+  id: number
+  tipType: TipType
+  title: string
+  content: string
+  icon?: string
+}
+
+export interface TransferPartner {
+  name: string
+  ratio: string
+  value: string
+}
+
+export interface CardUsageGuide {
+  cardId: number
+  rewardType: RewardType
+  pointValue?: number
+  pointProgram?: string
+  transferPartners?: TransferPartner[]
+  tips: CardUsageTip[]
+}

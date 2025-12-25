@@ -1,8 +1,16 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRightOutlined, SafetyOutlined, CloseOutlined, WalletOutlined, CreditCardOutlined } from '@ant-design/icons'
+import { ArrowRightOutlined, SafetyOutlined, CloseOutlined, WalletOutlined, CreditCardOutlined, AppleOutlined } from '@ant-design/icons'
 import { Capacitor } from '@capacitor/core'
+
+// Detect WeChat in-app browser on mobile only (not desktop WeChat)
+const isWeChatMobile = (): boolean => {
+  const ua = navigator.userAgent.toLowerCase()
+  const isWeChat = ua.includes('micromessenger')
+  const isMobile = /mobile|android|iphone|ipad|ipod/.test(ua)
+  return isWeChat && isMobile
+}
 import { useAuthStore } from '../stores/useAuthStore'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useHomePageStore } from '../stores/useHomePageStore'
@@ -108,6 +116,9 @@ function HomePage() {
 
   // Use global store for modal and category state - persists across navigation
   const { showCardModal, setShowCardModal, selectedCategory, setSelectedCategory } = useHomePageStore()
+
+  // Detect WeChat mobile browser (not desktop)
+  const isWeChat = useMemo(() => isWeChatMobile(), [])
 
   // Track if modal is closing (for fade-out animation)
   const [isModalClosing, setIsModalClosing] = useState(false)
@@ -257,6 +268,52 @@ function HomePage() {
 
   return (
     <div className="sv-home-page" style={{ padding: '20px 0 60px', overflow: 'hidden' }}>
+      {/* WeChat Browser Banner */}
+      {isWeChat && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 'calc(56px + env(safe-area-inset-top, 0px))',
+          background: 'linear-gradient(135deg, #111827 0%, #1f2937 100%)',
+          padding: '0 16px',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+          boxSizing: 'border-box'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+            <AppleOutlined style={{ fontSize: '20px', color: 'white', flexShrink: 0 }} />
+            <span style={{ fontSize: '13px', color: 'white', lineHeight: 1.4 }}>
+              {t('share.wechatTip')}
+            </span>
+          </div>
+          <a
+            href="https://apps.apple.com/app/id6756332569"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              padding: '8px 16px',
+              background: 'white',
+              color: '#111827',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: '600',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              flexShrink: 0
+            }}
+          >
+            {t('share.openAppStore')}
+          </a>
+        </div>
+      )}
+
       {/* Hero - Asymmetric Layout */}
       <section className="sv-home-grid" style={{
         display: 'grid',

@@ -1,0 +1,68 @@
+{
+  "cards": [
+    {
+      "card_id": 1,
+      "card_name": "Cobalt Card",
+      "bank": "AMEX",
+      "reward_info": {
+        "reward_type": "POINTS",
+        "point_value": 0.02,
+        "point_program": "Membership Rewards",
+        "transfer_partners": [
+          {
+            "partner": "Aeroplan",
+            "ratio": "1:1",
+            "type": "AIRLINE"
+          },
+          {
+            "partner": "Hilton Honors",
+            "ratio": "1:2",
+            "type": "HOTEL"
+          },
+          {
+            "partner": "Marriott Bonvoy",
+            "ratio": "1:1.2",
+            "type": "HOTEL"
+          }
+        ]
+      },
+      "tips": [
+        {
+          "tip_type": "BEST_USE",
+          "title": "Dining and Food Delivery",
+          "content": "Earn 5x points at restaurants, bars, and food delivery services including Uber Eats and DoorDash. This is one of the highest dining reward rates in Canada.",
+          "icon": "dining",
+          "priority": 1
+        },
+        {
+          "tip_type": "BEST_USE",
+          "title": "Grocery Shopping",
+          "content": "Earn 5x points at grocery stores. Ideal for everyday shopping at major chains like Loblaws, Sobeys, and Metro.",
+          "icon": "grocery",
+          "priority": 2
+        },
+        {
+          "tip_type": "REDEMPTION",
+          "title": "Transfer to Aeroplan for Best Value",
+          "content": "Transfer points 1:1 to Aeroplan for flights worth up to 2+ cents per point. Book reward flights on Air Canada and Star Alliance partners.",
+          "icon": "transfer",
+          "priority": 1
+        },
+        {
+          "tip_type": "STACKING",
+          "title": "Combine with Amex Offers",
+          "content": "Stack your earnings by adding Amex Offers in the app for additional discounts at participating merchants.",
+          "icon": "stack",
+          "priority": 1
+        },
+        {
+          "tip_type": "AVOID",
+          "title": "Foreign Transactions",
+          "content": "Avoid using this card abroad as it charges 2.5% foreign transaction fee. Use a no-FX fee card instead.",
+          "icon": "warning",
+          "priority": 1
+        }
+      ]
+    }
+  ]
+}

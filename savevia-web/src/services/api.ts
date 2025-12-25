@@ -15,6 +15,7 @@ import type {
   UserSubscription,
   VerifyReceiptRequest,
   VerifyReceiptResponse,
+  CardUsageGuide,
 } from '../types'
 
 // API 基础地址 - 通过 Gateway 访问
@@ -404,6 +405,14 @@ export const cardApi = {
     const response = await createRequest('/api/v1/cards/batch', {
       method: 'POST',
       body: JSON.stringify(ids),
+    })
+    return response.data
+  },
+
+  // 获取卡片使用指南
+  getUsageGuide: async (id: number, lang: string = 'en'): Promise<CardUsageGuide> => {
+    const response = await createRequest(`/api/v1/cards/${id}/usage-guide?lang=${lang}`, {
+      method: 'GET',
     })
     return response.data
   },
