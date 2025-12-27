@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { message } from 'antd'
 import { useNavigate, Link } from 'react-router-dom'
@@ -37,6 +37,7 @@ const CATEGORY_CONFIG: Record<SpendingCategory, { icon: string; color: string }>
   ENTERTAINMENT: { icon: '🎬', color: '#f43f5e' },
   PERSONAL_SERVICES: { icon: '💇', color: '#d946ef' },
   FOREIGN: { icon: '🌍', color: '#06b6d4' },
+  LIQUOR: { icon: '🍷', color: '#7c2d12' },
   // Catch-all
   OTHER: { icon: '💳', color: '#71717a' },
 }
@@ -69,22 +70,7 @@ function OptimizerPage() {
   const [showPaywall, setShowPaywall] = useState(false)
   const [checkingUsage, setCheckingUsage] = useState(false)
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isInitialLoadRef = useRef(true)
-
-  // Auto-save with debounce
-  const debouncedSave = useCallback((spending: Record<string, number>) => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        await userApi.saveUserSpending(spending)
-      } catch (error) {
-        console.error('Auto-save spending failed:', error)
-      }
-    }, 1000)
-  }, [])
 
   // Load user's saved spending when authenticated
   useEffect(() => {
@@ -110,15 +96,6 @@ function OptimizerPage() {
     loadUserSpending()
   }, [isAuthenticated, setSpending])
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [])
-
   const mutation = useMutation({
     mutationFn: optimizerApi.calculate,
     onSuccess: (data) => {
@@ -135,10 +112,7 @@ function OptimizerPage() {
     const newSpending = { ...localSpending, [category]: numValue }
     setLocalSpending(newSpending)
     setSpending(category, numValue)
-
-    if (isAuthenticated && !isInitialLoadRef.current) {
-      debouncedSave(newSpending as Record<string, number>)
-    }
+    // Note: setSpending already triggers syncSpending() in the store with debounce
   }
 
   // Execute the optimization request

@@ -36,13 +36,33 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
-        # User Service
+        # User Service - Auth endpoints (strict rate limit)
+        - id: auth-service
+          uri: lb://savevia-user
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 50
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # User Service - User endpoints
         - id: user-service
           uri: lb://savevia-user
           predicates:
-            - Path=/api/v1/auth/**, /api/v1/users/**
+            - Path=/api/v1/users/**
           filters:
             - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         # Card Service
         - id: card-service
@@ -51,14 +71,40 @@ spring:
             - Path=/api/v1/cards/**
           filters:
             - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
-        # Optimizer Service
+        # Optimizer Service - Calculate endpoint (expensive, strict limit)
+        - id: optimizer-calculate
+          uri: lb://savevia-optimizer
+          predicates:
+            - Path=/api/v1/optimize/calculate
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # Optimizer Service - Other endpoints
         - id: optimizer-service
           uri: lb://savevia-optimizer
           predicates:
             - Path=/api/v1/optimize/**
           filters:
             - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
         # Static uploads (avatars, etc.)
         - id: uploads
@@ -109,3 +155,18 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+
+# Security settings
+savevia:
+  security:
+    rate-limit:
+      enabled: true
+      block-threshold: 30  # Block IP after 30 rate limit violations in 1 minute (more lenient)
+    bot-detection:
+      enabled: true
+      block-empty-ua: true
+    ip-block:
+      enabled: true
+      first-block-minutes: 5
+      second-block-minutes: 60
+      third-block-minutes: 1440

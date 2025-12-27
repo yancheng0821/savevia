@@ -91,18 +91,25 @@ class BaseScraper(ABC):
         self.last_request_time = time.time()
 
     @retry(max_attempts=3, delay=2.0)
-    def get_page(self, url: str, wait_selector: str = None) -> Optional[str]:
-        """Get page content with rate limiting and retry"""
+    def get_page(self, url: str, wait_selector: str = None, wait_time: int = 2) -> Optional[str]:
+        """Get page content with rate limiting and retry
+
+        Args:
+            url: URL to fetch
+            wait_selector: CSS selector to wait for (Selenium only)
+            wait_time: Additional wait time for dynamic content (seconds)
+        """
         self._rate_limit()
 
         if self.use_selenium and self.driver:
             try:
                 self.driver.get(url)
                 if wait_selector:
-                    WebDriverWait(self.driver, 10).until(
+                    WebDriverWait(self.driver, 15).until(
                         EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector))
                     )
-                time.sleep(2)  # Additional wait for dynamic content
+                # Additional wait for JavaScript content to render
+                time.sleep(wait_time)
                 return self.driver.page_source
             except TimeoutException:
                 print(f"Timeout loading {url}")
@@ -116,9 +123,15 @@ class BaseScraper(ABC):
                 print(f"Request failed for {url}: {e}")
                 return None
 
-    def get_soup(self, url: str, wait_selector: str = None) -> Optional[BeautifulSoup]:
-        """Get BeautifulSoup object for a URL"""
-        html = self.get_page(url, wait_selector)
+    def get_soup(self, url: str, wait_selector: str = None, wait_time: int = 2) -> Optional[BeautifulSoup]:
+        """Get BeautifulSoup object for a URL
+
+        Args:
+            url: URL to fetch
+            wait_selector: CSS selector to wait for (Selenium only)
+            wait_time: Additional wait time for dynamic content (seconds)
+        """
+        html = self.get_page(url, wait_selector, wait_time)
         if html:
             return BeautifulSoup(html, 'lxml')
         return None

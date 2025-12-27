@@ -19,6 +19,7 @@
         <result column="point_value" property="pointValue" jdbcType="DECIMAL"/>
         <result column="point_program" property="pointProgram" jdbcType="VARCHAR"/>
         <result column="transfer_partners_json" property="transferPartnersJson" jdbcType="VARCHAR"/>
+        <result column="amex_travel_bonus_rate" property="amexTravelBonusRate" jdbcType="DECIMAL"/>
         <result column="is_active" property="isActive" jdbcType="BOOLEAN"/>
         <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
         <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
@@ -28,7 +29,7 @@
     <sql id="Base_Column_List">
         id, bank, name, card_type, annual_fee, base_reward_rate, signup_bonus_json,
         image_url, apply_url, no_fx_fee, reward_type, point_value, point_program,
-        transfer_partners_json, is_active, created_at, updated_at
+        transfer_partners_json, amex_travel_bonus_rate, is_active, created_at, updated_at
     </sql>
 
     <!-- 根据ID查询 -->

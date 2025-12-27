@@ -70,6 +70,7 @@ const CATEGORY_CONFIG: Record<SpendingCategory, { icon: string; color: string }>
   ENTERTAINMENT: { icon: '🎬', color: '#f43f5e' },
   PERSONAL_SERVICES: { icon: '💇', color: '#d946ef' },
   FOREIGN: { icon: '🌍', color: '#10b981' },
+  LIQUOR: { icon: '🍷', color: '#7c2d12' },
   // Catch-all
   OTHER: { icon: '💳', color: '#6b7280' },
 }

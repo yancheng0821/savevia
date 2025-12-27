@@ -1,9 +1,9 @@
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useRef, useCallback, useState } from 'react'
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
-import { ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined, DollarOutlined, CreditCardOutlined, RightOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined, DollarOutlined } from '@ant-design/icons'
 import { cardApi, affiliateApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -150,8 +150,25 @@ const CATEGORY_ICONS: Record<SpendingCategory, string> = {
   INSURANCE: '📋',
   TELECOM: '📱',
   EV_CHARGING: '⚡',
+  LIQUOR: '🍷',
   // Catch-all
   OTHER: '💳',
+}
+
+// Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS'): string {
+  const value = rate * 100
+  // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
+  let formatted: string
+  if (value % 1 === 0) {
+    formatted = value.toFixed(0)  // e.g., 1, 2, 3
+  } else if ((value * 10) % 1 === 0) {
+    formatted = value.toFixed(1)  // e.g., 1.5, 2.5
+  } else {
+    formatted = value.toFixed(2)  // e.g., 1.25, 1.75
+  }
+
+  return rewardType === 'POINTS' ? `${formatted}x` : `${formatted}%`
 }
 
 // Parse card style from imageUrl JSON or use fallback
@@ -171,14 +188,140 @@ function getCardStyle(card: CreditCard) {
   return BANK_FALLBACK_COLORS[card.bank] || DEFAULT_CARD_STYLE
 }
 
+// Usage Guide Tabs Component
+function UsageGuideTabs({ usageGuide, t }: { usageGuide: any; t: any }) {
+  const typeIcons: Record<TipType, string> = {
+    BEST_USE: '💡',
+    REDEMPTION: '🎁',
+    TRAVEL_BENEFIT: '✈️',
+    INSURANCE: '🛡️',
+    PERK: '🎉',
+    STACKING: '🔗',
+    AVOID: '⚠️',
+    TRANSFER_PARTNER: '🔄'
+  }
+
+  // Build available tabs from usage guide data
+  const availableTabs = useMemo(() => {
+    if (!usageGuide) return []
+
+    const tabs: { key: string; label: string; icon: string }[] = []
+    const typeOrder: TipType[] = ['BEST_USE', 'REDEMPTION', 'TRAVEL_BENEFIT', 'INSURANCE', 'PERK', 'STACKING', 'AVOID']
+
+    if (usageGuide.tips && usageGuide.tips.length > 0) {
+      const tipsByType = usageGuide.tips.reduce((acc: Record<string, any[]>, tip: any) => {
+        if (!acc[tip.tipType]) acc[tip.tipType] = []
+        acc[tip.tipType].push(tip)
+        return acc
+      }, {})
+
+      typeOrder.forEach(tipType => {
+        if (tipsByType[tipType] && tipsByType[tipType].length > 0) {
+          tabs.push({
+            key: tipType,
+            label: t(`cardDetail.usageGuide.tipTypes.${tipType}`),
+            icon: typeIcons[tipType]
+          })
+        }
+      })
+    }
+
+    if (usageGuide.transferPartners && usageGuide.transferPartners.length > 0) {
+      tabs.push({
+        key: 'TRANSFER_PARTNER',
+        label: t('cardDetail.usageGuide.transferPartners'),
+        icon: '🔄'
+      })
+    }
+
+    return tabs
+  }, [usageGuide, t])
+
+  const [activeTab, setActiveTab] = useState<string>('')
+
+  // Set initial active tab when availableTabs changes
+  useEffect(() => {
+    if (availableTabs.length > 0 && !activeTab) {
+      setActiveTab(availableTabs[0].key)
+    }
+  }, [availableTabs, activeTab])
+
+  if (!usageGuide || availableTabs.length === 0) return null
+
+  const tipsByType = usageGuide.tips?.reduce((acc: Record<string, any[]>, tip: any) => {
+    if (!acc[tip.tipType]) acc[tip.tipType] = []
+    acc[tip.tipType].push(tip)
+    return acc
+  }, {}) || {}
+
+  return (
+    <div className="sv-card-detail-usage-guide">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <h2 className="sv-card-detail-section-title" style={{ margin: 0 }}>
+          {t('cardDetail.usageGuide.title')}
+        </h2>
+        <span style={{
+          fontSize: '11px',
+          color: '#9ca3af',
+          fontStyle: 'italic'
+        }}>
+          {t('cardDetail.usageGuide.disclaimer')}
+        </span>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="sv-usage-guide-tabs">
+        {availableTabs.map(tab => (
+          <button
+            key={tab.key}
+            className={`sv-usage-guide-tab ${activeTab === tab.key ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            <span className="sv-usage-guide-tab-icon">{tab.icon}</span>
+            <span className="sv-usage-guide-tab-label">{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="sv-usage-guide-tab-content">
+        {activeTab === 'TRANSFER_PARTNER' ? (
+          // Transfer Partners content
+          <div className="sv-card-detail-partners-list">
+            {usageGuide.transferPartners?.map((partner: any, idx: number) => (
+              <div key={idx} className="sv-card-detail-partner-tag">
+                <span className="sv-card-detail-partner-tag-name">{partner.name}</span>
+                <span className="sv-card-detail-partner-tag-ratio sv-highlight-number">{partner.ratio}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Tips content
+          <div className="sv-card-detail-tip-list">
+            {tipsByType[activeTab]?.map((tip: any) => (
+              <div key={tip.id} className="sv-card-detail-tip-entry">
+                <div className="sv-card-detail-tip-entry-title">{tip.title}</div>
+                {tip.content && (
+                  <div className="sv-card-detail-tip-entry-content">{tip.content}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function CardDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const location = useLocation()
   const { t, i18n } = useTranslation()
+  // Get base language code (e.g., 'zh' from 'zh-CN')
+  const lang = i18n.language?.split('-')[0] || 'en'
   const { selectedCards, addCard, removeCard } = useOptimizerStore()
   const { user } = useAuthStore()
-  const [isGuideExpanded, setIsGuideExpanded] = useState(false)
 
   // Get card from router state if available (passed from CardsPage)
   const passedCard = (location.state as { card?: CreditCard })?.card
@@ -229,8 +372,8 @@ function CardDetailPage() {
 
   // Fetch usage guide
   const { data: usageGuide } = useQuery({
-    queryKey: ['cardUsageGuide', id, i18n.language],
-    queryFn: () => cardApi.getUsageGuide(Number(id), i18n.language),
+    queryKey: ['cardUsageGuide', id, lang],
+    queryFn: () => cardApi.getUsageGuide(Number(id), lang),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -449,7 +592,7 @@ function CardDetailPage() {
         </div>
 
         {/* Tags */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px', alignItems: 'center' }}>
           {card.annualFee === 0 && (
             <span style={{
               background: '#ecfdf5',
@@ -464,8 +607,8 @@ function CardDetailPage() {
           )}
           {hasNoFxFee && (
             <span style={{
-              background: '#eff6ff',
-              color: '#2563eb',
+              background: '#f3f4f6',
+              color: '#374151',
               padding: '6px 12px',
               borderRadius: '8px',
               fontSize: '12px',
@@ -482,7 +625,21 @@ function CardDetailPage() {
             fontSize: '12px',
             fontWeight: '600'
           }}>
-            {(card.baseRewardRate * 100).toFixed(1)}% {t('cardDetail.baseRate')}
+            {t(card.rewardType === 'POINTS' ? 'cardDetail.pointsCard' : 'cardDetail.cashbackCard')}
+          </span>
+          {/* Update time - pushed to the right */}
+          <span style={{
+            marginLeft: 'auto',
+            color: '#9ca3af',
+            fontSize: '11px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            <ClockCircleOutlined style={{ fontSize: '10px' }} />
+            {t('cardDetail.lastUpdated')}: {card.updatedAt
+              ? new Date(card.updatedAt).toLocaleDateString(lang === 'zh' ? 'zh-CN' : lang === 'ja' ? 'ja-JP' : lang === 'ko' ? 'ko-KR' : 'en-CA', { year: 'numeric', month: 'short' })
+              : new Date().toLocaleDateString(lang === 'zh' ? 'zh-CN' : lang === 'ja' ? 'ja-JP' : lang === 'ko' ? 'ko-KR' : 'en-CA', { year: 'numeric', month: 'short' })}
           </span>
         </div>
       </div>
@@ -506,9 +663,11 @@ function CardDetailPage() {
               <ClockCircleOutlined /> {card.signupBonus.daysToComplete} {t('cardDetail.days')}
             </span>
           </div>
-          {card.signupBonus.description && (
+          {(card.signupBonus.descriptionI18n || card.signupBonus.description) && (
             <p className="sv-card-detail-bonus-desc">
-              {card.signupBonus.description}
+              {card.signupBonus.descriptionI18n
+                ? (card.signupBonus.descriptionI18n[lang] || card.signupBonus.descriptionI18n['en'])
+                : card.signupBonus.description}
             </p>
           )}
         </div>
@@ -517,144 +676,84 @@ function CardDetailPage() {
       {/* Reward Rules */}
       <div className="sv-card-detail-rules">
         <h2 className="sv-card-detail-section-title">
-          {t('cardDetail.rewardRates')}
+          {t(card.rewardType === 'POINTS' ? 'cardDetail.rewardRatesPoints' : 'cardDetail.rewardRatesCashback')}
         </h2>
         <div className="sv-card-detail-rules-list">
-          {card.rewardRules.length > 0 ? (
-            card.rewardRules.map((rule, index) => (
-              <div
-                key={rule.id}
-                className="sv-card-detail-rule-item"
-                style={{
-                  borderBottom: index < card.rewardRules.length - 1 ? '1px solid var(--border-color, rgba(0,0,0,0.06))' : 'none'
-                }}
-              >
-                <div className="sv-card-detail-rule-left">
-                  <span style={{ fontSize: '20px' }}>{CATEGORY_ICONS[rule.category]}</span>
-                  <div>
-                    <div className="sv-card-detail-rule-category">
-                      {t(`categories.${rule.category}`)}
-                    </div>
-                    {rule.description && (
-                      <div className="sv-card-detail-rule-desc">
-                        {rule.description}
-                      </div>
-                    )}
+          {card.rewardRules.map((rule) => (
+            <div
+              key={rule.id}
+              className="sv-card-detail-rule-item"
+              style={{
+                borderBottom: '1px solid var(--border-color, rgba(0,0,0,0.06))'
+              }}
+            >
+              <div className="sv-card-detail-rule-left">
+                <span style={{ fontSize: '20px' }}>{CATEGORY_ICONS[rule.category]}</span>
+                <div>
+                  <div className="sv-card-detail-rule-category">
+                    {t(`categories.${rule.category}`)}
                   </div>
-                </div>
-                <div className="sv-card-detail-rule-right">
-                  <div className="sv-card-detail-rule-rate">
-                    {(rule.rewardRate * 100).toFixed(0)}%
-                  </div>
-                  {rule.monthlyCapAmount && (
-                    <div className="sv-card-detail-rule-cap">
-                      {t('cardDetail.capAmount', { amount: rule.monthlyCapAmount })}
+                  {rule.description && (
+                    <div className="sv-card-detail-rule-desc">
+                      {rule.description}
                     </div>
                   )}
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="sv-card-detail-no-rules">
-              <CreditCardOutlined style={{ fontSize: '24px', marginBottom: '8px', display: 'block' }} />
-              {(card.baseRewardRate * 100).toFixed(1)}% {t('cardDetail.onAllPurchases')}
+              <div className="sv-card-detail-rule-right">
+                <div className="sv-card-detail-rule-rate">
+                  {formatRewardRate(rule.rewardRate, card.rewardType)}
+                </div>
+                {rule.monthlyCapAmount && (
+                  <div className="sv-card-detail-rule-cap">
+                    {t('cardDetail.capAmount', { amount: rule.monthlyCapAmount })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {/* Amex Travel Online bonus - only show if card has this benefit */}
+          {card.amexTravelBonusRate && card.amexTravelBonusRate > 0 && (
+            <div className="sv-card-detail-rule-item" style={{ borderBottom: '1px solid var(--border-color, rgba(0,0,0,0.06))' }}>
+              <div className="sv-card-detail-rule-left">
+                <span style={{ fontSize: '20px' }}>🌐</span>
+                <div>
+                  <div className="sv-card-detail-rule-category">
+                    {t('cardDetail.amexTravelOnline')}
+                  </div>
+                  <div className="sv-card-detail-rule-desc">
+                    {t('cardDetail.amexTravelOnlineDesc')}
+                  </div>
+                </div>
+              </div>
+              <div className="sv-card-detail-rule-right">
+                <div className="sv-card-detail-rule-rate">
+                  +{formatRewardRate(card.amexTravelBonusRate, card.rewardType)}
+                </div>
+              </div>
             </div>
           )}
+          {/* OTHER category - base reward rate for all other purchases (always last) */}
+          <div className="sv-card-detail-rule-item">
+            <div className="sv-card-detail-rule-left">
+              <span style={{ fontSize: '20px' }}>{CATEGORY_ICONS['OTHER']}</span>
+              <div>
+                <div className="sv-card-detail-rule-category">
+                  {t('categories.OTHER')}
+                </div>
+              </div>
+            </div>
+            <div className="sv-card-detail-rule-right">
+              <div className="sv-card-detail-rule-rate">
+                {formatRewardRate(card.baseRewardRate, card.rewardType)}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Usage Guide - Collapsible */}
-      {usageGuide && (usageGuide.tips?.length > 0 || (usageGuide.transferPartners && usageGuide.transferPartners.length > 0)) && (
-        <div className="sv-card-detail-usage-guide">
-          <div
-            className="sv-card-detail-guide-header"
-            onClick={() => setIsGuideExpanded(!isGuideExpanded)}
-          >
-            <h2 className="sv-card-detail-section-title" style={{ marginBottom: 0 }}>
-              <span className="sv-card-detail-guide-icon">💡</span>
-              {t('cardDetail.usageGuide.title')}
-            </h2>
-            <RightOutlined className={`sv-card-detail-guide-arrow ${isGuideExpanded ? 'expanded' : ''}`} />
-          </div>
-
-          {isGuideExpanded && (
-            <div className="sv-card-detail-guide-content">
-              {/* Reward Program Info */}
-              {usageGuide.pointProgram && usageGuide.pointValue && (
-                <div className="sv-card-detail-reward-program-info">
-                  <div className="sv-card-detail-reward-program-name">
-                    <span className="sv-card-detail-reward-program-icon">💎</span>
-                    {usageGuide.pointProgram}
-                  </div>
-                  <div className="sv-card-detail-reward-program-value">
-                    1 {t('cardDetail.usageGuide.pointUnit')} ≈ {(usageGuide.pointValue * 100).toFixed(1)}{t('cardDetail.usageGuide.cents')}
-                  </div>
-                </div>
-              )}
-
-              {/* Tips by type */}
-              {usageGuide.tips && usageGuide.tips.length > 0 && (() => {
-                const tipsByType = usageGuide.tips.reduce((acc, tip) => {
-                  if (!acc[tip.tipType]) acc[tip.tipType] = []
-                  acc[tip.tipType].push(tip)
-                  return acc
-                }, {} as Record<TipType, typeof usageGuide.tips>)
-
-                const typeOrder: TipType[] = ['BEST_USE', 'REDEMPTION', 'STACKING', 'AVOID']
-                const typeIcons: Record<TipType, string> = {
-                  BEST_USE: '✦',
-                  REDEMPTION: '↗',
-                  STACKING: '⚡',
-                  AVOID: '✗',
-                  TRANSFER_PARTNER: '→'
-                }
-
-                return typeOrder.map(tipType => {
-                  const tips = tipsByType[tipType]
-                  if (!tips || tips.length === 0) return null
-
-                  return (
-                    <div key={tipType} className="sv-card-detail-tip-section">
-                      <div className="sv-card-detail-tip-section-title">
-                        <span className="sv-card-detail-tip-section-icon">{typeIcons[tipType]}</span>
-                        {t(`cardDetail.usageGuide.tipTypes.${tipType}`)}
-                      </div>
-                      <div className="sv-card-detail-tip-list">
-                        {tips.map(tip => (
-                          <div key={tip.id} className="sv-card-detail-tip-entry">
-                            <div className="sv-card-detail-tip-entry-title">{tip.title}</div>
-                            {tip.content && (
-                              <div className="sv-card-detail-tip-entry-content">{tip.content}</div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                })
-              })()}
-
-              {/* Transfer Partners */}
-              {usageGuide.transferPartners && usageGuide.transferPartners.length > 0 && (
-                <div className="sv-card-detail-tip-section">
-                  <div className="sv-card-detail-tip-section-title">
-                    <span className="sv-card-detail-tip-section-icon">→</span>
-                    {t('cardDetail.usageGuide.transferPartners')}
-                  </div>
-                  <div className="sv-card-detail-partners-list">
-                    {usageGuide.transferPartners.map((partner, idx) => (
-                      <div key={idx} className="sv-card-detail-partner-tag">
-                        <span className="sv-card-detail-partner-tag-name">{partner.name}</span>
-                        <span className="sv-card-detail-partner-tag-ratio sv-highlight-number">{partner.ratio}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Usage Guide with Tabs */}
+      <UsageGuideTabs usageGuide={usageGuide} t={t} />
 
       {/* Apply URL */}
       {(card.applyUrl || card.affiliateLink?.affiliateUrl) && (

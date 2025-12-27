@@ -47,18 +47,18 @@ class SQLGenerator:
                     lines.append(sql)
                     lines.append("")
 
-        # Generate UPDATE statements for reward info
-        if reward_infos:
-            lines.append("-- ============================================")
-            lines.append("-- CARD REWARD INFO UPDATES")
-            lines.append("-- ============================================")
-            lines.append("")
-
-            for info in reward_infos:
-                sql = self._generate_reward_info_update(info)
-                if sql:
-                    lines.append(sql)
-                    lines.append("")
+        # NOTE: Reward info updates disabled - data extraction not reliable
+        # if reward_infos:
+        #     lines.append("-- ============================================")
+        #     lines.append("-- CARD REWARD INFO UPDATES")
+        #     lines.append("-- ============================================")
+        #     lines.append("")
+        #
+        #     for info in reward_infos:
+        #         sql = self._generate_reward_info_update(info)
+        #         if sql:
+        #             lines.append(sql)
+        #             lines.append("")
 
         lines.append("COMMIT;")
         lines.append("")
@@ -75,7 +75,7 @@ class SQLGenerator:
         return sql_content
 
     def _generate_tip_insert(self, tip: TranslatedTip) -> Optional[str]:
-        """Generate INSERT statement for a single tip"""
+        """Generate INSERT statement for a single tip using card_name + bank lookup"""
         # Check for duplicates
         key = (tip.card_id, tip.tip_type.value, list(tip.title_json.values())[0] if tip.title_json else "")
         if key in self.generated_keys:
@@ -88,17 +88,30 @@ class SQLGenerator:
 
         icon = f"'{tip.icon}'" if tip.icon else "NULL"
 
-        sql = f"""-- {tip.tip_type.value} tip for card {tip.card_id}
+        # Use card_name + bank to find card_id if available
+        if tip.card_name and tip.bank:
+            card_name_escaped = tip.card_name.replace("'", "''")
+            bank_escaped = tip.bank.replace("'", "''")
+            card_id_expr = f"(SELECT id FROM credit_cards WHERE name = '{card_name_escaped}' AND bank = '{bank_escaped}' LIMIT 1)"
+            comment = f"-- {tip.tip_type.value} tip for {tip.bank} {tip.card_name}"
+            where_clause = f"WHERE EXISTS (SELECT 1 FROM credit_cards WHERE name = '{card_name_escaped}' AND bank = '{bank_escaped}')"
+        else:
+            card_id_expr = str(tip.card_id)
+            comment = f"-- {tip.tip_type.value} tip for card {tip.card_id}"
+            where_clause = "WHERE 1=1"
+
+        sql = f"""{comment}
 INSERT INTO card_usage_tips (card_id, tip_type, title_json, content_json, icon, priority, is_active)
-VALUES (
-    {tip.card_id},
+SELECT
+    {card_id_expr},
     '{tip.tip_type.value}',
     '{title_json}',
     '{content_json}',
     {icon},
     {tip.priority},
     true
-) ON DUPLICATE KEY UPDATE
+{where_clause}
+ON DUPLICATE KEY UPDATE
     title_json = VALUES(title_json),
     content_json = VALUES(content_json),
     icon = VALUES(icon),
@@ -108,7 +121,7 @@ VALUES (
         return sql
 
     def _generate_reward_info_update(self, info: CardRewardInfo) -> Optional[str]:
-        """Generate UPDATE statement for card reward info"""
+        """Generate UPDATE statement for card reward info using card_name + bank lookup"""
         updates = []
 
         if info.reward_type:
@@ -132,11 +145,22 @@ VALUES (
             return None
 
         updates_str = ',\n    '.join(updates)
-        sql = f"""-- Update reward info for card {info.card_id}
+
+        # Use card_name + bank to find card if available
+        if info.card_name and info.bank:
+            card_name_escaped = info.card_name.replace("'", "''")
+            bank_escaped = info.bank.replace("'", "''")
+            comment = f"-- Update reward info for {info.bank} {info.card_name}"
+            where_clause = f"WHERE name = '{card_name_escaped}' AND bank = '{bank_escaped}'"
+        else:
+            comment = f"-- Update reward info for card {info.card_id}"
+            where_clause = f"WHERE id = {info.card_id}"
+
+        sql = f"""{comment}
 UPDATE credit_cards SET
     {updates_str},
     updated_at = NOW()
-WHERE id = {info.card_id};"""
+{where_clause};"""
 
         return sql
 

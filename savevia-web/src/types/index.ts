@@ -20,6 +20,7 @@ export type SpendingCategory =
   | 'INSURANCE'
   | 'TELECOM'
   | 'EV_CHARGING'
+  | 'LIQUOR'
   // Catch-all
   | 'OTHER'
 
@@ -40,19 +41,24 @@ export interface CreditCard {
   cardType: string
   annualFee: number
   baseRewardRate: number
+  rewardType?: 'CASHBACK' | 'POINTS'  // CASHBACK shows %, POINTS shows x
+  pointProgram?: string  // e.g., "AIR MILES", "Aeroplan", "MR Points"
   imageUrl?: string
   applyUrl?: string
   noFxFee?: boolean
   signupBonus?: SignupBonus
   rewardRules: RewardRule[]
+  amexTravelBonusRate?: number  // Additional points when booking via Amex Travel Online
   affiliateLink?: AffiliateLink
+  updatedAt?: string  // Last update time for card data
 }
 
 export interface SignupBonus {
   bonusAmount: number
   minSpend: number
   daysToComplete: number
-  description?: string
+  description?: string                        // 英文描述（旧前端兼容）
+  descriptionI18n?: Record<string, string>    // 多语言描述（新前端用）
 }
 
 export interface RewardRule {
@@ -119,6 +125,7 @@ export const CATEGORY_LABELS: Record<SpendingCategory, string> = {
   INSURANCE: 'Insurance',
   TELECOM: 'Telecom',
   EV_CHARGING: 'EV Charging',
+  LIQUOR: 'Liquor',
   // Catch-all
   OTHER: 'Other',
 }
@@ -247,7 +254,7 @@ export interface VerifyReceiptResponse {
 }
 
 // Card Usage Guide Types
-export type TipType = 'BEST_USE' | 'REDEMPTION' | 'TRANSFER_PARTNER' | 'STACKING' | 'AVOID'
+export type TipType = 'BEST_USE' | 'REDEMPTION' | 'TRAVEL_BENEFIT' | 'INSURANCE' | 'PERK' | 'TRANSFER_PARTNER' | 'STACKING' | 'AVOID'
 export type RewardType = 'CASHBACK' | 'POINTS' | 'MILES'
 
 export interface CardUsageTip {

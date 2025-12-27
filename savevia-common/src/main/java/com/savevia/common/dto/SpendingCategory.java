@@ -29,6 +29,7 @@ public enum SpendingCategory {
     INSURANCE("Insurance", "保险"),
     TELECOM("Telecom", "电信"),
     EV_CHARGING("EV Charging", "电动车充电"),
+    LIQUOR("Liquor", "酒类"),
 
     // Catch-all
     OTHER("Other", "其他");

@@ -553,7 +553,7 @@ function MePage() {
               <span>{t('me.language')}</span>
             </div>
             <div className="sv-me-item-right">
-              <span>{langLabels[i18n.language] || 'English'}</span>
+              <span>{langLabels[i18n.language?.split('-')[0]] || 'English'}</span>
               <RightOutlined />
             </div>
           </div>

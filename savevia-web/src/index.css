@@ -3362,12 +3362,10 @@ html.dark-mode .sv-optimizer-title {
 
 .sv-result-ai-tip {
   margin: 4px 0 0 0;
+  padding-left: 20px;
   font-size: 13px;
   color: #6b7280;
   line-height: 1.6;
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
 }
 
 .sv-result-ai-label {
@@ -3679,66 +3677,94 @@ html.dark-mode .sv-share-menu-divider {
   color: #6b7280;
 }
 
-/* Card Usage Guide - Collapsible */
+/* Card Usage Guide */
 .sv-card-detail-usage-guide {
   margin-bottom: 32px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.sv-card-detail-guide-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  padding: 4px 0;
-}
-
-.sv-card-detail-guide-icon {
-  margin-right: 8px;
-}
-
-.sv-card-detail-guide-header:active {
-  opacity: 0.7;
-}
-
-.sv-card-detail-guide-arrow {
-  font-size: 12px;
-  color: #9ca3af;
-  transition: transform 0.2s ease;
-}
-
-.sv-card-detail-guide-arrow.expanded {
-  transform: rotate(90deg);
 }
 
 .sv-card-detail-guide-content {
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
-/* Reward Program Info */
-.sv-card-detail-reward-program-info {
-  margin-bottom: 24px;
+/* Usage Guide Tabs */
+.sv-usage-guide-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 0 16px;
 }
 
-.sv-card-detail-reward-program-name {
+.sv-usage-guide-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 500;
   color: #6b7280;
-  margin-bottom: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 
-.sv-card-detail-reward-program-icon {
-  font-size: 14px;
+.sv-usage-guide-tab:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #374151;
 }
 
-.sv-card-detail-reward-program-value {
-  font-size: 18px;
-  font-weight: 600;
+.sv-usage-guide-tab:active {
+  transform: scale(0.97);
+}
+
+.sv-usage-guide-tab.active {
+  background: var(--gray-100, #f3f4f6);
   color: #111827;
+  font-weight: 600;
+}
+
+.sv-usage-guide-tab-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.sv-usage-guide-tab-label {
+  line-height: 1;
+}
+
+.sv-usage-guide-tab-content {
+  min-height: 80px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode tabs */
+html.dark-mode .sv-usage-guide-tab {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+html.dark-mode .sv-usage-guide-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-usage-guide-tab.active {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 /* Highlight numbers in green */
@@ -3780,15 +3806,16 @@ html.dark-mode .sv-share-menu-divider {
 }
 
 .sv-card-detail-tip-entry {
-  padding-left: 12px;
-  border-left: 2px solid #e5e7eb;
+  padding: 14px 16px;
+  background: var(--gray-100, #f3f4f6);
+  border-radius: 10px;
 }
 
 .sv-card-detail-tip-entry-title {
   font-size: 15px;
   font-weight: 600;
   color: #111827;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   line-height: 1.4;
 }
 
@@ -3796,6 +3823,11 @@ html.dark-mode .sv-share-menu-divider {
   font-size: 14px;
   color: #6b7280;
   line-height: 1.6;
+}
+
+/* Dark mode tip entry */
+html.dark-mode .sv-card-detail-tip-entry {
+  background: var(--bg-tertiary);
 }
 
 /* Transfer Partners */
@@ -3869,15 +3901,6 @@ html.dark-mode .sv-card-detail-no-rules {
 
 html.dark-mode .sv-card-detail-rule-item {
   border-color: var(--border-color) !important;
-}
-
-/* Card Usage Guide - Dark Mode */
-html.dark-mode .sv-card-detail-usage-guide {
-  border-color: var(--border-color);
-}
-
-html.dark-mode .sv-card-detail-reward-program-value {
-  color: var(--text-primary);
 }
 
 html.dark-mode .sv-card-detail-tip-entry {

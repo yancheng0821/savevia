@@ -162,6 +162,7 @@
     "INSURANCE": "Insurance",
     "TELECOM": "Telecom",
     "EV_CHARGING": "EV Charging",
+    "LIQUOR": "Liquor",
     "OTHER": "Other"
   },
   "auth": {
@@ -300,12 +301,20 @@
     "noAnnualFee": "No Annual Fee",
     "noFxFee": "No FX Fee",
     "baseRate": "Base Rate",
+    "baseRatePoints": "Base Earn Rate",
+    "baseRateCashback": "Base Cash Back",
+    "pointsCard": "Points Card",
+    "cashbackCard": "Cash Back Card",
     "welcomeBonus": "Welcome Bonus",
     "points": "Points",
     "minSpend": "Min. Spend",
     "days": "Days",
     "rewardRates": "Reward Rates",
+    "rewardRatesPoints": "Earning Rates",
+    "rewardRatesCashback": "Cash Back Rates",
     "capAmount": "Up to ${{amount}}/mo",
+    "amexTravelOnline": "Amex Travel Online",
+    "amexTravelOnlineDesc": "Additional points on hotel & car rental bookings",
     "onAllPurchases": "on all purchases",
     "applyNow": "Apply Now",
     "addToMyCards": "Add to My Cards",
@@ -313,8 +322,10 @@
     "viewDetails": "View Details",
     "add": "Add",
     "added": "Added",
+    "lastUpdated": "Updated",
     "usageGuide": {
-      "title": "How to Maximize This Card",
+      "title": "Card Benefits & Tips",
+      "disclaimer": "For reference only",
       "rewardType": "Reward Type",
       "pointValue": "Point Value",
       "centsPerPoint": "cents/point",
@@ -325,9 +336,12 @@
       "tipTypes": {
         "BEST_USE": "Best For",
         "REDEMPTION": "Redemption Tips",
+        "TRAVEL_BENEFIT": "Travel Benefits",
+        "INSURANCE": "Insurance Coverage",
+        "PERK": "Card Perks",
         "TRANSFER_PARTNER": "Transfer Partners",
         "STACKING": "Stacking Tips",
-        "AVOID": "Things to Avoid"
+        "AVOID": "Notes"
       },
       "rewardTypes": {
         "CASHBACK": "Cash Back",

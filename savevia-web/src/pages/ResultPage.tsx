@@ -13,6 +13,21 @@ import type { SpendingCategory } from '../types'
 // Check if running on native platform
 const isNativeApp = Capacitor.isNativePlatform()
 
+// Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS'): string {
+  const value = rate * 100
+  // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
+  let formatted: string
+  if (value % 1 === 0) {
+    formatted = value.toFixed(0)  // e.g., 1, 2, 3
+  } else if ((value * 10) % 1 === 0) {
+    formatted = value.toFixed(1)  // e.g., 1.5, 2.5
+  } else {
+    formatted = value.toFixed(2)  // e.g., 1.25, 1.75
+  }
+  return rewardType === 'POINTS' ? `${formatted}x` : `${formatted}%`
+}
+
 // Category emoji mapping
 const CATEGORY_ICONS: Record<string, string> = {
   // Daily Essentials
@@ -39,6 +54,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'ENTERTAINMENT': '🎬',
   'PERSONAL_SERVICES': '💇',
   'FOREIGN': '🌍',
+  'LIQUOR': '🍷',
   // Catch-all
   'OTHER': '💳',
 }
@@ -559,7 +575,7 @@ function ResultPage() {
                       }}
                     >
                       <span className="sv-result-rate">
-                        {(rec.rewardRate * 100).toFixed(0)}%
+                        {formatRewardRate(rec.rewardRate, rec.recommendedCard?.rewardType)}
                       </span>
                       <span className="sv-result-reward">
                         ${rec.monthlyReward.toFixed(2)}/mo
@@ -578,7 +594,6 @@ function ResultPage() {
                     }}
                   >
                     <p className="sv-result-ai-tip">
-                      <img src="/logo.svg" alt="" style={{ width: '14px', height: '14px', marginTop: '3px', flexShrink: 0 }} />
                       <span><span className="sv-result-ai-label">{t('result.aiTip')}:</span> {rec.aiExplanation}</span>
                     </p>
                   </div>

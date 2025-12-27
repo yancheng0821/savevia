@@ -150,6 +150,7 @@
     "INSURANCE": "Seguros",
     "TELECOM": "Telecomunicaciones",
     "EV_CHARGING": "Carga VE",
+    "LIQUOR": "Licor",
     "OTHER": "Otro"
   },
   "auth": {
@@ -285,12 +286,20 @@
     "noAnnualFee": "Sin cargo anual",
     "noFxFee": "Sin cargo por cambio",
     "baseRate": "Tasa base",
+    "baseRatePoints": "Tasa base de puntos",
+    "baseRateCashback": "Reembolso base",
+    "pointsCard": "Tarjeta de puntos",
+    "cashbackCard": "Tarjeta de reembolso",
     "welcomeBonus": "Bono de bienvenida",
     "points": "Puntos",
     "minSpend": "Gasto mín.",
     "days": "Días",
     "rewardRates": "Tasas de recompensa",
+    "rewardRatesPoints": "Tasas de acumulación",
+    "rewardRatesCashback": "Tasas de reembolso",
     "capAmount": "Hasta ${{amount}}/mes",
+    "amexTravelOnline": "Amex Travel en línea",
+    "amexTravelOnlineDesc": "Puntos adicionales en hoteles y alquiler de autos",
     "onAllPurchases": "en todas las compras",
     "applyNow": "Solicitar ahora",
     "addToMyCards": "Agregar a mis tarjetas",
@@ -298,8 +307,10 @@
     "viewDetails": "Ver detalles",
     "add": "Agregar",
     "added": "Agregada",
+    "lastUpdated": "Actualizado",
     "usageGuide": {
-      "title": "Cómo maximizar esta tarjeta",
+      "title": "Beneficios y consejos",
+      "disclaimer": "Solo para referencia",
       "rewardType": "Tipo de recompensa",
       "pointValue": "Valor del punto",
       "centsPerPoint": "centavos/punto",
@@ -310,9 +321,12 @@
       "tipTypes": {
         "BEST_USE": "Mejor uso",
         "REDEMPTION": "Consejos de canje",
+        "TRAVEL_BENEFIT": "Beneficios de viaje",
+        "INSURANCE": "Cobertura de seguro",
+        "PERK": "Privilegios",
         "TRANSFER_PARTNER": "Socios de transferencia",
         "STACKING": "Consejos de acumulación",
-        "AVOID": "Qué evitar"
+        "AVOID": "Notas"
       },
       "rewardTypes": {
         "CASHBACK": "Reembolso",

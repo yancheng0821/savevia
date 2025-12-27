@@ -20,11 +20,16 @@ public class CreditCardDTO {
     private String cardType;
     private BigDecimal annualFee;
     private BigDecimal baseRewardRate;
+    private String rewardType;  // CASHBACK or POINTS
+    private String pointProgram;  // e.g., "AIR MILES", "Aeroplan", "MR Points"
     private String imageUrl;
     private String applyUrl;
     private Boolean noFxFee;
     private SignupBonusDTO signupBonus;
     private List<RewardRuleDTO> rewardRules;
+
+    // Amex Travel Online 额外积分倍率
+    private BigDecimal amexTravelBonusRate;
 
     // 联盟链接信息
     private AffiliateLinkDTO affiliateLink;

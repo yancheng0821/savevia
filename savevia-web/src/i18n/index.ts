@@ -24,6 +24,9 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
+    supportedLngs: ['en', 'zh', 'fr', 'es', 'ko', 'ja'],
+    nonExplicitSupportedLngs: true, // Allow zh-CN, zh-TW to match zh
+    load: 'languageOnly', // Only load 'zh' instead of 'zh-CN'
     debug: false,
     interpolation: {
       escapeValue: false,

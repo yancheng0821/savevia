@@ -1,5 +1,6 @@
 package com.savevia.card.service;
 
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.savevia.card.dto.CreditCardDTO;
 import com.savevia.card.dto.RewardRuleDTO;
@@ -88,14 +89,7 @@ public class CreditCardService {
     }
 
     private CreditCardDTO toDTO(CreditCard card, List<RewardRule> rules) {
-        SignupBonusDTO signupBonus = null;
-        if (card.getSignupBonusJson() != null) {
-            try {
-                signupBonus = JSONUtil.toBean(card.getSignupBonusJson(), SignupBonusDTO.class);
-            } catch (Exception e) {
-                log.warn("Failed to parse signup bonus for card {}: {}", card.getId(), e.getMessage());
-            }
-        }
+        SignupBonusDTO signupBonus = parseSignupBonus(card.getSignupBonusJson(), card.getId());
 
         List<RewardRuleDTO> ruleDTOs = rules != null
                 ? rules.stream().map(this::toRuleDTO).toList()
@@ -111,11 +105,14 @@ public class CreditCardService {
                 .cardType(card.getCardType())
                 .annualFee(card.getAnnualFee())
                 .baseRewardRate(card.getBaseRewardRate())
+                .rewardType(card.getRewardType())
+                .pointProgram(card.getPointProgram())
                 .imageUrl(card.getImageUrl())
                 .applyUrl(card.getApplyUrl())
                 .noFxFee(card.getNoFxFee() != null && card.getNoFxFee())
                 .signupBonus(signupBonus)
                 .rewardRules(ruleDTOs)
+                .amexTravelBonusRate(card.getAmexTravelBonusRate())
                 .affiliateLink(affiliateLink)
                 .build();
     }
@@ -128,5 +125,44 @@ public class CreditCardService {
                 .monthlyCapAmount(rule.getMonthlyCapAmount())
                 .description(rule.getDescription())
                 .build();
+    }
+
+    /**
+     * 解析 signup bonus JSON，兼容新旧格式
+     * - description: 返回英文描述（旧前端兼容）
+     * - descriptionI18n: 返回完整多语言对象（新前端用）
+     */
+    private SignupBonusDTO parseSignupBonus(String json, Long cardId) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+
+        try {
+            JSONObject obj = JSONUtil.parseObj(json);
+
+            SignupBonusDTO.SignupBonusDTOBuilder builder = SignupBonusDTO.builder()
+                    .bonusAmount(obj.getBigDecimal("bonusAmount"))
+                    .minSpend(obj.getBigDecimal("minSpend"))
+                    .daysToComplete(obj.getInt("daysToComplete"));
+
+            // 处理 description - 可能是字符串或 i18n 对象
+            Object desc = obj.get("description");
+            if (desc instanceof String) {
+                // 旧格式：直接是字符串
+                builder.description((String) desc);
+            } else if (desc instanceof JSONObject) {
+                // 新格式：i18n 对象
+                JSONObject i18n = (JSONObject) desc;
+                // description 返回英文（旧前端兼容）
+                builder.description(i18n.getStr("en"));
+                // descriptionI18n 返回完整对象（新前端用）
+                builder.descriptionI18n(i18n.toBean(new cn.hutool.core.lang.TypeReference<java.util.Map<String, String>>() {}));
+            }
+
+            return builder.build();
+        } catch (Exception e) {
+            log.warn("Failed to parse signup bonus for card {}: {}", cardId, e.getMessage());
+            return null;
+        }
     }
 }

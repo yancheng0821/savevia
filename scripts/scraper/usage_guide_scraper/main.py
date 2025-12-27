@@ -6,9 +6,17 @@ Scrapes credit card usage tips from bank websites and review sites,
 translates content using OpenAI, and generates SQL for database updates.
 
 Usage:
-    python -m usage_guide_scraper.main --source all --output usage_tips_update.sql
-    python -m usage_guide_scraper.main --dry-run --source review
-    python -m usage_guide_scraper.main --card-ids 1,2,3 --no-translate
+    # AI-powered extraction (recommended) - uses OpenAI to extract structured tips
+    python -m usage_guide_scraper.main --source ai --card-ids 6 -o aeroplan_tips.sql
+
+    # Traditional scraping from review sites
+    python -m usage_guide_scraper.main --source review --output usage_tips_update.sql
+
+    # Preview mode (no SQL generation)
+    python -m usage_guide_scraper.main --dry-run --source ai --card-ids 6
+
+    # Skip translation (English only)
+    python -m usage_guide_scraper.main --source ai --card-ids 1,2,3 --no-translate
 """
 
 import argparse
@@ -23,7 +31,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from usage_guide_scraper.scrapers import (
     CreditCardGeniusUsageScraper,
     RatehubUsageScraper,
-    BankScraper
+    BankScraper,
+    AICardScraper,
+    SingleSourceAIScraper
 )
 from usage_guide_scraper.translator import Translator, MockTranslator
 from usage_guide_scraper.sql_generator import SQLGenerator, DryRunGenerator
@@ -32,40 +42,49 @@ from usage_guide_scraper.config import OUTPUT_DIR, OPENAI_API_KEY
 
 
 def load_cards_from_database() -> List[dict]:
-    """Load cards from database (placeholder - implement DB connection)"""
-    # TODO: Implement actual database connection
-    # For now, return sample card data
+    """Load cards from MySQL database via Docker"""
+    import subprocess
+    import json as json_module
+
+    try:
+        # Query database via docker exec
+        query = "SELECT id, name, bank, apply_url FROM credit_cards ORDER BY bank, id"
+        cmd = [
+            'docker', 'exec', 'savevia-mysql',
+            'mysql', '-u', 'savevia', '-psavevia123', 'savevia',
+            '-N', '-e', query
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+
+        if result.returncode != 0:
+            print(f"Database query failed: {result.stderr}")
+            return _get_fallback_cards()
+
+        cards = []
+        for line in result.stdout.strip().split('\n'):
+            if line:
+                parts = line.split('\t')
+                if len(parts) >= 3:
+                    cards.append({
+                        "id": int(parts[0]),
+                        "name": parts[1],
+                        "bank": parts[2],
+                        "apply_url": parts[3] if len(parts) > 3 else None
+                    })
+        return cards if cards else _get_fallback_cards()
+
+    except Exception as e:
+        print(f"Failed to load from database: {e}")
+        return _get_fallback_cards()
+
+
+def _get_fallback_cards() -> List[dict]:
+    """Fallback card data when database is not available"""
     return [
-        {
-            "id": 1,
-            "name": "Cobalt Card",
-            "bank": "AMEX",
-            "apply_url": "https://www.americanexpress.com/ca/en/credit-cards/cobalt-card/"
-        },
-        {
-            "id": 2,
-            "name": "Gold Rewards Card",
-            "bank": "AMEX",
-            "apply_url": "https://www.americanexpress.com/ca/en/credit-cards/gold-rewards-card/"
-        },
-        {
-            "id": 3,
-            "name": "Aeroplan Visa Infinite",
-            "bank": "TD",
-            "apply_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-infinite-card"
-        },
-        {
-            "id": 4,
-            "name": "Cash Back Visa Infinite",
-            "bank": "TD",
-            "apply_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"
-        },
-        {
-            "id": 5,
-            "name": "Scene+ Visa",
-            "bank": "Scotiabank",
-            "apply_url": "https://www.scotiabank.com/ca/en/personal/credit-cards/scene-visa-card.html"
-        },
+        {"id": 1, "name": "Cobalt Card", "bank": "AMEX", "apply_url": "https://www.americanexpress.com/ca/en/credit-cards/cobalt-card/"},
+        {"id": 8, "name": "Cash Back Visa Infinite", "bank": "TD", "apply_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card"},
+        {"id": 10, "name": "Aeroplan Visa Infinite", "bank": "TD", "apply_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-infinite-card"},
+        {"id": 20, "name": "Momentum Visa Infinite", "bank": "Scotiabank", "apply_url": "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/momentum-visa-infinite-card.html"},
     ]
 
 
@@ -138,6 +157,22 @@ def scrape_bank_sites(cards: List[dict], use_selenium: bool = True) -> List[Scra
         return []
 
 
+def scrape_with_ai(cards: List[dict], use_selenium: bool = True, use_cache: bool = True) -> List[ScrapedCardData]:
+    """Scrape usage tips using AI extraction from multiple sources"""
+    print("\n" + "=" * 60)
+    print("AI-Powered Scraping (Multiple Sources)")
+    print("=" * 60)
+
+    try:
+        scraper = AICardScraper(use_selenium=use_selenium, use_cache=use_cache)
+        return scraper.scrape_all(cards)
+    except Exception as e:
+        print(f"Error in AI scraping: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
+
+
 def merge_scraped_data(data_list: List[ScrapedCardData]) -> List[ScrapedCardData]:
     """Merge data from multiple sources, avoiding duplicates"""
     merged = {}
@@ -170,9 +205,14 @@ def main():
     )
     parser.add_argument(
         '--source',
-        choices=['all', 'review', 'bank'],
+        choices=['all', 'review', 'bank', 'ai'],
         default='all',
-        help='Data source to scrape (default: all)'
+        help='Data source to scrape: all, review, bank, or ai (default: all)'
+    )
+    parser.add_argument(
+        '--no-cache',
+        action='store_true',
+        help='Disable AI extraction cache (re-process all pages)'
     )
     parser.add_argument(
         '--card-ids',
@@ -235,14 +275,21 @@ def main():
     # Scrape data
     all_data = []
     use_selenium = not args.no_selenium
+    use_cache = not args.no_cache
 
-    if args.source in ['all', 'review']:
-        review_data = scrape_review_sites(cards, use_selenium)
-        all_data.extend(review_data)
+    if args.source == 'ai':
+        # AI-powered extraction (recommended)
+        ai_data = scrape_with_ai(cards, use_selenium, use_cache)
+        all_data.extend(ai_data)
+    else:
+        # Traditional scraping methods
+        if args.source in ['all', 'review']:
+            review_data = scrape_review_sites(cards, use_selenium)
+            all_data.extend(review_data)
 
-    if args.source in ['all', 'bank']:
-        bank_data = scrape_bank_sites(cards, use_selenium)
-        all_data.extend(bank_data)
+        if args.source in ['all', 'bank']:
+            bank_data = scrape_bank_sites(cards, use_selenium)
+            all_data.extend(bank_data)
 
     # Merge data from different sources
     merged_data = merge_scraped_data(all_data)

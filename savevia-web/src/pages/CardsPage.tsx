@@ -445,7 +445,7 @@ function CardsPage() {
                         color: style.textColor,
                         opacity: 0.7
                       }}>
-                        {card.annualFee === 0 ? 'NO FEE' : `$${card.annualFee}/yr`}
+                        {card.annualFee === 0 ? t('cardDetail.noFee') : `$${card.annualFee}${t('common.perYear')}`}
                       </span>
                     </div>
 

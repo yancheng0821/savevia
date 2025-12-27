@@ -37,3 +37,20 @@ logging:
   level:
     root: INFO
     org.springframework.cloud.gateway: WARN
+    com.savevia.gateway.filter: INFO
+    com.savevia.gateway.service: INFO
+
+# Production security settings
+savevia:
+  security:
+    rate-limit:
+      enabled: true
+      block-threshold: 30  # Block IP after 30 rate limit violations in 1 minute (more lenient for legitimate users)
+    bot-detection:
+      enabled: true
+      block-empty-ua: true
+    ip-block:
+      enabled: true
+      first-block-minutes: 5
+      second-block-minutes: 60
+      third-block-minutes: 1440  # 24 hours

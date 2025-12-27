@@ -1,0 +1,53 @@
+{
+  "tips": [
+    {
+      "type": "BEST_USE",
+      "title": "Maximize Dining Spend",
+      "content": "Earn 1.5 Aeroplan points per dollar on dining and food delivery, making it a great category for frequent diners.",
+      "icon": "dining",
+      "priority": 2
+    },
+    {
+      "type": "BEST_USE",
+      "title": "Air Canada Purchases",
+      "content": "Get 2 Aeroplan points per dollar spent on Air Canada and Air Canada Vacations, ideal for frequent travelers.",
+      "icon": "travel",
+      "priority": 3
+    },
+    {
+      "type": "REDEMPTION",
+      "title": "Preferred Pricing",
+      "content": "Use Aeroplan points for preferred pricing on Air Canada flights to maximize point value.",
+      "icon": "travel",
+      "priority": 4
+    },
+    {
+      "type": "TRAVEL_BENEFIT",
+      "title": "Free Checked Bags",
+      "content": "Enjoy a free first checked bag for you and up to 8 companions on Air Canada flights, saving on baggage fees.",
+      "icon": "travel",
+      "priority": 5
+    },
+    {
+      "type": "INSURANCE",
+      "title": "Travel Insurance Coverage",
+      "content": "Includes coverage for flight delays and lost baggage, providing peace of mind during travels.",
+      "icon": "insurance",
+      "priority": 6
+    },
+    {
+      "type": "AVOID",
+      "title": "High Interest Rate",
+      "content": "Avoid carrying a balance; the card has a 30% APR on unpaid balances, which can accumulate quickly.",
+      "icon": "warning",
+      "priority": 1
+    },
+    {
+      "type": "STACKING",
+      "title": "Combine with Other Cards",
+      "content": "Consider using this card alongside others for categories like groceries or gas to maximize overall points.",
+      "icon": "default",
+      "priority": 7
+    }
+  ]
+}

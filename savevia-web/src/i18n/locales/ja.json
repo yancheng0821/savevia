@@ -150,6 +150,7 @@
     "INSURANCE": "保険",
     "TELECOM": "通信",
     "EV_CHARGING": "EV充電",
+    "LIQUOR": "酒類",
     "OTHER": "その他"
   },
   "auth": {
@@ -285,12 +286,20 @@
     "noAnnualFee": "年会費無料",
     "noFxFee": "海外手数料なし",
     "baseRate": "基本還元率",
+    "baseRatePoints": "基本ポイント",
+    "baseRateCashback": "基本キャッシュバック",
+    "pointsCard": "ポイントカード",
+    "cashbackCard": "キャッシュバックカード",
     "welcomeBonus": "入会特典",
     "points": "ポイント",
     "minSpend": "最低利用額",
     "days": "日",
     "rewardRates": "還元率",
+    "rewardRatesPoints": "ポイント倍率",
+    "rewardRatesCashback": "キャッシュバック率",
     "capAmount": "月${{amount}}まで",
+    "amexTravelOnline": "Amex Travel オンライン",
+    "amexTravelOnlineDesc": "ホテル・レンタカー予約で追加ポイント",
     "onAllPurchases": "すべての購入",
     "applyNow": "今すぐ申し込む",
     "addToMyCards": "マイカードに追加",
@@ -298,8 +307,10 @@
     "viewDetails": "詳細を見る",
     "add": "追加",
     "added": "追加済",
+    "lastUpdated": "更新日",
     "usageGuide": {
-      "title": "このカードを最大限活用する方法",
+      "title": "カード特典・活用術",
+      "disclaimer": "参考情報",
       "rewardType": "リワードタイプ",
       "pointValue": "ポイント価値",
       "centsPerPoint": "セント/ポイント",
@@ -310,9 +321,12 @@
       "tipTypes": {
         "BEST_USE": "おすすめの使い方",
         "REDEMPTION": "交換のヒント",
+        "TRAVEL_BENEFIT": "旅行特典",
+        "INSURANCE": "保険補償",
+        "PERK": "特典",
         "TRANSFER_PARTNER": "移行パートナー",
         "STACKING": "併用テクニック",
-        "AVOID": "避けるべきこと"
+        "AVOID": "注意事項"
       },
       "rewardTypes": {
         "CASHBACK": "キャッシュバック",

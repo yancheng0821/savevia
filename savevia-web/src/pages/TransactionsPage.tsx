@@ -129,6 +129,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'INSURANCE': '📋',
   'TELECOM': '📱',
   'EV_CHARGING': '⚡',
+  'LIQUOR': '🍷',
   // Catch-all
   'OTHER': '💳',
 }

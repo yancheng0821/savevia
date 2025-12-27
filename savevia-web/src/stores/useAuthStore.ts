@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
             // Sync local data to backend first (if user calculated while anonymous)
             await useOptimizerStore.getState().syncLocalDataToBackend()
             // Then load user's saved data
-            useOptimizerStore.getState().loadUserData()
+            await useOptimizerStore.getState().loadUserData()
           } else {
             throw new Error(response.message || 'Login failed')
           }
@@ -114,7 +114,7 @@ export const useAuthStore = create<AuthState>()(
             // Sync local data to backend first (if user calculated while anonymous)
             await useOptimizerStore.getState().syncLocalDataToBackend()
             // Then load user's saved data
-            useOptimizerStore.getState().loadUserData()
+            await useOptimizerStore.getState().loadUserData()
           } else {
             console.error('Google login failed: code=', response.code, 'data=', response.data, 'message=', response.message)
             throw new Error(response.message || 'Google login failed')
@@ -141,7 +141,7 @@ export const useAuthStore = create<AuthState>()(
             // Sync local data to backend first (if user calculated while anonymous)
             await useOptimizerStore.getState().syncLocalDataToBackend()
             // Then load user's saved data
-            useOptimizerStore.getState().loadUserData()
+            await useOptimizerStore.getState().loadUserData()
           } else {
             throw new Error(response.message || 'Apple login failed')
           }

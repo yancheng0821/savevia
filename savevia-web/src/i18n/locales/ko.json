@@ -150,6 +150,7 @@
     "INSURANCE": "보험",
     "TELECOM": "통신",
     "EV_CHARGING": "전기차 충전",
+    "LIQUOR": "주류",
     "OTHER": "기타"
   },
   "auth": {
@@ -285,12 +286,20 @@
     "noAnnualFee": "연회비 무료",
     "noFxFee": "해외결제 수수료 없음",
     "baseRate": "기본 적립률",
+    "baseRatePoints": "기본 포인트",
+    "baseRateCashback": "기본 캐시백",
+    "pointsCard": "포인트 카드",
+    "cashbackCard": "캐시백 카드",
     "welcomeBonus": "가입 혜택",
     "points": "포인트",
     "minSpend": "최소 사용액",
     "days": "일",
     "rewardRates": "적립률",
+    "rewardRatesPoints": "포인트 적립률",
+    "rewardRatesCashback": "캐시백 비율",
     "capAmount": "월 ${{amount}} 한도",
+    "amexTravelOnline": "Amex Travel 온라인",
+    "amexTravelOnlineDesc": "호텔 및 렌터카 예약 시 추가 포인트",
     "onAllPurchases": "모든 구매",
     "applyNow": "지금 신청",
     "addToMyCards": "내 카드에 추가",
@@ -298,8 +307,10 @@
     "viewDetails": "상세보기",
     "add": "추가",
     "added": "추가됨",
+    "lastUpdated": "업데이트",
     "usageGuide": {
-      "title": "이 카드 최대한 활용하기",
+      "title": "카드 혜택 & 팁",
+      "disclaimer": "참고용",
       "rewardType": "리워드 유형",
       "pointValue": "포인트 가치",
       "centsPerPoint": "센트/포인트",
@@ -310,9 +321,12 @@
       "tipTypes": {
         "BEST_USE": "최적의 사용처",
         "REDEMPTION": "교환 팁",
+        "TRAVEL_BENEFIT": "여행 혜택",
+        "INSURANCE": "보험 보장",
+        "PERK": "특별 혜택",
         "TRANSFER_PARTNER": "전환 파트너",
         "STACKING": "적립 팁",
-        "AVOID": "피해야 할 것"
+        "AVOID": "주의사항"
       },
       "rewardTypes": {
         "CASHBACK": "캐시백",

@@ -10,10 +10,13 @@ from datetime import datetime
 
 class TipType(str, Enum):
     """Types of usage tips"""
-    BEST_USE = "BEST_USE"        # 最佳使用场景
-    REDEMPTION = "REDEMPTION"    # 积分兑换建议
-    STACKING = "STACKING"        # 叠加技巧
-    AVOID = "AVOID"              # 避免事项
+    BEST_USE = "BEST_USE"              # 最佳使用场景
+    REDEMPTION = "REDEMPTION"          # 积分兑换建议
+    TRAVEL_BENEFIT = "TRAVEL_BENEFIT"  # 旅行福利（休息室、旅行积分等）
+    INSURANCE = "INSURANCE"            # 保险福利
+    PERK = "PERK"                      # 其他特权（积分、会员等）
+    STACKING = "STACKING"              # 叠加技巧
+    AVOID = "AVOID"                    # 避免事项
 
 
 class RewardType(str, Enum):
@@ -33,6 +36,8 @@ class UsageTip:
     icon: Optional[str] = None
     priority: int = 0
     source_url: Optional[str] = None
+    card_name: Optional[str] = None  # For SQL generation by name
+    bank: Optional[str] = None       # For SQL generation by name
 
     def __hash__(self):
         return hash((self.card_id, self.tip_type.value, self.title_en))
@@ -54,6 +59,8 @@ class TranslatedTip:
     content_json: Dict[str, str]  # {"en": "...", "zh": "...", ...}
     icon: Optional[str] = None
     priority: int = 0
+    card_name: Optional[str] = None  # For SQL generation by name
+    bank: Optional[str] = None       # For SQL generation by name
 
     @classmethod
     def from_usage_tip(cls, tip: UsageTip, title_translations: Dict[str, str],
@@ -65,7 +72,9 @@ class TranslatedTip:
             title_json={"en": tip.title_en, **title_translations},
             content_json={"en": tip.content_en, **content_translations},
             icon=tip.icon,
-            priority=tip.priority
+            priority=tip.priority,
+            card_name=tip.card_name,
+            bank=tip.bank
         )
 
 
@@ -85,6 +94,8 @@ class CardRewardInfo:
     point_value: Optional[float] = None  # Value per point in cents
     point_program: Optional[str] = None  # e.g., "Aeroplan", "Scene+"
     transfer_partners: List[TransferPartner] = field(default_factory=list)
+    card_name: Optional[str] = None  # For SQL generation by name
+    bank: Optional[str] = None       # For SQL generation by name
 
 
 @dataclass
@@ -118,7 +129,27 @@ TIP_ICONS = {
         "points": "🎯",
         "transfer": "🔄",
         "cashback": "💵",
+        "hotel": "🏨",
         "default": "💎"
+    },
+    TipType.TRAVEL_BENEFIT: {
+        "lounge": "🛋️",
+        "credit": "💳",
+        "companion": "👥",
+        "status": "⭐",
+        "default": "✈️"
+    },
+    TipType.INSURANCE: {
+        "travel": "🏥",
+        "purchase": "🛡️",
+        "rental": "🚗",
+        "default": "🔒"
+    },
+    TipType.PERK: {
+        "credit": "💵",
+        "membership": "🎫",
+        "dining": "🍽️",
+        "default": "🎁"
     },
     TipType.STACKING: {
         "default": "📚"

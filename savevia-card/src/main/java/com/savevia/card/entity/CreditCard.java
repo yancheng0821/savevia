@@ -42,6 +42,8 @@ public class CreditCard {
 
     private String transferPartnersJson;
 
+    private BigDecimal amexTravelBonusRate;
+
     private Boolean isActive;
 
     private LocalDateTime createdAt;

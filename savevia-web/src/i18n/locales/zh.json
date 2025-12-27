@@ -162,6 +162,7 @@
     "INSURANCE": "保险",
     "TELECOM": "电信",
     "EV_CHARGING": "电动车充电",
+    "LIQUOR": "酒类",
     "OTHER": "其他"
   },
   "auth": {
@@ -300,12 +301,20 @@
     "noAnnualFee": "免年费",
     "noFxFee": "无外币手续费",
     "baseRate": "基础返现",
+    "baseRatePoints": "基础积分",
+    "baseRateCashback": "基础返现",
+    "pointsCard": "积分卡",
+    "cashbackCard": "返现卡",
     "welcomeBonus": "开卡奖励",
     "points": "积分",
     "minSpend": "最低消费",
     "days": "天",
     "rewardRates": "返现比例",
+    "rewardRatesPoints": "积分倍率",
+    "rewardRatesCashback": "返现比例",
     "capAmount": "上限 ${{amount}}/月",
+    "amexTravelOnline": "Amex Travel 在线预订",
+    "amexTravelOnlineDesc": "酒店和租车预订额外积分",
     "onAllPurchases": "所有消费",
     "applyNow": "立即申请",
     "addToMyCards": "添加到我的卡片",
@@ -313,8 +322,10 @@
     "viewDetails": "查看详情",
     "add": "添加",
     "added": "已添加",
+    "lastUpdated": "更新于",
     "usageGuide": {
-      "title": "如何最大化这张卡的价值",
+      "title": "用卡攻略",
+      "disclaimer": "仅供参考",
       "rewardType": "奖励类型",
       "pointValue": "积分价值",
       "centsPerPoint": "分/积分",
@@ -325,9 +336,12 @@
       "tipTypes": {
         "BEST_USE": "最佳使用场景",
         "REDEMPTION": "兑换建议",
+        "TRAVEL_BENEFIT": "旅行权益",
+        "INSURANCE": "保险保障",
+        "PERK": "专属权益",
         "TRANSFER_PARTNER": "转换伙伴",
         "STACKING": "叠加技巧",
-        "AVOID": "避免事项"
+        "AVOID": "注意事项"
       },
       "rewardTypes": {
         "CASHBACK": "现金返还",
