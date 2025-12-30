@@ -73,6 +73,11 @@ spring.mail:
 # Application URLs
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  version:
+    latest: ${APP_VERSION_LATEST:1.0.2}
+    min: ${APP_VERSION_MIN:1.0.2}
+    ios-store-url: https://apps.apple.com/app/id6756332569
+    android-store-url: https://play.google.com/store/apps/details?id=app.savevia
 
 # AI Usage Limits
 ai:

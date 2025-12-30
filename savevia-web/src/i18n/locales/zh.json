@@ -52,6 +52,7 @@
       "description": "选择消费场景，找到最佳返现卡",
       "bestCard": "推荐使用",
       "cashback": "返现",
+      "points": "积分",
       "loginFirst": "登录并添加信用卡，开始使用",
       "addCards": "添加您的信用卡，获取推荐"
     },
@@ -85,7 +86,17 @@
     "savedSuccess": "卡片保存成功",
     "savedFailed": "保存卡片失败",
     "selectCards": "选择卡片",
-    "details": "详情"
+    "details": "详情",
+    "bankCategories": {
+      "big5": "五大银行",
+      "creditCard": "信用卡公司",
+      "digital": "数字银行",
+      "retail": "零售/品牌卡",
+      "creditUnion": "信用合作社",
+      "other": "其他银行"
+    },
+    "dragToReorder": "长按拖拽调整顺序，常用银行放前面",
+    "toggleCardStyle": "切换卡面"
   },
   "optimizer": {
     "title": "输入您的月度消费",
@@ -250,6 +261,7 @@
     "language": "语言",
     "notifications": "通知",
     "darkMode": "深色模式",
+    "realCardImages": "真实卡面",
     "myCards": "我的卡片",
     "annualSavings": "年度节省",
     "support": "支持",
@@ -486,5 +498,11 @@
     "resyncConfirmContent": "⚠️ 重新同步 {{bank}} 将从银行获取最新交易记录。\n\n这将消耗您本月剩余 {{remaining}}/{{max}} 次连接中的 1 次。\n\n确定要继续吗？",
     "resyncSuccess": "银行数据同步成功！",
     "analyzeSuccess": "重新分析完成"
+  },
+  "forceUpdate": {
+    "title": "需要更新",
+    "message": "SaveVia 有新版本可用，请更新后继续使用。",
+    "newVersion": "最新版本",
+    "updateNow": "立即更新"
   }
 }

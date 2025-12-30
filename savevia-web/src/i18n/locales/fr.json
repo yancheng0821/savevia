@@ -31,7 +31,7 @@
   },
   "home": {
     "title": "Bienvenue sur SaveVia",
-    "subtitle": "L'optimiseur de remises en argent leader au Canada, propulsé par l'IA",
+    "subtitle": "L'optimiseur de remises en argent leader au Canada propulsé par l'IA",
     "step1Title": "Sélectionnez vos cartes",
     "step1Desc": "Choisissez les cartes de crédit que vous possédez",
     "step2Title": "Entrez vos dépenses",
@@ -79,7 +79,9 @@
     "noCardsSelected": "Veuillez sélectionner au moins une carte",
     "cardCount": "{{count}} cartes",
     "selectedCount": "{{count}} sélectionnées",
-    "details": "Détails"
+    "details": "Détails",
+    "dragToReorder": "Maintenez et faites glisser pour réorganiser",
+    "toggleCardStyle": "Changer le style"
   },
   "optimizer": {
     "title": "Entrez vos dépenses mensuelles",
@@ -238,6 +240,7 @@
     "language": "Langue",
     "notifications": "Notifications",
     "darkMode": "Mode sombre",
+    "realCardImages": "Images de carte réelles",
     "myCards": "Mes cartes",
     "annualSavings": "Économies annuelles",
     "support": "Assistance",
@@ -467,5 +470,11 @@
       "disclaimer": "* Estimations seulement. Les résultats réels peuvent varier. Pas un conseil financier.",
       "getStarted": "Commencer à économiser"
     }
+  },
+  "forceUpdate": {
+    "title": "Mise à jour requise",
+    "message": "Une nouvelle version de SaveVia est disponible. Veuillez mettre à jour pour continuer.",
+    "newVersion": "Nouvelle version",
+    "updateNow": "Mettre à jour"
   }
 }

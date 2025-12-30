@@ -1,0 +1,206 @@
+[
+  {
+    "url": "https://www.td.com/ca/fr/services-bancaires-personnels/produits/cartes-de-credit",
+    "name": "Français",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/aeroplan-infinite-visa-card-fr-comp39-fr.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/ways-to-bank/ways-to-pay/visa-debit-card",
+    "name": "TD Access Card",
+    "image_url": "https://www.td.com/ca/en/personal-banking/ways-to-bank/ways-to-pay/visa-debit-card/_jcr_content/root/container/responsivegrid/tabs_copy_67949546_c/item_1/container_1553201687/image.coreimg.50{.width}.jpeg/1753716403568/visa-debit-3.3d-image1-879x494.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards",
+    "name": "Explore all credit cards",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/aeroplan-infinite-visa-card-fr-comp39-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/solutions/student-banking/student-credit-cards",
+    "name": "Students",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/rewardstravel-visa-mkt-en-286x180.jpg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/solutions/post-grad/credit-cards",
+    "name": "Post grads",
+    "image_url": "https://www.td.com/ca/en/personal-banking/solutions/post-grad/credit-cards/_jcr_content/root/container/responsivegrid/container_copy_copy_/image.coreimg.50{.width}.jpeg/1689600211932/everyday-banking-alt-mb-tp.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/solutions/new-to-canada/credit-cards-for-newcomers",
+    "name": "New to Canada",
+    "image_url": "https://www.td.com/ca/en/personal-banking/solutions/new-to-canada/credit-cards-for-newcomers/_jcr_content/root/container/responsivegrid/container_1703145309/image.coreimg.50{.width}.jpeg/1714065803157/n2c-credit-card-3.3d-879x494.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/td-rewards",
+    "name": "TD Rewards Program",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/td-rewards/_jcr_content/root/container/responsivegrid/container_copy/textimagectagrid_con/0/custom_teaser_3_colu.coreimg.82{.width}.jpeg/1759835621140/td-rewards-home-3-2j-redeem.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/borrowing/check-your-credit-score",
+    "name": "Check your credit score",
+    "image_url": null,
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-infinite-card",
+    "name": "View offer",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/aeroplan-infinite-visa-card-fr-comp39-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/travel-rewards/first-class-travel-visa-infinite-card",
+    "name": "View offer",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/travel-rewards/first-class-travel-visa-infinite-card/_jcr_content/root/container/responsivegrid/container_copy/textimagectagrid_con/0/custom_teaser.coreimg.82{.width}.png/1739914236979/2025-milesopedia-awards-best-credit-card-travel-rewards-200x90.png",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit",
+    "name": "Explore all lines of credit",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit/_jcr_content/root/container/responsivegrid/container_94871400_c_780622538/container_copy_copy_/textimagectagrid_con/0/custom_teaser_4_colu.coreimg.82{.width}.jpeg/1673458761360/1180-23702-3691-pl-f22-loans-component14-4-c1.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit/student-line-of-credit",
+    "name": "Student Line of Credit",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit/student-line-of-credit/_jcr_content/root/container/responsivegrid/container_copy/textimagectagrid_con/0/custom_teaser_3_colu_1719970538.coreimg.82{.width}.jpeg/1761588127888/undergraduate.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit/professional-student-line-of-credit",
+    "name": "Professional Student Line of Credit",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit/professional-student-line-of-credit/_jcr_content/root/container/responsivegrid/container_copy/container/item_list_copy_copy_/item_1687287689096.coreimg.82{.width}.jpeg/1760259616435/student-banking-package.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit/medical-dental-veterinary-student-line-of-credit",
+    "name": "Healthcare Student Line of Credit",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/borrowing/lines-of-credit/medical-dental-veterinary-student-line-of-credit/_jcr_content/root/container/responsivegrid/container_2087054700_56960763/container_1781376232/item_list_copy_copy_/custom_teaser_111870.coreimg.82{.width}.jpeg/1760339569899/td-all-inclusive-banking.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/borrowing/personal-loan-line-of-credit-calculator",
+    "name": "Loan/Line of Credit Calculator",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/borrowing/personal-loan-line-of-credit-calculator/_jcr_content/root/container/responsivegrid/container_1631483700/textimagectagrid_con/0/custom_teaser_2_colu.coreimg.82{.width}.jpeg/1742569044506/438-23072-1145-loc-11-5-2-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/borrowing/credit-application-guide",
+    "name": "Get more info on borrowing",
+    "image_url": "https://www.td.com/content/dam/tdcom/canada/personal-banking/borrowing/credit-application-guide/3.2o-application-guide-1.png",
+    "bank": "TD"
+  },
+  {
+    "url": "https://ix0.apps.td.com/creditcardtravelinsurancetool/",
+    "name": "Credit Card Travel Insurance Verification Tool",
+    "image_url": null,
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/insurance/credit-protection/claims",
+    "name": "Learn more about filing a claim",
+    "image_url": null,
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card",
+    "name": "TD Cash Back Visa Infinite*&nbsp;Card",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/cash-back-infinite-visa-card-large-1-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan",
+    "name": "Aeroplan points",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/aeroplan-infinite-visa-card-fr-comp39-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/travel-rewards",
+    "name": "Travel Rewards",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/browse-all/RewardsTravel_VISA_MKT_RGB_L_EN_548x344.jpg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back",
+    "name": "Cash Back",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/cash-back-infinite-visa-card-large-1-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/no-annual-fee",
+    "name": "No Annual Fee",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/browse-all/RewardsTravel_VISA_MKT_RGB_L_EN_548x344.jpg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/low-rate",
+    "name": "Low Rate",
+    "image_url": "https://www.td.com/content/dam/tdcom/canada/personal-banking/low-rate/lowrate-visa-mkt-en-286x180.png",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/us-dollar/us-dollar-visa-card",
+    "name": "U.S. Dollar",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/browse-all/USDollar_VISA_MKT_RGB_L_EN_548x344.jpg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/business-banking/small-business/credit/borrowing",
+    "name": "Credit",
+    "image_url": null,
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/business-banking/small-business/credit/borrowing/business-overdraft-protection",
+    "name": "Overdraft Protection",
+    "image_url": "https://www.td.com/ca/en/business-banking/small-business/credit/borrowing/business-overdraft-protection/_jcr_content/root/container/responsivegrid/container_441658769/textimagectagrid_con/0/custom_teaser.coreimg.82{.width}.jpeg/1688024065763/overdraft-credit-protection.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/business-banking/small-business/credit/line-of-credit",
+    "name": "Line of Credit",
+    "image_url": "https://www.td.com/ca/en/business-banking/small-business/credit/line-of-credit/_jcr_content/root/container/responsivegrid/container_994684393/container_copy_copy_/image_copy_copy.coreimg.50{.width}.jpeg/1666091211973/tdb01-802-component13-sbb-borrowingproducts-smallbusinessloc-thing-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/business-banking/small-business/credit/business-mortgage",
+    "name": "Business Mortgage",
+    "image_url": "https://www.td.com/ca/en/business-banking/small-business/credit/business-mortgage/_jcr_content/root/container/responsivegrid/container_1266347688/container/image.coreimg.50{.width}.jpeg/1667287007394/tdb01-802-component13-sbb-borrowingproducts-businessmortgage-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/business-banking/small-business/credit/canada-small-business-financing-loan",
+    "name": "Canada Small Business Financial Loan",
+    "image_url": "https://www.td.com/ca/en/business-banking/small-business/credit/canada-small-business-financing-loan/_jcr_content/root/container/responsivegrid/container_copy/container_copy_copy_/container_copy_copy/image_copy_copy.coreimg.50{.width}.jpeg/1667205597952/tdb01-802-component13-sbb-borrowingproducts-canadasbfinancingloan-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/business-banking/small-business/credit/agricultural-solutions",
+    "name": "Agriculture Credit Solutions",
+    "image_url": null,
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/business-banking/small-business/credit/auto-finance-small-business-vehicle-lending",
+    "name": "TD Auto Finance Small Business Vehicle Lending",
+    "image_url": "https://www.td.com/ca/en/business-banking/small-business/credit/auto-finance-small-business-vehicle-lending/_jcr_content/root/container/responsivegrid/container_1461352288/container/container/image.coreimg.50{.width}.jpeg/1667813994466/tdb01-802-component13-sbb-borrowingproducts-autosmallbusiness-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/advice/day-to-day-banking/cardholder-agreement",
+    "name": "td.com/agreements",
+    "image_url": "https://www.td.com/ca/en/personal-banking/advice/day-to-day-banking/cardholder-agreement/_jcr_content/root/container/responsivegrid/container/textimagectagrid_con/0/custom_teaser_3_colu.coreimg.82{.width}.jpeg/1723530658114/aeroplan-infinite-privilege-visa-card-en.jpeg",
+    "bank": "TD"
+  },
+  {
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/browse-all/trademark-legal",
+    "name": "www.tdcanadatrust.com/aeroplancards",
+    "image_url": null,
+    "bank": "TD"
+  }
+]

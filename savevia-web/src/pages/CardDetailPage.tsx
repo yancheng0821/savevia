@@ -8,6 +8,7 @@ import { cardApi, affiliateApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
 import type { SpendingCategory, CreditCard, TipType } from '../types'
+import { getCardImageUrl } from '../utils/cardImages'
 
 // Swipe back gesture for Android only (iOS uses native gesture)
 function useAndroidSwipeBack(onSwipeBack: () => void) {
@@ -313,6 +314,119 @@ function UsageGuideTabs({ usageGuide, t }: { usageGuide: any; t: any }) {
   )
 }
 
+// Card Visual Component with image loading and fallback
+function CardVisual({ card, style, t, realCardImages }: { card: CreditCard; style: { gradient: string; textColor: string }; t: any; realCardImages: boolean }) {
+  const [imageError, setImageError] = useState(false)
+  const cardImageUrl = realCardImages ? getCardImageUrl(card.bank, card.name) : null
+
+  // Reset error state when card changes
+  useEffect(() => {
+    setImageError(false)
+  }, [card.id])
+
+  // Show image if available and not failed
+  if (cardImageUrl && !imageError) {
+    return (
+      <div style={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: '400px',
+        margin: '0 auto 32px',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+        // Gradient as loading placeholder
+        background: style.gradient,
+        aspectRatio: '1.586'
+      }}>
+        <img
+          src={cardImageUrl}
+          alt={`${card.bank} ${card.name}`}
+          loading="eager"
+          onError={() => setImageError(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+        {/* Full overlay to soften the card image */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(0,0,0,0.05)',
+          borderRadius: '16px',
+          zIndex: 2
+        }} />
+      </div>
+    )
+  }
+
+  // Fallback: gradient card style
+  return (
+    <div style={{
+      position: 'relative',
+      width: '100%',
+      maxWidth: '400px',
+      height: '252px',
+      margin: '0 auto 32px',
+      background: style.gradient,
+      borderRadius: '20px',
+      padding: '24px',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+      color: style.textColor
+    }}>
+      {/* Bank Name */}
+      <div style={{
+        fontSize: '20px',
+        fontWeight: '800',
+        letterSpacing: '0.5px'
+      }}>
+        {BANK_ABBR[card.bank] || card.bank}
+      </div>
+
+      {/* Card Name */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '24px',
+        right: '24px',
+        transform: 'translateY(-50%)',
+        fontSize: '16px',
+        fontWeight: '600',
+        lineHeight: '1.3'
+      }}>
+        {card.name}
+      </div>
+
+      {/* Card Type Badge */}
+      <div style={{
+        position: 'absolute',
+        bottom: '24px',
+        left: '24px',
+        fontSize: '11px',
+        fontWeight: '600',
+        opacity: 0.8
+      }}>
+        {card.cardType}
+      </div>
+
+      {/* Annual Fee */}
+      <div style={{
+        position: 'absolute',
+        top: '24px',
+        right: '24px',
+        fontSize: '12px',
+        fontWeight: '600',
+        opacity: 0.8
+      }}>
+        {card.annualFee === 0 ? t('cardDetail.noFee') : `$${card.annualFee}${t('common.perYear')}`}
+      </div>
+    </div>
+  )
+}
+
 function CardDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -322,6 +436,30 @@ function CardDetailPage() {
   const lang = i18n.language?.split('-')[0] || 'en'
   const { selectedCards, addCard, removeCard } = useOptimizerStore()
   const { user } = useAuthStore()
+
+  // Real card images setting
+  const [realCardImages, setRealCardImages] = useState(() => {
+    const saved = localStorage.getItem('sv_realCardImages')
+    return saved !== null ? saved === 'true' : true
+  })
+
+  // Listen for storage changes (when setting is updated in MePage)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('sv_realCardImages')
+      setRealCardImages(saved !== null ? saved === 'true' : true)
+    }
+    window.addEventListener('storage', handleStorageChange)
+    const handleFocus = () => {
+      const saved = localStorage.getItem('sv_realCardImages')
+      setRealCardImages(saved !== null ? saved === 'true' : true)
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [])
 
   // Get card from router state if available (passed from CardsPage)
   const passedCard = (location.state as { card?: CreditCard })?.card
@@ -472,66 +610,8 @@ function CardDetailPage() {
         <ArrowLeftOutlined /> {t('common.back')}
       </button>
 
-      {/* Card Visual */}
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: '400px',
-        height: '252px',
-        margin: '0 auto 32px',
-        background: style.gradient,
-        borderRadius: '20px',
-        padding: '24px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-        color: style.textColor
-      }}>
-        {/* Bank Name */}
-        <div style={{
-          fontSize: '20px',
-          fontWeight: '800',
-          letterSpacing: '0.5px'
-        }}>
-          {BANK_ABBR[card.bank] || card.bank}
-        </div>
-
-        {/* Card Name */}
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '24px',
-          right: '24px',
-          transform: 'translateY(-50%)',
-          fontSize: '16px',
-          fontWeight: '600',
-          lineHeight: '1.3'
-        }}>
-          {card.name}
-        </div>
-
-        {/* Card Type Badge */}
-        <div style={{
-          position: 'absolute',
-          bottom: '24px',
-          left: '24px',
-          fontSize: '11px',
-          fontWeight: '600',
-          opacity: 0.8
-        }}>
-          {card.cardType}
-        </div>
-
-        {/* Annual Fee */}
-        <div style={{
-          position: 'absolute',
-          top: '24px',
-          right: '24px',
-          fontSize: '12px',
-          fontWeight: '600',
-          opacity: 0.8
-        }}>
-          {card.annualFee === 0 ? t('cardDetail.noFee') : `$${card.annualFee}${t('common.perYear')}`}
-        </div>
-      </div>
+      {/* Card Visual - with image or gradient fallback */}
+      <CardVisual card={card} style={style} t={t} realCardImages={realCardImages} />
 
       {/* Card Info */}
       <div style={{ marginBottom: '32px' }}>
@@ -593,18 +673,17 @@ function CardDetailPage() {
 
         {/* Tags */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '16px', alignItems: 'center' }}>
-          {card.annualFee === 0 && (
-            <span style={{
-              background: '#ecfdf5',
-              color: '#059669',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '600'
-            }}>
-              {t('cardDetail.noAnnualFee')}
-            </span>
-          )}
+          {/* Annual fee tag - green for no fee, gray for has fee */}
+          <span style={{
+            background: card.annualFee === 0 ? '#ecfdf5' : '#f3f4f6',
+            color: card.annualFee === 0 ? '#059669' : '#374151',
+            padding: '6px 12px',
+            borderRadius: '8px',
+            fontSize: '12px',
+            fontWeight: '600'
+          }}>
+            {card.annualFee === 0 ? t('cardDetail.noAnnualFee') : `$${card.annualFee}${t('common.perYear')}`}
+          </span>
           {hasNoFxFee && (
             <span style={{
               background: '#f3f4f6',

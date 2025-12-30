@@ -31,9 +31,11 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../stores/useAuthStore'
 import LegalModal, { type LegalType } from '../components/LegalModal'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
+import { useOnboardingStore } from '../stores/useOnboardingStore'
 import { userApi, authApi, transactionApi, bankApi } from '../services/api'
 import type { MissedCashbackSummary } from '../types'
 import { ExclamationCircleOutlined, KeyOutlined } from '@ant-design/icons'
+import { clearCardImageCache } from '../utils/cardImages'
 
 // Platform detection
 const isNativeApp = Capacitor.isNativePlatform()
@@ -85,6 +87,8 @@ function MePage() {
   const { t, i18n } = useTranslation()
   const { user, isAuthenticated, logout, updateUserAvatar, setPanelOpen } = useAuthStore()
   const { selectedCards, result } = useOptimizerStore()
+  const { resetOnboarding } = useOnboardingStore()
+  const [versionClickCount, setVersionClickCount] = useState(0)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [notifications, setNotifications] = useState(() => {
@@ -653,6 +657,7 @@ function MePage() {
           <h3>{t('me.data')}</h3>
           <div className="sv-me-item" onClick={() => {
             useOptimizerStore.getState().reset()
+            clearCardImageCache()
             message.success(t('me.cacheCleared'))
           }}>
             <div className="sv-me-item-left">
@@ -684,8 +689,20 @@ function MePage() {
       {/* Logo & Version - Mobile only */}
       <div className="sv-me-footer">
         <img src="/logo-full.svg" alt="SaveVia" className="sv-me-logo-mobile" />
-        <div className="sv-me-version">
-          v1.0.0
+        <div
+          className="sv-me-version"
+          onClick={() => {
+            const newCount = versionClickCount + 1
+            if (newCount >= 5) {
+              resetOnboarding()
+              setVersionClickCount(0)
+              message.success('Onboarding reset! Restart app to see it.')
+            } else {
+              setVersionClickCount(newCount)
+            }
+          }}
+        >
+          v{__APP_VERSION__}
         </div>
       </div>
 

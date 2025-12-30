@@ -31,7 +31,7 @@
   },
   "home": {
     "title": "Bienvenido a SaveVia",
-    "subtitle": "El optimizador líder de reembolsos de tarjetas de crédito en Canadá, impulsado por IA",
+    "subtitle": "El optimizador de reembolsos líder en Canadá impulsado por IA",
     "step1Title": "Selecciona tus tarjetas",
     "step1Desc": "Elige las tarjetas de crédito que tienes actualmente",
     "step2Title": "Ingresa tus gastos",
@@ -79,7 +79,9 @@
     "noCardsSelected": "Por favor selecciona al menos una tarjeta",
     "cardCount": "{{count}} tarjetas",
     "selectedCount": "{{count}} seleccionadas",
-    "details": "Detalles"
+    "details": "Detalles",
+    "dragToReorder": "Mantén presionado y arrastra para reordenar",
+    "toggleCardStyle": "Cambiar estilo"
   },
   "optimizer": {
     "title": "Ingresa tus gastos mensuales",
@@ -238,6 +240,7 @@
     "language": "Idioma",
     "notifications": "Notificaciones",
     "darkMode": "Modo oscuro",
+    "realCardImages": "Imágenes de tarjeta reales",
     "myCards": "Mis tarjetas",
     "annualSavings": "Ahorro anual",
     "support": "Soporte",
@@ -467,5 +470,11 @@
       "disclaimer": "* Solo estimaciones. Los resultados reales pueden variar. No es asesoramiento financiero.",
       "getStarted": "Empezar a ahorrar"
     }
+  },
+  "forceUpdate": {
+    "title": "Actualización requerida",
+    "message": "Una nueva versión de SaveVia está disponible. Por favor actualice para continuar.",
+    "newVersion": "Nueva versión",
+    "updateNow": "Actualizar ahora"
   }
 }

@@ -52,6 +52,7 @@
       "description": "Select a spending category to find the best card",
       "bestCard": "Best Card for This",
       "cashback": "cashback",
+      "points": "points",
       "loginFirst": "Login and add your cards to get started",
       "addCards": "Add your credit cards to get recommendations"
     },
@@ -85,7 +86,17 @@
     "savedSuccess": "Cards saved successfully",
     "savedFailed": "Failed to save cards",
     "selectCards": "Select Cards",
-    "details": "Details"
+    "details": "Details",
+    "bankCategories": {
+      "big5": "Big 5 Banks",
+      "creditCard": "Credit Card Companies",
+      "digital": "Digital Banks",
+      "retail": "Retail / Brand Cards",
+      "creditUnion": "Credit Unions",
+      "other": "Other Banks"
+    },
+    "dragToReorder": "Hold and drag to reorder. Move favorites to the front.",
+    "toggleCardStyle": "Switch Style"
   },
   "optimizer": {
     "title": "Enter Your Monthly Spending",
@@ -250,6 +261,7 @@
     "language": "Language",
     "notifications": "Notifications",
     "darkMode": "Dark Mode",
+    "realCardImages": "Real Card Images",
     "myCards": "My Cards",
     "annualSavings": "Annual Savings",
     "support": "Support",
@@ -486,5 +498,11 @@
     "resyncConfirmContent": "⚠️ Resyncing {{bank}} will fetch the latest transactions from your bank.\n\nThis will use 1 of your {{remaining}}/{{max}} remaining monthly connections.\n\nDo you want to continue?",
     "resyncSuccess": "Bank data resynced successfully!",
     "analyzeSuccess": "Analysis completed"
+  },
+  "forceUpdate": {
+    "title": "Update Required",
+    "message": "A new version of SaveVia is available. Please update to continue using the app.",
+    "newVersion": "New version",
+    "updateNow": "Update Now"
   }
 }

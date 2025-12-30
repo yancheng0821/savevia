@@ -20,6 +20,7 @@ import AuthPanel from './components/AuthPanel'
 import Paywall from './components/Paywall'
 import Onboarding from './components/Onboarding'
 import AnimatedSplash from './components/AnimatedSplash'
+import ForceUpdate from './components/ForceUpdate'
 import { useAuthStore } from './stores/useAuthStore'
 import { useOptimizerStore } from './stores/useOptimizerStore'
 import { useSubscriptionStore } from './stores/useSubscriptionStore'
@@ -27,6 +28,24 @@ import { useOnboardingStore } from './stores/useOnboardingStore'
 import { useHomePageStore } from './stores/useHomePageStore'
 import { useCardsPageStore } from './stores/useCardsPageStore'
 import { isNativePlatform, initializeIAP } from './services/iap'
+import { appApi, type AppVersionInfo } from './services/api'
+
+// Current app version (synced with package.json via vite.config.ts)
+// Fallback to "1.0.0" for old versions that don't have __APP_VERSION__ defined
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'
+
+// Compare version strings (e.g., "1.0.2" vs "1.0.0")
+function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.split('.').map(Number)
+  const parts2 = v2.split('.').map(Number)
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const p1 = parts1[i] || 0
+    const p2 = parts2[i] || 0
+    if (p1 > p2) return 1
+    if (p1 < p2) return -1
+  }
+  return 0
+}
 
 // Preload bank logos to prevent flicker on navigation (lazy loaded)
 const BANK_LOGOS = [
@@ -107,10 +126,8 @@ function ScrollToTop() {
         savedPosition = (window as any).__savedHomeScrollPosition
         delete (window as any).__savedHomeScrollPosition
       }
-      // Use setTimeout to ensure scroll happens after React render
-      setTimeout(() => {
-        window.scrollTo(0, savedPosition)
-      }, 0)
+      // Scroll synchronously in useLayoutEffect to prevent flash
+      window.scrollTo(0, savedPosition)
     } else if (pathname === '/cards') {
       // CardsPage handles its own scroll restoration - do nothing here
     } else {
@@ -126,7 +143,7 @@ function App() {
   const { isAuthenticated } = useAuthStore()
   const { loadUserData } = useOptimizerStore()
   const { isSubscribed, checkSubscription } = useSubscriptionStore()
-  const { hasSeenOnboarding, setHasSeenOnboarding } = useOnboardingStore()
+  const { hasSeenOnboarding, setHasSeenOnboarding, loadOnboardingState, isLoading: isOnboardingLoading } = useOnboardingStore()
   // Pre-hydrate CardsPageStore to prevent scroll button flicker on iOS swipe back
   useCardsPageStore()
 
@@ -135,12 +152,44 @@ function App() {
   const [showPaywall, setShowPaywall] = useState(false)
   const [iapReady, setIapReady] = useState(false)
   const [showAnimatedSplash, setShowAnimatedSplash] = useState(true)
+  const [forceUpdateInfo, setForceUpdateInfo] = useState<AppVersionInfo | null>(null)
   const splashHidden = useRef(false)
   const isNative = isNativePlatform()
 
   // Preload bank logos on app start
   useEffect(() => {
     preloadImages(BANK_LOGOS)
+  }, [])
+
+  // Check app version immediately on native platforms (during splash screen)
+  useEffect(() => {
+    if (!isNative) return
+
+    const checkVersion = async () => {
+      try {
+        const response = await appApi.getVersion()
+        if (response.code === 200 && response.data) {
+          const { minVersion } = response.data
+          // If current version is below minimum, show force update
+          if (compareVersions(APP_VERSION, minVersion) < 0) {
+            setForceUpdateInfo(response.data)
+          }
+        }
+      } catch (error) {
+        // Silently fail - don't block app if version check fails
+        console.error('Version check failed:', error)
+      }
+    }
+
+    // Check version immediately, don't wait for splash to finish
+    checkVersion()
+  }, []) // Remove isNative dependency to run only once on mount
+
+  // Load onboarding state from Keychain on app start (native only)
+  useEffect(() => {
+    if (isNative) {
+      loadOnboardingState()
+    }
   }, [])
 
   // Initialize IAP in background - don't block app startup
@@ -173,8 +222,8 @@ function App() {
       return
     }
 
-    // Native: wait for IAP to be ready, then show onboarding for first-time users
-    if (isNative && iapReady) {
+    // Native: wait for IAP to be ready AND onboarding state to load from Keychain
+    if (isNative && iapReady && !isOnboardingLoading) {
       if (!hasSeenOnboarding) {
         // First time user - show onboarding
         setShowOnboarding(true)
@@ -185,7 +234,7 @@ function App() {
         setShowPaywall(false)
       }
     }
-  }, [isNative, iapReady, hasSeenOnboarding])
+  }, [isNative, iapReady, hasSeenOnboarding, isOnboardingLoading])
 
   
   // Load user data from backend when app starts with authenticated user
@@ -219,6 +268,17 @@ function App() {
       <AnimatedSplash
         duration={2800}
         onComplete={() => setShowAnimatedSplash(false)}
+      />
+    )
+  }
+
+  // Show force update modal if version is too old (blocks all interaction)
+  if (forceUpdateInfo) {
+    return (
+      <ForceUpdate
+        iosStoreUrl={forceUpdateInfo.iosStoreUrl}
+        androidStoreUrl={forceUpdateInfo.androidStoreUrl}
+        latestVersion={forceUpdateInfo.latestVersion}
       />
     )
   }

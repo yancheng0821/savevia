@@ -828,6 +828,25 @@ export const affiliateApi = {
   },
 }
 
+/**
+ * App API - Version check
+ */
+export interface AppVersionInfo {
+  latestVersion: string
+  minVersion: string
+  iosStoreUrl: string
+  androidStoreUrl: string
+}
+
+export const appApi = {
+  // Get app version info
+  getVersion: async (): Promise<ApiResponse<AppVersionInfo>> => {
+    return createRequest('/api/v1/app/version', {
+      method: 'GET',
+    })
+  },
+}
+
 export default {
   auth: authApi,
   card: cardApi,
@@ -837,4 +856,5 @@ export default {
   transaction: transactionApi,
   subscription: subscriptionApi,
   affiliate: affiliateApi,
+  app: appApi,
 }

@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Master - 信用卡管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* 银行品牌色 */
+        .bank-bmo { background: linear-gradient(135deg, #0075be 0%, #004c8c 100%); }
+        .bank-td { background: linear-gradient(135deg, #34a853 0%, #1e7b34 100%); }
+        .bank-rbc { background: linear-gradient(135deg, #003168 0%, #fdb913 100%); }
+        .bank-cibc { background: linear-gradient(135deg, #c41f3e 0%, #8b1429 100%); }
+        .bank-scotiabank { background: linear-gradient(135deg, #ec111a 0%, #a80d12 100%); }
+        .bank-amex { background: linear-gradient(135deg, #006fcf 0%, #004a99 100%); }
+        .bank-tangerine { background: linear-gradient(135deg, #ff6600 0%, #cc5200 100%); }
+        .bank-simplii { background: linear-gradient(135deg, #f7941d 0%, #c77617 100%); }
+        .bank-rogers { background: linear-gradient(135deg, #da291c 0%, #a81f15 100%); }
+        .bank-hsbc { background: linear-gradient(135deg, #db0011 0%, #a8000d 100%); }
+        .bank-desjardins { background: linear-gradient(135deg, #00874e 0%, #00633a 100%); }
+        .bank-national { background: linear-gradient(135deg, #e31837 0%, #b3132b 100%); }
+        .bank-canadian-tire { background: linear-gradient(135deg, #d62027 0%, #a8191e 100%); }
+        .bank-default { background: linear-gradient(135deg, #374151 0%, #1f2937 100%); }
+
+        /* Visa/Mastercard/Amex 卡面颜色区分 */
+        .card-visa { background: linear-gradient(135deg, #1a1f71 0%, #0d1340 100%); }
+        .card-mastercard { background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%); }
+        .card-amex { background: linear-gradient(135deg, #006fcf 0%, #004080 100%); }
+
+        /* 卡片悬停效果 */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 模态框动画 */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen" x-data="cardApp()" x-init="init()">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Card Master</h1>
+                        <p class="text-sm text-gray-500">加拿大信用卡管理</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500" x-text="`${stats.total_cards || 0} 张卡片`"></span>
+                    <!-- Tab Navigation -->
+                    <div class="flex border rounded-lg overflow-hidden">
+                        <button
+                            @click="activeTab = 'cards'"
+                            :class="activeTab === 'cards' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="px-4 py-1.5 text-sm font-medium transition-colors"
+                        >
+                            💳 信用卡
+                        </button>
+                        <button
+                            @click="activeTab = 'images'; loadScrapedImages()"
+                            :class="activeTab === 'images' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="px-4 py-1.5 text-sm font-medium transition-colors"
+                        >
+                            🖼️ 图片库
+                        </button>
+                        <button
+                            @click="activeTab = 'collect'"
+                            :class="activeTab === 'collect' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                            class="px-4 py-1.5 text-sm font-medium transition-colors"
+                        >
+                            🤖 采集
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <!-- ==================== 信用卡列表界面 ==================== -->
+        <div x-show="activeTab === 'cards'" x-cloak>
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">选择您的信用卡</h2>
+                <p class="text-gray-500 mt-1">按银行分组浏览所有信用卡，点击卡片查看详情</p>
+            </div>
+
+            <!-- Loading State -->
+            <div x-show="loading" class="flex justify-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+            </div>
+
+            <!-- 按银行分组的卡片列表 -->
+            <div x-show="!loading" class="space-y-4">
+                <template x-for="bankGroup in groupedCards" :key="bankGroup.bank">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <!-- 银行头部（可折叠） -->
+                        <button
+                            @click="toggleBank(bankGroup.bank)"
+                            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        >
+                            <div class="flex items-center space-x-3">
+                                <!-- 展开/折叠图标 -->
+                                <svg
+                                    :class="expandedBanks.includes(bankGroup.bank) ? 'rotate-90' : ''"
+                                    class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                <!-- 银行 Logo/图标 -->
+                                <div
+                                    class="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold"
+                                    :class="getBankColorClass(bankGroup.bank)"
+                                >
+                                    <span x-text="getBankAbbr(bankGroup.bank)"></span>
+                                </div>
+                                <!-- 银行名称 -->
+                                <span class="font-semibold text-gray-900" x-text="bankGroup.bank"></span>
+                            </div>
+                            <!-- 卡片数量 -->
+                            <span class="text-sm text-gray-500" x-text="`${bankGroup.cards.length} 张卡`"></span>
+                        </button>
+
+                        <!-- 卡片网格（展开时显示） -->
+                        <div
+                            x-show="expandedBanks.includes(bankGroup.bank)"
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0"
+                            x-transition:enter-end="opacity-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100"
+                            x-transition:leave-end="opacity-0"
+                            class="px-6 pb-6"
+                        >
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                <template x-for="card in bankGroup.cards" :key="card.id">
+                                    <!-- 信用卡卡面 -->
+                                    <div
+                                        @click="showCardDetail(card)"
+                                        class="card-hover cursor-pointer rounded-xl overflow-hidden shadow-md"
+                                        :class="card.imageUrl ? 'bg-gray-100' : getCardColorClass(card)"
+                                    >
+                                        <!-- 有图片时显示真实卡面 -->
+                                        <template x-if="card.imageUrl">
+                                            <div class="relative">
+                                                <img
+                                                    :src="card.imageUrl"
+                                                    :alt="card.name"
+                                                    class="w-full h-auto object-contain"
+                                                    @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
+                                                >
+                                                <!-- 图片加载失败时的备用显示 -->
+                                                <div class="hidden p-5 text-white min-h-[180px] flex-col justify-between" :class="getCardColorClass(card)">
+                                                    <div class="text-sm font-bold" x-text="card.name"></div>
+                                                    <div class="text-xs opacity-70" x-text="card.bank"></div>
+                                                </div>
+                                                <!-- 悬停遮罩显示详情 -->
+                                                <div class="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span class="text-white font-medium flex items-center">
+                                                        查看详情
+                                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <!-- 无图片时显示渐变色卡面 -->
+                                        <template x-if="!card.imageUrl">
+                                            <div class="p-5 text-white min-h-[180px] flex flex-col justify-between">
+                                                <!-- 顶部: 银行名 + 年费 -->
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <div class="text-sm font-bold opacity-90" x-text="card.bank"></div>
+                                                        <div class="text-xs opacity-70 mt-1" x-text="card.name"></div>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <span
+                                                            class="text-xs px-2 py-1 rounded bg-white/20"
+                                                            x-text="card.annualFee === 0 ? 'NO FEE' : `$${card.annualFee}/yr`"
+                                                        ></span>
+                                                    </div>
+                                                </div>
+                                                <!-- 底部: 卡号样式 + 详情链接 -->
+                                                <div class="flex justify-between items-end mt-auto">
+                                                    <div class="text-sm opacity-60 tracking-wider" x-text="getCardNumberDisplay(card.cardType)"></div>
+                                                    <div class="text-sm opacity-80 flex items-center">
+                                                        详情
+                                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty State -->
+                <div x-show="groupedCards.length === 0" class="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">还没有信用卡数据</h3>
+                    <p class="mt-2 text-sm text-gray-500">前往「采集」页面添加信用卡信息</p>
+                    <button
+                        @click="activeTab = 'collect'"
+                        class="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                    >
+                        去采集
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 卡片详情弹窗 ==================== -->
+        <div
+            x-show="selectedCard !== null"
+            x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto"
+            @keydown.escape.window="selectedCard = null"
+        >
+            <!-- 遮罩 -->
+            <div
+                class="modal-backdrop fixed inset-0"
+                @click="selectedCard = null"
+            ></div>
+
+            <!-- 弹窗内容 -->
+            <div class="relative min-h-screen flex items-center justify-center p-4">
+                <div
+                    x-show="selectedCard !== null"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 transform scale-95"
+                    x-transition:enter-end="opacity-100 transform scale-100"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 transform scale-100"
+                    x-transition:leave-end="opacity-0 transform scale-95"
+                    class="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+                    @click.stop
+                >
+                    <!-- 关闭按钮 -->
+                    <button
+                        @click="selectedCard = null"
+                        class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition-colors"
+                    >
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+
+                    <!-- 卡片头部 -->
+                    <div class="relative">
+                        <!-- 有图片时显示卡面图片 -->
+                        <template x-if="selectedCard?.imageUrl">
+                            <div class="bg-gray-100 p-4 flex justify-center">
+                                <img
+                                    :src="selectedCard?.imageUrl"
+                                    :alt="selectedCard?.name"
+                                    class="max-h-48 w-auto object-contain rounded-lg shadow-lg"
+                                >
+                            </div>
+                        </template>
+                        <!-- 无图片时显示渐变色背景 -->
+                        <template x-if="!selectedCard?.imageUrl">
+                            <div
+                                class="p-6 text-white"
+                                :class="selectedCard ? getCardColorClass(selectedCard) : ''"
+                            >
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="text-sm font-medium opacity-80" x-text="selectedCard?.bank"></div>
+                                        <h3 class="text-2xl font-bold mt-1" x-text="selectedCard?.name"></h3>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-3xl font-bold" x-text="selectedCard?.annualFee === 0 ? '免年费' : `$${selectedCard?.annualFee}`"></div>
+                                        <div class="text-xs opacity-70">/年</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <!-- 卡片信息栏（有图片时显示在图片下方） -->
+                        <div class="p-4 bg-white border-b" x-show="selectedCard?.imageUrl">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="text-sm text-gray-500" x-text="selectedCard?.bank"></div>
+                                    <h3 class="text-xl font-bold text-gray-900" x-text="selectedCard?.name"></h3>
+                                    <div class="mt-2 flex items-center space-x-2">
+                                        <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700" x-text="selectedCard?.cardType"></span>
+                                        <span x-show="selectedCard?.noFxFee" class="text-xs px-2 py-1 rounded bg-green-100 text-green-700">免外汇费</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-emerald-600" x-text="selectedCard?.annualFee === 0 ? '免年费' : `$${selectedCard?.annualFee}/年`"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 卡片详情内容 -->
+                    <div class="p-6 overflow-y-auto max-h-[60vh]">
+                        <!-- 基础返现 -->
+                        <div class="mb-6">
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase mb-2">基础返现</h4>
+                            <div class="text-2xl font-bold text-emerald-500" x-text="selectedCard?.baseRewardRatePercent || '1%'"></div>
+                        </div>
+
+                        <!-- 开卡奖励 -->
+                        <div x-show="selectedCard?.signupBonus" class="mb-6 p-4 bg-amber-50 rounded-xl border border-amber-200">
+                            <h4 class="text-sm font-semibold text-amber-800 mb-2">🎁 开卡奖励</h4>
+                            <div class="text-lg font-bold text-amber-900" x-text="selectedCard?.signupBonus?.description || `消费满 $${selectedCard?.signupBonus?.minSpend} 获得 ${selectedCard?.signupBonus?.bonusAmount} 奖励`"></div>
+                            <div x-show="selectedCard?.signupBonus?.daysToComplete" class="text-sm text-amber-700 mt-1">
+                                需在 <span x-text="selectedCard?.signupBonus?.daysToComplete"></span> 天内完成
+                            </div>
+                        </div>
+
+                        <!-- 返现规则 -->
+                        <div x-show="selectedCard?.rewardRules?.length > 0" class="mb-6">
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase mb-3">返现规则</h4>
+                            <div class="space-y-2">
+                                <template x-for="(rule, ruleIndex) in selectedCard?.rewardRules" :key="ruleIndex">
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="text-xl" x-text="rule.categoryIcon || '📌'"></span>
+                                            <div>
+                                                <div class="font-medium text-gray-900" x-text="rule.categoryCn || rule.category"></div>
+                                                <div x-show="rule.monthlyCapAmount" class="text-xs text-gray-500">
+                                                    上限 $<span x-text="rule.monthlyCapAmount?.toLocaleString()"></span>/月
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-lg font-bold text-emerald-500" x-text="rule.rewardRatePercent"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- 申请按钮 -->
+                        <div x-show="selectedCard?.applyUrl" class="mt-6">
+                            <a
+                                :href="selectedCard?.applyUrl"
+                                target="_blank"
+                                class="block w-full py-3 bg-emerald-500 text-white text-center font-semibold rounded-xl hover:bg-emerald-600 transition-colors"
+                            >
+                                立即申请
+                                <svg class="inline w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 图片库界面 ==================== -->
+        <div x-show="activeTab === 'images'" x-cloak>
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">信用卡图片库</h2>
+                <p class="text-gray-500 mt-1">浏览从银行官网爬取的信用卡图片，点击可预览大图</p>
+            </div>
+
+            <!-- 加载中状态 -->
+            <div x-show="imagesLoading" class="flex justify-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+            </div>
+
+            <!-- 图片统计 -->
+            <div x-show="!imagesLoading && scrapedImages.length > 0" class="mb-6 flex items-center gap-4">
+                <span class="text-sm text-gray-600">
+                    共 <span class="font-semibold text-emerald-600" x-text="totalScrapedImages"></span> 张图片，
+                    来自 <span class="font-semibold" x-text="scrapedImages.length"></span> 家银行
+                </span>
+            </div>
+
+            <!-- 按银行分组的图片 -->
+            <div x-show="!imagesLoading" class="space-y-6">
+                <template x-for="bankGroup in scrapedImages" :key="bankGroup.bank">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <!-- 银行头部 -->
+                        <button
+                            @click="toggleImageBank(bankGroup.bank)"
+                            class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        >
+                            <div class="flex items-center space-x-3">
+                                <svg
+                                    :class="expandedImageBanks.includes(bankGroup.bank) ? 'rotate-90' : ''"
+                                    class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                <div
+                                    class="w-8 h-8 rounded flex items-center justify-center text-white text-xs font-bold"
+                                    :class="getBankColorClass(bankGroup.bank)"
+                                >
+                                    <span x-text="getBankAbbr(bankGroup.bank)"></span>
+                                </div>
+                                <span class="font-semibold text-gray-900" x-text="bankGroup.bank"></span>
+                            </div>
+                            <span class="text-sm text-gray-500" x-text="`${bankGroup.count} 张图片`"></span>
+                        </button>
+
+                        <!-- 图片网格 -->
+                        <div
+                            x-show="expandedImageBanks.includes(bankGroup.bank)"
+                            x-transition
+                            class="px-6 pb-6"
+                        >
+                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                <template x-for="(img, idx) in bankGroup.images" :key="idx">
+                                    <div
+                                        @click="showImagePreview(img)"
+                                        class="cursor-pointer group relative bg-gray-100 rounded-lg overflow-hidden aspect-[1.6/1] shadow-sm hover:shadow-md transition-shadow"
+                                    >
+                                        <img
+                                            :src="img.image_url"
+                                            :alt="img.name"
+                                            class="w-full h-full object-contain"
+                                            @error="$event.target.parentElement.classList.add('bg-red-50')"
+                                        >
+                                        <!-- 悬停遮罩 -->
+                                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2">
+                                            <span class="text-white text-xs text-center line-clamp-2" x-text="img.name"></span>
+                                            <span class="text-white/70 text-xs mt-1">点击查看大图</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- 空状态 -->
+                <div x-show="scrapedImages.length === 0" class="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">还没有爬取的图片</h3>
+                    <p class="mt-2 text-sm text-gray-500">运行 <code class="bg-gray-100 px-1 rounded">python scripts/scrape_card_images.py --bank TD</code> 来爬取卡片图片</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 图片预览弹窗 ==================== -->
+        <div
+            x-show="previewImage !== null"
+            x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto"
+            @keydown.escape.window="previewImage = null"
+        >
+            <div class="modal-backdrop fixed inset-0" @click="previewImage = null"></div>
+            <div class="relative min-h-screen flex items-center justify-center p-4">
+                <div
+                    x-show="previewImage !== null"
+                    x-transition
+                    class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden"
+                    @click.stop
+                >
+                    <!-- 关闭按钮 -->
+                    <button
+                        @click="previewImage = null"
+                        class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition-colors"
+                    >
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+
+                    <!-- 图片预览 -->
+                    <div class="p-4 bg-gray-100 flex justify-center">
+                        <img
+                            :src="previewImage?.image_url"
+                            :alt="previewImage?.name"
+                            class="max-h-[60vh] w-auto object-contain"
+                        >
+                    </div>
+
+                    <!-- 图片信息 -->
+                    <div class="p-6 border-t">
+                        <h3 class="text-lg font-bold text-gray-900" x-text="previewImage?.name"></h3>
+                        <div class="mt-2 flex items-center gap-4 text-sm text-gray-500">
+                            <span>银行: <span class="font-medium text-gray-700" x-text="previewImage?.bank"></span></span>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <a
+                                :href="previewImage?.url"
+                                target="_blank"
+                                class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                🔗 访问来源页面
+                            </a>
+                            <a
+                                :href="previewImage?.image_url"
+                                target="_blank"
+                                class="px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 transition-colors"
+                            >
+                                📥 查看原图
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 采集界面 ==================== -->
+        <div x-show="activeTab === 'collect'" x-cloak class="space-y-6">
+            <!-- 采集控制面板 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">🤖 智能采集信用卡信息</h2>
+                <p class="text-sm text-gray-500 mb-6">选择银行和 AI 模型，自动从银行官网采集信用卡返现信息</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <!-- 银行选择 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">🏦 选择银行</label>
+                        <select
+                            x-model="collectForm.bank"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <option value="">-- 请选择银行 --</option>
+                            <template x-for="bank in agentBanks" :key="bank.name">
+                                <option :value="bank.name" x-text="bank.name"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- LLM 提供商选择 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">🧠 AI 模型</label>
+                        <select
+                            x-model="collectForm.provider"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                            <template x-for="provider in agentProviders" :key="provider.id">
+                                <option :value="provider.id" x-text="`${provider.name} (${provider.defaultModel})`"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- 最大卡片数 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📊 最大卡片数</label>
+                        <input
+                            type="number"
+                            x-model="collectForm.maxCards"
+                            placeholder="留空采集全部"
+                            min="1"
+                            max="50"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                    </div>
+                </div>
+
+                <!-- 单URL采集 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">🔗 或输入单个卡片 URL（可选）</label>
+                    <div class="flex gap-2">
+                        <input
+                            type="url"
+                            x-model="collectForm.singleUrl"
+                            placeholder="https://www.bmo.com/main/personal/credit-cards/..."
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        >
+                        <button
+                            @click="collectSingleCard()"
+                            :disabled="!collectForm.singleUrl || collecting"
+                            :class="(!collectForm.singleUrl || collecting) ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'"
+                            class="px-4 py-2 text-white font-medium rounded-lg transition-colors"
+                        >
+                            采集单卡
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 采集按钮 -->
+                <div class="flex gap-3">
+                    <button
+                        @click="collectBankCards()"
+                        :disabled="!collectForm.bank || collecting"
+                        :class="(!collectForm.bank || collecting) ? 'bg-gray-300 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600'"
+                        class="flex-1 px-6 py-3 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                        <template x-if="collecting">
+                            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </template>
+                        <span x-text="collecting ? '采集中...' : `🚀 开始采集 ${collectForm.bank || '银行'} 的信用卡`"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== 银行管理面板 ==================== -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900">🏦 银行管理</h2>
+                    <button
+                        @click="showAddBankForm = !showAddBankForm"
+                        class="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-1"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        添加银行
+                    </button>
+                </div>
+
+                <!-- 添加银行表单 -->
+                <div x-show="showAddBankForm" x-transition class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h3 class="text-sm font-semibold text-blue-800 mb-3">添加新银行</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">银行名称 *</label>
+                            <input
+                                type="text"
+                                x-model="newBankForm.name"
+                                placeholder="如: Chase"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            >
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">信用卡列表页 URL *</label>
+                            <input
+                                type="url"
+                                x-model="newBankForm.cardsUrl"
+                                placeholder="https://..."
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            >
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button
+                            @click="addBank()"
+                            :disabled="!newBankForm.name || !newBankForm.cardsUrl"
+                            :class="(!newBankForm.name || !newBankForm.cardsUrl) ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'"
+                            class="px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                            保存
+                        </button>
+                        <button
+                            @click="showAddBankForm = false; resetNewBankForm()"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                        >
+                            取消
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 银行列表 -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-2 font-medium text-gray-600">银行名称</th>
+                                <th class="text-left py-3 px-2 font-medium text-gray-600">信用卡列表页 URL</th>
+                                <th class="text-center py-3 px-2 font-medium text-gray-600 w-24">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="bank in agentBanks" :key="bank.id">
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="py-3 px-2">
+                                        <template x-if="editingBankId !== bank.id">
+                                            <span class="font-medium text-gray-900" x-text="bank.name"></span>
+                                        </template>
+                                        <template x-if="editingBankId === bank.id">
+                                            <input
+                                                type="text"
+                                                x-model="editBankForm.name"
+                                                class="w-full px-2 py-1 text-sm border border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+                                            >
+                                        </template>
+                                    </td>
+                                    <td class="py-3 px-2">
+                                        <template x-if="editingBankId !== bank.id">
+                                            <a
+                                                :href="bank.listingUrl"
+                                                target="_blank"
+                                                class="text-blue-600 hover:underline truncate block max-w-md"
+                                                x-text="bank.listingUrl"
+                                            ></a>
+                                        </template>
+                                        <template x-if="editingBankId === bank.id">
+                                            <input
+                                                type="url"
+                                                x-model="editBankForm.cardsUrl"
+                                                class="w-full px-2 py-1 text-sm border border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+                                            >
+                                        </template>
+                                    </td>
+                                    <td class="py-3 px-2 text-center">
+                                        <template x-if="editingBankId !== bank.id">
+                                            <div class="flex justify-center gap-1">
+                                                <button
+                                                    @click="startEditBank(bank)"
+                                                    class="p-1.5 text-blue-600 hover:bg-blue-100 rounded transition-colors"
+                                                    title="编辑"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    @click="deleteBank(bank)"
+                                                    class="p-1.5 text-red-600 hover:bg-red-100 rounded transition-colors"
+                                                    title="删除"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </template>
+                                        <template x-if="editingBankId === bank.id">
+                                            <div class="flex justify-center gap-1">
+                                                <button
+                                                    @click="saveEditBank()"
+                                                    class="p-1.5 text-green-600 hover:bg-green-100 rounded transition-colors"
+                                                    title="保存"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    @click="cancelEditBank()"
+                                                    class="p-1.5 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                                                    title="取消"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 采集日志 -->
+            <div x-show="collectLogs.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">📋 采集日志</h3>
+                <div class="bg-gray-900 rounded-lg p-4 max-h-64 overflow-y-auto font-mono text-sm">
+                    <template x-for="(log, index) in collectLogs" :key="index">
+                        <div
+                            :class="{
+                                'text-green-400': log.type === 'success',
+                                'text-red-400': log.type === 'error',
+                                'text-yellow-400': log.type === 'warning',
+                                'text-gray-400': log.type === 'info'
+                            }"
+                            class="mb-1"
+                        >
+                            <span class="text-gray-500" x-text="log.time"></span>
+                            <span x-text="log.message"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- 采集结果 -->
+            <div x-show="collectedCards.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                    ✅ 采集成功 <span class="text-emerald-500" x-text="`(${collectedCards.length} 张卡)`"></span>
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <template x-for="card in collectedCards" :key="card.cardId">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xs font-medium px-2 py-0.5 rounded bg-blue-100 text-blue-800" x-text="card.bank"></span>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 mb-1" x-text="card.name"></h4>
+                            <div class="text-sm text-gray-500 space-y-1">
+                                <p>年费: <span x-text="card.annualFee === 0 ? '免年费' : `$${card.annualFee}`"></span></p>
+                                <p>返现规则: <span class="text-emerald-600" x-text="`${card.rewardRulesCount} 条`"></span></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t bg-white mt-12">
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                Card Master - 加拿大信用卡管理工具 | 数据参考自银行官网
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function cardApp() {
+            return {
+                // Tab控制
+                activeTab: 'cards',  // 'cards' or 'collect'
+
+                // 信用卡列表状态
+                allCards: [],
+                groupedCards: [],
+                expandedBanks: [],  // 展开的银行列表
+                selectedCard: null,  // 当前查看详情的卡片
+                loading: false,
+                stats: {},
+
+                // 采集界面状态
+                agentProviders: [],
+                agentBanks: [],
+                collecting: false,
+                collectLogs: [],
+                collectedCards: [],
+                collectForm: {
+                    bank: '',
+                    provider: 'volces',
+                    maxCards: null,
+                    singleUrl: '',
+                },
+
+                // 银行管理状态
+                showAddBankForm: false,
+                newBankForm: { name: '', cardsUrl: '' },
+                editingBankId: null,
+                editBankForm: { name: '', cardsUrl: '' },
+
+                // 图片库状态
+                scrapedImages: [],
+                expandedImageBanks: [],
+                imagesLoading: false,
+                totalScrapedImages: 0,
+                previewImage: null,
+
+                async init() {
+                    // 并行加载所有初始数据
+                    await Promise.all([
+                        this.loadAllCards(),
+                        this.loadStats(),
+                        this.loadAgentProviders(),
+                        this.loadAgentBanks(),
+                    ]);
+                },
+
+                async loadAllCards() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/api/cards');
+                        const data = await response.json();
+                        this.allCards = data.data || [];
+                        // groupCardsByBank() 会自动设置 expandedBanks 展开所有银行
+                        this.groupCardsByBank();
+                    } catch (error) {
+                        console.error('Error loading cards:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                groupCardsByBank() {
+                    const groups = {};
+                    this.allCards.forEach(card => {
+                        if (!groups[card.bank]) {
+                            groups[card.bank] = [];
+                        }
+                        groups[card.bank].push(card);
+                    });
+
+                    // 转换为数组并排序
+                    this.groupedCards = Object.entries(groups)
+                        .map(([bank, cards]) => ({
+                            bank,
+                            cards: cards.sort((a, b) => a.name.localeCompare(b.name))
+                        }))
+                        .sort((a, b) => a.bank.localeCompare(b.bank));
+
+                    // 默认展开所有银行
+                    this.expandedBanks = this.groupedCards.map(g => g.bank);
+                },
+
+                toggleBank(bank) {
+                    const index = this.expandedBanks.indexOf(bank);
+                    if (index === -1) {
+                        this.expandedBanks.push(bank);
+                    } else {
+                        this.expandedBanks.splice(index, 1);
+                    }
+                },
+
+                showCardDetail(card) {
+                    this.selectedCard = card;
+                },
+
+                getBankColorClass(bank) {
+                    const bankLower = bank.toLowerCase();
+                    if (bankLower.includes('bmo')) return 'bank-bmo';
+                    if (bankLower.includes('td')) return 'bank-td';
+                    if (bankLower.includes('rbc')) return 'bank-rbc';
+                    if (bankLower.includes('cibc')) return 'bank-cibc';
+                    if (bankLower.includes('scotiabank')) return 'bank-scotiabank';
+                    if (bankLower.includes('amex') || bankLower.includes('american express')) return 'bank-amex';
+                    if (bankLower.includes('tangerine')) return 'bank-tangerine';
+                    if (bankLower.includes('simplii')) return 'bank-simplii';
+                    if (bankLower.includes('rogers')) return 'bank-rogers';
+                    if (bankLower.includes('hsbc')) return 'bank-hsbc';
+                    if (bankLower.includes('desjardins')) return 'bank-desjardins';
+                    if (bankLower.includes('national')) return 'bank-national';
+                    if (bankLower.includes('canadian tire') || bankLower === 'ct') return 'bank-canadian-tire';
+                    return 'bank-default';
+                },
+
+                getCardColorClass(card) {
+                    // 优先按卡类型着色，否则按银行
+                    const type = card.cardType?.toUpperCase() || '';
+                    if (type.includes('AMEX') || type.includes('AMERICAN EXPRESS')) return 'card-amex';
+                    if (type.includes('VISA')) return 'card-visa';
+                    if (type.includes('MASTERCARD')) return 'card-mastercard';
+                    return this.getBankColorClass(card.bank);
+                },
+
+                getBankAbbr(bank) {
+                    const abbrs = {
+                        'BMO': 'BMO',
+                        'TD': 'TD',
+                        'RBC': 'RBC',
+                        'CIBC': 'CIBC',
+                        'Scotiabank': 'SB',
+                        'AMEX': 'AX',
+                        'American Express': 'AX',
+                        'Tangerine': 'TG',
+                        'Simplii': 'SF',
+                        'Rogers': 'RG',
+                        'HSBC': 'HS',
+                        'Desjardins': 'DJ',
+                        'National Bank': 'NB',
+                        'Canadian Tire': 'CT',
+                    };
+                    return abbrs[bank] || bank.substring(0, 2).toUpperCase();
+                },
+
+                getCardNumberDisplay(cardType) {
+                    const type = cardType?.toUpperCase() || '';
+                    if (type.includes('AMEX')) return '3XXX •••• •••• ••••';
+                    if (type.includes('VISA')) return '4XXX •••• •••• ••••';
+                    if (type.includes('MASTERCARD')) return '52XX •••• •••• ••••';
+                    return '•••• •••• •••• ••••';
+                },
+
+                async loadStats() {
+                    try {
+                        const response = await fetch('/api/stats');
+                        const data = await response.json();
+                        this.stats = data.data || {};
+                    } catch (error) {
+                        console.error('Error loading stats:', error);
+                    }
+                },
+
+                // ==================== 采集功能 ====================
+
+                async loadAgentProviders() {
+                    try {
+                        const response = await fetch('/api/agent/providers');
+                        const data = await response.json();
+                        this.agentProviders = data.data || [];
+                    } catch (error) {
+                        console.error('Error loading providers:', error);
+                    }
+                },
+
+                async loadAgentBanks() {
+                    try {
+                        const response = await fetch('/api/agent/banks');
+                        const data = await response.json();
+                        this.agentBanks = data.data || [];
+                    } catch (error) {
+                        console.error('Error loading banks:', error);
+                    }
+                },
+
+                addLog(message, type = 'info') {
+                    const now = new Date();
+                    const time = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
+                    this.collectLogs.unshift({ time, message, type });
+                    // 保持最多100条日志
+                    if (this.collectLogs.length > 100) {
+                        this.collectLogs.pop();
+                    }
+                },
+
+                async collectSingleCard() {
+                    if (!this.collectForm.singleUrl || this.collecting) return;
+
+                    this.collecting = true;
+                    this.addLog(`开始采集单卡: ${this.collectForm.singleUrl}`, 'info');
+
+                    try {
+                        const response = await fetch('/api/agent/collect', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                url: this.collectForm.singleUrl,
+                                bank: this.collectForm.bank || null,
+                                provider: this.collectForm.provider,
+                            }),
+                        });
+
+                        const data = await response.json();
+
+                        if (data.code === 200) {
+                            this.addLog(`✅ 采集成功: ${data.data.bank} - ${data.data.name}`, 'success');
+                            this.collectedCards.unshift(data.data);
+                            // 刷新数据
+                            await Promise.all([
+                                this.loadStats(),
+                                this.loadAllCards(),
+                            ]);
+                        } else {
+                            this.addLog(`❌ 采集失败: ${data.detail || data.message}`, 'error');
+                        }
+                    } catch (error) {
+                        this.addLog(`❌ 采集异常: ${error.message}`, 'error');
+                    } finally {
+                        this.collecting = false;
+                    }
+                },
+
+                async collectBankCards() {
+                    if (!this.collectForm.bank || this.collecting) return;
+
+                    this.collecting = true;
+                    this.collectedCards = [];
+                    this.addLog(`🚀 开始采集 ${this.collectForm.bank} 的信用卡...`, 'info');
+                    this.addLog(`使用 AI 模型: ${this.collectForm.provider}`, 'info');
+
+                    try {
+                        const response = await fetch('/api/agent/collect-bank', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                bank: this.collectForm.bank,
+                                provider: this.collectForm.provider,
+                                maxCards: this.collectForm.maxCards ? parseInt(this.collectForm.maxCards) : null,
+                            }),
+                        });
+
+                        const data = await response.json();
+
+                        if (data.code === 200) {
+                            this.addLog(`✅ 采集完成: 共采集 ${data.count} 张卡`, 'success');
+                            this.collectedCards = data.data || [];
+                            // 刷新数据
+                            await Promise.all([
+                                this.loadStats(),
+                                this.loadAllCards(),
+                            ]);
+                        } else {
+                            this.addLog(`❌ 采集失败: ${data.detail || data.message}`, 'error');
+                        }
+                    } catch (error) {
+                        this.addLog(`❌ 采集异常: ${error.message}`, 'error');
+                    } finally {
+                        this.collecting = false;
+                    }
+                },
+
+                // ==================== 银行管理功能 ====================
+
+                resetNewBankForm() {
+                    this.newBankForm = { name: '', cardsUrl: '' };
+                },
+
+                async addBank() {
+                    if (!this.newBankForm.name || !this.newBankForm.cardsUrl) return;
+
+                    try {
+                        const response = await fetch('/api/banks', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: this.newBankForm.name,
+                                cardsUrl: this.newBankForm.cardsUrl,
+                            }),
+                        });
+
+                        const data = await response.json();
+
+                        if (data.code === 200) {
+                            this.addLog(`✅ 银行添加成功: ${this.newBankForm.name}`, 'success');
+                            this.showAddBankForm = false;
+                            this.resetNewBankForm();
+                            await this.loadAgentBanks();
+                        } else {
+                            this.addLog(`❌ 银行添加失败: ${data.detail || data.message}`, 'error');
+                            alert(`添加失败: ${data.detail || data.message}`);
+                        }
+                    } catch (error) {
+                        this.addLog(`❌ 银行添加异常: ${error.message}`, 'error');
+                        alert(`添加异常: ${error.message}`);
+                    }
+                },
+
+                startEditBank(bank) {
+                    this.editingBankId = bank.id;
+                    this.editBankForm = {
+                        name: bank.name,
+                        cardsUrl: bank.listingUrl,
+                    };
+                },
+
+                async saveEditBank() {
+                    if (!this.editBankForm.name || !this.editBankForm.cardsUrl) return;
+
+                    try {
+                        const response = await fetch(`/api/banks/${this.editingBankId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: this.editBankForm.name,
+                                cardsUrl: this.editBankForm.cardsUrl,
+                            }),
+                        });
+
+                        const data = await response.json();
+
+                        if (data.code === 200) {
+                            this.addLog(`✅ 银行更新成功: ${this.editBankForm.name}`, 'success');
+                            this.cancelEditBank();
+                            await this.loadAgentBanks();
+                        } else {
+                            this.addLog(`❌ 银行更新失败: ${data.detail || data.message}`, 'error');
+                            alert(`更新失败: ${data.detail || data.message}`);
+                        }
+                    } catch (error) {
+                        this.addLog(`❌ 银行更新异常: ${error.message}`, 'error');
+                        alert(`更新异常: ${error.message}`);
+                    }
+                },
+
+                cancelEditBank() {
+                    this.editingBankId = null;
+                    this.editBankForm = { name: '', cardsUrl: '' };
+                },
+
+                async deleteBank(bank) {
+                    if (!confirm(`确定要删除银行 "${bank.name}" 吗？\n\n注意：这不会删除已采集的信用卡数据。`)) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/banks/${bank.id}`, {
+                            method: 'DELETE',
+                        });
+
+                        const data = await response.json();
+
+                        if (data.code === 200) {
+                            this.addLog(`✅ 银行删除成功: ${bank.name}`, 'success');
+                            await this.loadAgentBanks();
+                        } else {
+                            this.addLog(`❌ 银行删除失败: ${data.detail || data.message}`, 'error');
+                            alert(`删除失败: ${data.detail || data.message}`);
+                        }
+                    } catch (error) {
+                        this.addLog(`❌ 银行删除异常: ${error.message}`, 'error');
+                        alert(`删除异常: ${error.message}`);
+                    }
+                },
+
+                // ==================== 图片库功能 ====================
+
+                async loadScrapedImages() {
+                    if (this.scrapedImages.length > 0) return; // 已加载过
+
+                    this.imagesLoading = true;
+                    try {
+                        const response = await fetch('/api/scraped-images');
+                        const data = await response.json();
+                        this.scrapedImages = data.data || [];
+                        this.totalScrapedImages = data.totalCount || 0;
+                        // 默认展开所有银行
+                        this.expandedImageBanks = this.scrapedImages.map(g => g.bank);
+                    } catch (error) {
+                        console.error('Error loading scraped images:', error);
+                    } finally {
+                        this.imagesLoading = false;
+                    }
+                },
+
+                toggleImageBank(bank) {
+                    const index = this.expandedImageBanks.indexOf(bank);
+                    if (index === -1) {
+                        this.expandedImageBanks.push(bank);
+                    } else {
+                        this.expandedImageBanks.splice(index, 1);
+                    }
+                },
+
+                showImagePreview(img) {
+                    this.previewImage = img;
+                },
+            }
+        }
+    </script>
+</body>
+</html>

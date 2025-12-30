@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { cardApi } from '../services/api'
 import type { OptimizationResult, CreditCard, SpendingCategory } from '../types'
+import { getCardImageUrl, loadedImages } from '../utils/cardImages'
 
 interface CardUpgradeRecommendationProps {
   result: OptimizationResult
@@ -127,26 +128,47 @@ function CardUpgradeRecommendation({
 }: CardUpgradeRecommendationProps) {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const [bestRecommendation, setBestRecommendation] = useState<CardUpgradeOpportunity | null>(null)
+
+  // Real card images setting
+  const [realCardImages, setRealCardImages] = useState(() => {
+    const saved = localStorage.getItem('sv_realCardImages')
+    return saved !== null ? saved === 'true' : true
+  })
+
+  // Listen for storage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('sv_realCardImages')
+      setRealCardImages(saved !== null ? saved === 'true' : true)
+    }
+    window.addEventListener('storage', handleStorageChange)
+    const handleFocus = () => {
+      const saved = localStorage.getItem('sv_realCardImages')
+      setRealCardImages(saved !== null ? saved === 'true' : true)
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [])
 
   const { data: allCards } = useQuery({
     queryKey: ['cards'],
     queryFn: () => cardApi.getAll(),
   })
 
-  // Calculate the best upgrade opportunity
-  useEffect(() => {
+  // Calculate the best upgrade opportunity (sync with useMemo to avoid flicker)
+  const bestRecommendation = useMemo((): CardUpgradeOpportunity | null => {
     if (!allCards || allCards.length === 0 || !result) {
-      setBestRecommendation(null)
-      return
+      return null
     }
 
     // Filter cards that user doesn't have
     const unselectedCards = allCards.filter(card => !selectedCardIds.includes(card.id))
 
     if (unselectedCards.length === 0) {
-      setBestRecommendation(null)
-      return
+      return null
     }
 
     // For each unselected card, calculate potential savings
@@ -214,11 +236,19 @@ function CardUpgradeRecommendation({
 
     if (positiveOpportunities.length > 0) {
       positiveOpportunities.sort((a, b) => b.annualSavings - a.annualSavings)
-      setBestRecommendation(positiveOpportunities[0])
+      return positiveOpportunities[0]
     } else {
-      setBestRecommendation(null)
+      return null
     }
   }, [allCards, selectedCardIds, result, monthlySpending])
+
+  // Track image load errors - must be before early return
+  const [imageError, setImageError] = useState(false)
+
+  // Reset error state when card changes
+  useEffect(() => {
+    setImageError(false)
+  }, [bestRecommendation?.card.id])
 
   if (!bestRecommendation) {
     return null
@@ -231,6 +261,8 @@ function CardUpgradeRecommendation({
   if (compact) {
     // Card face style version matching CardsPage
     const style = getCardStyle(card)
+    const imageKey = `${card.bank}|${card.name}`
+    const cardImageUrl = realCardImages && !imageError ? getCardImageUrl(card.bank, card.name) : null
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -245,7 +277,7 @@ function CardUpgradeRecommendation({
           💳 {t('result.recommendedCard') || 'Recommended Card'}
         </div>
 
-        {/* Card face - matching CardsPage style */}
+        {/* Card face - with real image or gradient fallback */}
         <div
           className="sv-card-upgrade-compact"
           onClick={() => navigate(`/cards/${card.id}`, { state: { card } })}
@@ -254,95 +286,133 @@ function CardUpgradeRecommendation({
             aspectRatio: '1.586',
             background: style.gradient,
             borderRadius: '12px',
-            padding: '16px',
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             boxShadow: '0 2px 12px rgba(0,0,0,0.1)',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            isolation: 'isolate',
+            WebkitMaskImage: 'radial-gradient(white, white)'
           }}
         >
-          {/* Top row: bank logo/abbr + annual fee */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}>
-              {bankLogo && (
-                <img
-                  src={bankLogo}
-                  alt={card.bank}
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    objectFit: 'contain',
-                    borderRadius: '4px'
-                  }}
-                />
-              )}
+          {cardImageUrl ? (
+            <>
+              <img
+                src={cardImageUrl}
+                alt={`${card.bank} ${card.name}`}
+                loading="lazy"
+                onLoad={(e) => {
+                  loadedImages.add(imageKey)
+                  ;(e.target as HTMLImageElement).style.opacity = '1'
+                }}
+                onError={() => setImageError(true)}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  opacity: loadedImages.has(imageKey) ? 1 : 0,
+                  transition: 'opacity 0.2s ease',
+                  zIndex: 1
+                }}
+              />
+              {/* Full overlay to soften the card image */}
               <div style={{
-                fontSize: '14px',
-                fontWeight: '800',
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(0,0,0,0.05)',
+                borderRadius: '12px',
+                zIndex: 2
+              }} />
+            </>
+          ) : (
+            <>
+              {/* Gradient fallback content */}
+              <div style={{ padding: '16px' }}>
+                {/* Top row: bank logo/abbr + annual fee */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    {bankLogo && (
+                      <img
+                        src={bankLogo}
+                        alt={card.bank}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          objectFit: 'contain',
+                          borderRadius: '4px'
+                        }}
+                      />
+                    )}
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: '800',
+                      color: style.textColor,
+                      letterSpacing: '0.5px'
+                    }}>
+                      {BANK_ABBR[card.bank] || card.bank.substring(0, 4).toUpperCase()}
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: '600',
+                    color: style.textColor,
+                    opacity: 0.7
+                  }}>
+                    {card.annualFee === 0 ? 'NO FEE' : `$${card.annualFee}/yr`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card name - middle */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '16px',
+                right: '16px',
+                transform: 'translateY(-50%)',
+                fontSize: '13px',
+                fontWeight: '600',
                 color: style.textColor,
-                letterSpacing: '0.5px'
+                lineHeight: '1.3'
               }}>
-                {BANK_ABBR[card.bank] || card.bank.substring(0, 4).toUpperCase()}
+                {card.name}
               </div>
-            </div>
-            <span style={{
-              fontSize: '10px',
-              fontWeight: '600',
-              color: style.textColor,
-              opacity: 0.7
-            }}>
-              {card.annualFee === 0 ? 'NO FEE' : `$${card.annualFee}/yr`}
-            </span>
-          </div>
+            </>
+          )}
+        </div>
 
-          {/* Card name - middle */}
-          <div style={{
-            position: 'absolute',
-            top: '40%',
-            left: '16px',
-            right: '16px',
-            transform: 'translateY(-50%)',
-            fontSize: '13px',
-            fontWeight: '600',
-            color: style.textColor,
-            lineHeight: '1.3'
-          }}>
-            {card.name}
-          </div>
-
-          {/* Bottom row: key metrics */}
-          <div style={{
-            position: 'absolute',
-            bottom: '12px',
-            left: '16px',
-            right: '16px',
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '12px'
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ fontSize: '9px', color: style.textColor, opacity: 0.8, fontWeight: '500' }}>
-                {t('result.rewardRateIncrease') || 'Rate Increase'}
-              </div>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: style.textColor }}>
-                +{rateIncrease}%
-              </div>
+        {/* Metrics below card */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '12px',
+          padding: '12px 4px 0'
+        }}>
+          <div>
+            <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '500', marginBottom: '2px' }}>
+              {t('result.rewardRateIncrease') || 'Rate Increase'}
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'right' }}>
-              <div style={{ fontSize: '9px', color: style.textColor, opacity: 0.8, fontWeight: '500' }}>
-                {t('result.annualSavings') || 'Annual Savings'}
-              </div>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: style.textColor }}>
-                +${bestRecommendation.annualSavings.toFixed(0)}
-              </div>
+            <div style={{ fontSize: '16px', fontWeight: '700', color: '#059669' }}>
+              +{rateIncrease}%
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '500', marginBottom: '2px' }}>
+              {t('result.annualSavings') || 'Annual Savings'}
+            </div>
+            <div style={{ fontSize: '16px', fontWeight: '700', color: '#059669' }}>
+              +${bestRecommendation.annualSavings.toFixed(0)}
             </div>
           </div>
         </div>

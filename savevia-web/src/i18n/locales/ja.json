@@ -79,7 +79,9 @@
     "noCardsSelected": "少なくとも1枚のカードを選択してください",
     "cardCount": "{{count}}枚",
     "selectedCount": "{{count}}枚選択中",
-    "details": "詳細"
+    "details": "詳細",
+    "dragToReorder": "長押しでドラッグして並び替え",
+    "toggleCardStyle": "スタイル切替"
   },
   "optimizer": {
     "title": "月間支出を入力",
@@ -238,6 +240,7 @@
     "language": "言語",
     "notifications": "通知",
     "darkMode": "ダークモード",
+    "realCardImages": "実際のカード画像",
     "myCards": "マイカード",
     "annualSavings": "年間節約額",
     "support": "サポート",
@@ -467,5 +470,11 @@
       "disclaimer": "* 推定値のみ。実際の結果は異なる場合があります。金融アドバイスではありません。",
       "getStarted": "節約を始める"
     }
+  },
+  "forceUpdate": {
+    "title": "アップデートが必要です",
+    "message": "SaveViaの新しいバージョンが利用可能です。続行するにはアップデートしてください。",
+    "newVersion": "最新バージョン",
+    "updateNow": "今すぐアップデート"
   }
 }

@@ -1,0 +1,422 @@
+[
+  {
+    "id": 6,
+    "bank": "AMEX",
+    "name": "Aeroplan Card",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/aeroplan-card/",
+    "image_url": null
+  },
+  {
+    "id": 7,
+    "bank": "AMEX",
+    "name": "Aeroplan Reserve Card",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/aeroplan-reserve-card/",
+    "image_url": null
+  },
+  {
+    "id": 1,
+    "bank": "AMEX",
+    "name": "Cobalt Card",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/cobalt-card/",
+    "image_url": "https://icm.aexp-static.com/Internet/internationalcardshop/en_ca/images/cards/The_Platinum_Card.png"
+  },
+  {
+    "id": 2,
+    "bank": "AMEX",
+    "name": "Gold Rewards Card",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/gold-rewards-card/",
+    "image_url": "https://icm.aexp-static.com/Internet/internationalcardshop/en_ca/images/cards/The_Platinum_Card.png"
+  },
+  {
+    "id": 3,
+    "bank": "AMEX",
+    "name": "Platinum Card",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/platinum-card/",
+    "image_url": null
+  },
+  {
+    "id": 5,
+    "bank": "AMEX",
+    "name": "SimplyCash",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/simplycash-card/",
+    "image_url": null
+  },
+  {
+    "id": 4,
+    "bank": "AMEX",
+    "name": "SimplyCash Preferred",
+    "url": "https://www.americanexpress.com/ca/en/credit-cards/simplycash-preferred-card/",
+    "image_url": null
+  },
+  {
+    "id": 29,
+    "bank": "BMO",
+    "name": "Air Miles World Elite Mastercard",
+    "url": "https://www.bmo.com/main/personal/credit-cards/bmo-air-miles-world-elite-mastercard/",
+    "image_url": null
+  },
+  {
+    "id": 55,
+    "bank": "BMO",
+    "name": "Ascend World Elite Mastercard",
+    "url": "https://www.bmo.com/main/personal/credit-cards/bmo-ascend-world-elite-mastercard/",
+    "image_url": null
+  },
+  {
+    "id": 30,
+    "bank": "BMO",
+    "name": "CashBack Mastercard",
+    "url": "https://www.bmo.com/main/personal/credit-cards/bmo-cashback-mastercard/",
+    "image_url": null
+  },
+  {
+    "id": 28,
+    "bank": "BMO",
+    "name": "CashBack World Elite Mastercard",
+    "url": "https://www.bmo.com/main/personal/credit-cards/bmo-cashback-world-elite-mastercard/",
+    "image_url": null
+  },
+  {
+    "id": 27,
+    "bank": "BMO",
+    "name": "Eclipse Visa Infinite",
+    "url": "https://www.bmo.com/main/personal/credit-cards/bmo-eclipse-visa-infinite/",
+    "image_url": null
+  },
+  {
+    "id": 50,
+    "bank": "Canadian Tire",
+    "name": "Triangle Mastercard",
+    "url": "https://triangle.canadiantire.ca/en/credit-cards/triangle-mastercard.html",
+    "image_url": "https://media-triangle.canadiantire.ca/category-content/2022/triangle-ca-loyalty-program-2022-/triangle-elite-mastercard-1x.png"
+  },
+  {
+    "id": 49,
+    "bank": "Canadian Tire",
+    "name": "Triangle World Elite Mastercard",
+    "url": "https://triangle.canadiantire.ca/en/credit-cards/triangle-world-elite-mastercard.html",
+    "image_url": "https://media-triangle.canadiantire.ca/promo-content/2025/01/proudly-canadian-en.png"
+  },
+  {
+    "id": 53,
+    "bank": "CIBC",
+    "name": "Adapta Mastercard",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/adapta-mastercard.html",
+    "image_url": null
+  },
+  {
+    "id": 62,
+    "bank": "CIBC",
+    "name": "Aeroplan Visa Card",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aeroplan-visa-card.html",
+    "image_url": null
+  },
+  {
+    "id": 24,
+    "bank": "CIBC",
+    "name": "Aeroplan Visa Infinite",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aeroplan-visa-infinite-card.html",
+    "image_url": null
+  },
+  {
+    "id": 22,
+    "bank": "CIBC",
+    "name": "Aventura Visa Infinite",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-infinite-card.html",
+    "image_url": null
+  },
+  {
+    "id": 23,
+    "bank": "CIBC",
+    "name": "Aventura Visa Infinite Privilege",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/aventura-visa-infinite-privilege-card.html",
+    "image_url": null
+  },
+  {
+    "id": 26,
+    "bank": "CIBC",
+    "name": "Costco Mastercard",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/costco-mastercard.html",
+    "image_url": null
+  },
+  {
+    "id": 61,
+    "bank": "CIBC",
+    "name": "Dividend Visa Card",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/dividend-visa-card.html",
+    "image_url": null
+  },
+  {
+    "id": 25,
+    "bank": "CIBC",
+    "name": "Dividend Visa Infinite",
+    "url": "https://www.cibc.com/en/personal-banking/credit-cards/all-credit-cards/dividend-visa-infinite-card.html",
+    "image_url": null
+  },
+  {
+    "id": 60,
+    "bank": "Coast Capital",
+    "name": "Cash Back Mastercard",
+    "url": "https://www.coastcapitalsavings.com/credit-cards/cash-back-mastercard",
+    "image_url": "https://www.coastcapitalsavings.com/media/1663/chat-thread.png"
+  },
+  {
+    "id": 48,
+    "bank": "Desjardins",
+    "name": "Cash Back Mastercard",
+    "url": "https://www.desjardins.com/ca/personal/loans-credit/credit-cards/cash-back-mastercard/index.jsp",
+    "image_url": "https://www.desjardins.com/content/dam/images/vitrines/particuliers/cartes-credit/vitrine-carte-remises-mastercard-e.jpg"
+  },
+  {
+    "id": 47,
+    "bank": "Desjardins",
+    "name": "Cash Back World Elite Mastercard",
+    "url": "https://www.desjardins.com/ca/personal/loans-credit/credit-cards/cash-back-world-elite-mastercard/index.jsp",
+    "image_url": "https://www.desjardins.com/content/dam/images/vitrines/particuliers/cartes-credit/vitrine-carte-remises-world-elite-e.jpg"
+  },
+  {
+    "id": 43,
+    "bank": "Home Trust",
+    "name": "Preferred Visa",
+    "url": "https://www.hometrust.ca/credit-cards/preferred-visa-card/",
+    "image_url": "https://captcha.perfdrive.com/captcha-public/images/ss_captcha.png"
+  },
+  {
+    "id": 57,
+    "bank": "MBNA",
+    "name": "Amazon.ca Rewards Mastercard",
+    "url": "https://www.amazon.ca/dp/B08N3F1W7S",
+    "image_url": "https://images-na.ssl-images-amazon.com/images/G/15/error/en_CA/title._TTD_.png"
+  },
+  {
+    "id": 40,
+    "bank": "MBNA",
+    "name": "Rewards World Elite Mastercard",
+    "url": "https://www.mbna.ca/en/credit-cards/rewards/mbna-rewards-world-elite-mastercard.html",
+    "image_url": "https://www.mbna.ca/content/dam/mbna/images/credit-cards/tdmb-0006-creditcard-rewards-world-elite-en.png"
+  },
+  {
+    "id": 41,
+    "bank": "MBNA",
+    "name": "True Line Gold Mastercard",
+    "url": "https://www.mbna.ca/en/credit-cards/low-rate/mbna-true-line-gold-mastercard.html",
+    "image_url": null
+  },
+  {
+    "id": 59,
+    "bank": "Meridian",
+    "name": "Visa Cash Back",
+    "url": "https://www.meridiancu.ca/personal/credit-cards/visa-cash-back",
+    "image_url": "https://www.meridiancu.ca/getattachment/0b67f327-305d-4194-ba63-6a32f535b0b9/chequing-offer-promo-menu.png?lang=en-US&amp;ext=.png"
+  },
+  {
+    "id": 58,
+    "bank": "Meridian",
+    "name": "Visa Infinite Cash Back",
+    "url": "https://www.meridiancu.ca/personal/credit-cards/visa-infinite-cash-back",
+    "image_url": "https://www.meridiancu.ca/getattachment/0b67f327-305d-4194-ba63-6a32f535b0b9/chequing-offer-promo-menu.png?lang=en-US&amp;ext=.png"
+  },
+  {
+    "id": 42,
+    "bank": "National Bank",
+    "name": "World Elite Mastercard",
+    "url": "https://www.nbc.ca/personal/credit-cards/mastercard-world-elite.html",
+    "image_url": "https://www.nbc.ca/content/dam/bnc/commun/picto/picto-recherche-70x70.png"
+  },
+  {
+    "id": 35,
+    "bank": "Neo",
+    "name": "World Elite Mastercard",
+    "url": "https://www.neofinancial.com/credit",
+    "image_url": "https://n9typqfrnexj4eg9.public.blob.vercel-storage.com/compare-horizontal-mastercard-g3yj8ols76sliLjASLyRhIxkIaqYXc.webp"
+  },
+  {
+    "id": 36,
+    "bank": "Neo",
+    "name": "World Mastercard",
+    "url": "https://www.neofinancial.com/credit",
+    "image_url": "https://n9typqfrnexj4eg9.public.blob.vercel-storage.com/compare-horizontal-mastercard-g3yj8ols76sliLjASLyRhIxkIaqYXc.webp"
+  },
+  {
+    "id": 37,
+    "bank": "PC Financial",
+    "name": "World Elite Mastercard",
+    "url": "https://www.pcfinancial.ca/en/credit-cards/pc-money-account",
+    "image_url": null
+  },
+  {
+    "id": 38,
+    "bank": "PC Financial",
+    "name": "World Mastercard",
+    "url": "https://www.pcfinancial.ca/en/credit-cards/pc-money-account",
+    "image_url": null
+  },
+  {
+    "id": 13,
+    "bank": "RBC",
+    "name": "Avion Visa Infinite",
+    "url": "https://www.rbcroyalbank.com/credit-cards/travel/rbc-avion-visa-infinite.html",
+    "image_url": "https://www.rbcroyalbank.com/credit-cards/canada/travel/images/rbc-avion-visa-infinite.webp"
+  },
+  {
+    "id": 14,
+    "bank": "RBC",
+    "name": "Avion Visa Infinite Privilege",
+    "url": "https://www.rbcroyalbank.com/credit-cards/travel/rbc-avion-visa-infinite-privilege.html",
+    "image_url": "https://www.rbcroyalbank.com/credit-cards/canada/travel/images/rbc-avion-visa-infinite-privilege.webp"
+  },
+  {
+    "id": 16,
+    "bank": "RBC",
+    "name": "Cash Back Mastercard",
+    "url": "https://www.rbcroyalbank.com/credit-cards/cash-back/rbc-cash-back-mastercard.html",
+    "image_url": null
+  },
+  {
+    "id": 17,
+    "bank": "RBC",
+    "name": "ION Visa",
+    "url": "https://www.rbcroyalbank.com/credit-cards/cash-back/rbc-ion-visa.html",
+    "image_url": null
+  },
+  {
+    "id": 54,
+    "bank": "RBC",
+    "name": "ION+ Visa",
+    "url": "https://www.rbcroyalbank.com/credit-cards/cash-back/rbc-ion-plus-visa.html",
+    "image_url": null
+  },
+  {
+    "id": 15,
+    "bank": "RBC",
+    "name": "WestJet World Elite Mastercard",
+    "url": "https://www.rbcroyalbank.com/credit-cards/travel/rbc-westjet-world-elite-mastercard.html",
+    "image_url": null
+  },
+  {
+    "id": 32,
+    "bank": "Rogers",
+    "name": "Red Mastercard",
+    "url": "https://www.rogersbank.com/en/rogers_platinum_mastercard",
+    "image_url": "https://images.ctfassets.net/h6ysm004d16d/17STiwlDODZXqUqkfBGXqc/0cb10c053987f043d8372f9f27485362/header.png"
+  },
+  {
+    "id": 31,
+    "bank": "Rogers",
+    "name": "Red World Elite Mastercard",
+    "url": "https://www.rogersbank.com/en/rogers_world_elite_mastercard",
+    "image_url": "https://images.ctfassets.net/h6ysm004d16d/17STiwlDODZXqUqkfBGXqc/0cb10c053987f043d8372f9f27485362/header.png"
+  },
+  {
+    "id": 18,
+    "bank": "Scotiabank",
+    "name": "Gold American Express",
+    "url": "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/scotiabank-gold-american-express-card.html",
+    "image_url": null
+  },
+  {
+    "id": 20,
+    "bank": "Scotiabank",
+    "name": "Momentum Visa Infinite",
+    "url": "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/momentum-visa-infinite-card.html",
+    "image_url": null
+  },
+  {
+    "id": 19,
+    "bank": "Scotiabank",
+    "name": "Passport Visa Infinite",
+    "url": "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/passport-visa-infinite-card.html",
+    "image_url": null
+  },
+  {
+    "id": 21,
+    "bank": "Scotiabank",
+    "name": "Scene+ Visa",
+    "url": "https://www.scotiabank.com/ca/en/personal/credit-cards/visa/scene-visa-card.html",
+    "image_url": null
+  },
+  {
+    "id": 39,
+    "bank": "Simplii",
+    "name": "Cash Back Visa Card",
+    "url": "https://www.simplii.com/en/credit-cards/cash-back-visa-card.html",
+    "image_url": null
+  },
+  {
+    "id": 33,
+    "bank": "Tangerine",
+    "name": "Money-Back Credit Card",
+    "url": "https://www.tangerine.ca/en/products/spending/creditcard/money-back",
+    "image_url": "https://www.tangerine.ca/adobe/dynamicmedia/deliver/dm-aid--9351420d-35b6-49e3-9d40-978179dee07e/money-back-hero-ver2-front-sm-md-lg-xs-1x1-contain-en.jpg?quality=100&amp;preferwebp=true&amp;width={width}"
+  },
+  {
+    "id": 34,
+    "bank": "Tangerine",
+    "name": "World Mastercard",
+    "url": "https://www.tangerine.ca/en/products/spending/creditcard/world",
+    "image_url": "https://www.tangerine.ca/adobe/dynamicmedia/deliver/dm-aid--1be10dc7-3f83-46ad-bf52-de64cb92ee77/world-hero-ver2-sm-md-lg-1x1-contain-en.jpg?quality=100&amp;preferwebp=true&amp;width={width}"
+  },
+  {
+    "id": 10,
+    "bank": "TD",
+    "name": "Aeroplan Visa Infinite",
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-infinite-card",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/aeroplan-infinite-visa-card-fr-comp39-en.jpeg"
+  },
+  {
+    "id": 11,
+    "bank": "TD",
+    "name": "Aeroplan Visa Infinite Privilege",
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-infinite-privilege-card",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/aeroplan/aeroplan-visa-infinite-privilege-card/_jcr_content/root/container/responsivegrid/container_650430252/container_copy_copy/custom_teaser.coreimg.82{.width}.png/1739941701373/rewards-canada-2025-320x180.png"
+  },
+  {
+    "id": 12,
+    "bank": "TD",
+    "name": "Cash Back Visa",
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-card",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-card/_jcr_content/root/container/responsivegrid/container_972670418/container_copy_copy_/custom_teaser.coreimg.82{.width}.png/1691518660544/starbucks-320x180.png"
+  },
+  {
+    "id": 8,
+    "bank": "TD",
+    "name": "Cash Back Visa Infinite",
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/cash-back/cash-back-visa-infinite-card",
+    "image_url": "https://www.td.com/content/dam/tdct/images/personal-banking/cash-back-infinite-visa-card-large-1-en.jpeg"
+  },
+  {
+    "id": 9,
+    "bank": "TD",
+    "name": "First Class Visa Infinite",
+    "url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/travel-rewards/first-class-travel-visa-infinite-card",
+    "image_url": "https://www.td.com/ca/en/personal-banking/products/credit-cards/travel-rewards/first-class-travel-visa-infinite-card/_jcr_content/root/container/responsivegrid/container_copy/textimagectagrid_con/0/custom_teaser.coreimg.82{.width}.png/1739914236979/2025-milesopedia-awards-best-credit-card-travel-rewards-200x90.png"
+  },
+  {
+    "id": 52,
+    "bank": "Vancity",
+    "name": "enviro Visa Classic",
+    "url": "https://www.vancity.com/Banking/CreditCards/enviro-visa/",
+    "image_url": null
+  },
+  {
+    "id": 51,
+    "bank": "Vancity",
+    "name": "enviro Visa Infinite",
+    "url": "https://www.vancity.com/Banking/CreditCards/enviro-visa-infinite/",
+    "image_url": null
+  },
+  {
+    "id": 56,
+    "bank": "Walmart",
+    "name": "Rewards Mastercard",
+    "url": "https://www.walmartrewards.ca/credit-card/",
+    "image_url": null
+  },
+  {
+    "id": 46,
+    "bank": "Wealthsimple",
+    "name": "Visa Infinite",
+    "url": "https://www.wealthsimple.com/en-ca/cash-card",
+    "image_url": "https://www.wealthsimple.com/_next/static/media/generic.ec403c7b.png"
+  }
+]

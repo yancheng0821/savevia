@@ -2,5 +2,8 @@
   "devDependencies": {
     "sharp": "^0.34.5",
     "svgexport": "^0.4.2"
+  },
+  "dependencies": {
+    "capacitor-secure-storage-plugin": "^0.12.0"
   }
 }

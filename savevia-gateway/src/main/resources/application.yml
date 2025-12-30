@@ -36,6 +36,20 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
+        # App Service - Version check (public, no auth required)
+        - id: app-service
+          uri: lb://savevia-user
+          predicates:
+            - Path=/api/v1/app/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
         # User Service - Auth endpoints (strict rate limit)
         - id: auth-service
           uri: lb://savevia-user

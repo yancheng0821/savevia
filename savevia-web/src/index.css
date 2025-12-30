@@ -954,30 +954,30 @@ html.dark-mode .sv-header-lang-btn:hover {
 
   /* Mobile card adjustments - larger cards, centered */
   .sv-home-visual .sv-card-back {
-    top: 20px !important;
+    top: 15px !important;
     right: auto !important;
     left: 50% !important;
     transform: translateX(-50%) rotate(6deg) !important;
-    width: 240px !important;
-    height: 150px !important;
+    width: 270px !important;
+    height: 168px !important;
   }
 
   .sv-home-visual .sv-card-mid {
-    top: 50px !important;
+    top: 48px !important;
     right: auto !important;
     left: 50% !important;
     transform: translateX(-50%) rotate(-3deg) !important;
-    width: 240px !important;
-    height: 150px !important;
+    width: 270px !important;
+    height: 168px !important;
   }
 
   .sv-home-visual .sv-card-front {
-    top: 80px !important;
+    top: 82px !important;
     right: auto !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 240px !important;
-    height: 150px !important;
+    width: 270px !important;
+    height: 168px !important;
     padding: 20px !important;
   }
 
@@ -1012,42 +1012,9 @@ html.dark-mode .sv-header-lang-btn:hover {
     left: 20px !important;
   }
 
-  /* Reposition floating taglines on mobile - Annual Savings=top-left, One-Click=bottom-right */
-  .sv-home-visual .sv-tagline-top {
-    position: absolute !important;
-    top: 10px !important;
-    left: 10px !important;
-    right: auto !important;
-    bottom: auto !important;
-    transform: none !important;
-    padding: 8px 12px !important;
-    white-space: nowrap !important;
-  }
-
-  .sv-home-visual .sv-tagline-top .sv-tagline-label {
-    font-size: 10px !important;
-  }
-
-  .sv-home-visual .sv-tagline-top .sv-tagline-value {
-    font-size: 16px !important;
-  }
-
-  .sv-home-visual .sv-tagline-bottom {
-    position: absolute !important;
-    bottom: 50px !important;
-    right: 10px !important;
-    left: auto !important;
-    top: auto !important;
-    transform: none !important;
-    padding: 8px 12px !important;
-    white-space: nowrap !important;
-  }
-
-  .sv-home-visual .sv-tagline-bottom span {
-    font-size: 11px !important;
-  }
-
-  /* Hide mobile taglines row - use floating ones instead */
+  /* Hide floating taglines on mobile */
+  .sv-home-visual .sv-tagline-top,
+  .sv-home-visual .sv-tagline-bottom,
   .sv-home-visual .sv-mobile-taglines {
     display: none !important;
   }
@@ -1086,71 +1053,46 @@ html.dark-mode .sv-header-lang-btn:hover {
 
   /* Smaller screens but still readable cards */
   .sv-home-visual {
-    height: 360px !important;
+    height: 340px !important;
   }
 
   .sv-home-visual .sv-card-back,
   .sv-home-visual .sv-card-mid,
   .sv-home-visual .sv-card-front {
-    width: 200px !important;
-    height: 125px !important;
+    width: 260px !important;
+    height: 162px !important;
   }
 
   .sv-home-visual .sv-card-back {
-    top: 80px !important;
+    top: 15px !important;
   }
 
   .sv-home-visual .sv-card-mid {
-    top: 105px !important;
+    top: 48px !important;
   }
 
   .sv-home-visual .sv-card-front {
-    top: 130px !important;
-    padding: 16px !important;
+    top: 80px !important;
+    padding: 18px !important;
   }
 
   .sv-home-visual .sv-card-front .sv-card-label {
-    font-size: 8px !important;
-    letter-spacing: 0.2px !important;
+    font-size: 9px !important;
+    letter-spacing: 0.3px !important;
     margin-top: 3px !important;
   }
 
   .sv-home-visual .sv-card-front .sv-card-rate {
-    font-size: 12px !important;
+    font-size: 16px !important;
     font-weight: 600 !important;
     position: static !important;
     margin-top: 2px !important;
   }
 
   .sv-home-visual .sv-card-front .sv-card-number {
-    font-size: 9px !important;
-    bottom: 14px !important;
-    left: 16px !important;
-  }
-
-  /* Taglines for small screens */
-  .sv-home-visual .sv-tagline-top {
-    padding: 6px 10px !important;
-    top: 10px !important;
-    left: 10px !important;
-    right: auto !important;
-    white-space: nowrap !important;
-  }
-
-  .sv-home-visual .sv-tagline-bottom {
-    padding: 6px 10px !important;
-    bottom: 45px !important;
-    right: 10px !important;
-    left: auto !important;
-    white-space: nowrap !important;
-  }
-
-  .sv-home-visual .sv-tagline-top .sv-tagline-value {
-    font-size: 14px !important;
-  }
-
-  .sv-home-visual .sv-tagline-bottom span {
     font-size: 10px !important;
+    bottom: 16px !important;
+    left: 18px !important;
   }
 }
 
@@ -2243,12 +2185,12 @@ button:active, .sv-btn:active {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: transparent;
   border: none;
-  border-radius: 20px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 @media (min-width: 641px) {
@@ -2307,17 +2249,22 @@ button:active, .sv-btn:active {
 .sv-quick-select-label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--gray-500);
   text-align: center;
   line-height: 1.4;
-  transition: all 0.2s ease;
+  background: var(--gray-500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 @media (min-width: 641px) {
   .sv-quick-select-label {
     font-size: 13px;
     font-weight: 600;
-    color: var(--gray-700);
+    background: var(--gray-700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 
@@ -2796,8 +2743,12 @@ html.dark-mode .sv-quick-select-group-label {
 }
 
 html.dark-mode .sv-quick-select-item {
-  background: var(--bg-secondary) !important;
+  background: transparent !important;
   border-color: var(--border-color) !important;
+}
+
+html.dark-mode .sv-quick-select-item.selected {
+  background: var(--bg-tertiary) !important;
 }
 
 html.dark-mode .sv-quick-select-label {
@@ -3059,27 +3010,72 @@ html.dark-mode .sv-optimizer-title {
 }
 
 /* ========================================
+   Toggle Card Style Button
+   ======================================== */
+.sv-toggle-card-style-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--gray-100);
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sv-toggle-card-style-btn:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 640px) {
+  .sv-toggle-card-style-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+html.dark-mode .sv-toggle-card-style-btn {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+html.dark-mode .sv-toggle-card-style-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+html.dark-mode .sv-toggle-card-style-btn:active {
+  background: var(--bg-tertiary);
+}
+
+/* ========================================
    Bank Tabs (Mobile Cards Page)
    ======================================== */
 .sv-bank-tabs-wrapper {
-  display: none;
-  margin: 0 -24px 20px;
-  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
 }
 
 @media (max-width: 640px) {
   .sv-bank-tabs-wrapper {
-    display: block;
+    margin: 0 -24px 20px;
+    padding: 0 24px;
   }
 }
 
 .sv-bank-tabs {
   display: flex;
+  flex: 1;
   gap: 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 4px 0 12px;
+  padding: 4px 0;
 }
 
 .sv-bank-tabs::-webkit-scrollbar {
@@ -3100,11 +3096,29 @@ html.dark-mode .sv-optimizer-title {
   transition: all 0.15s ease;
 }
 
+.sv-bank-tab:hover {
+  background: var(--gray-50);
+}
+
+@media (max-width: 640px) {
+  .sv-bank-tab {
+    background: transparent;
+  }
+
+  .sv-bank-tab:hover {
+    background: transparent;
+  }
+}
+
 .sv-bank-tab:active {
   transform: scale(0.97);
 }
 
 .sv-bank-tab.active {
+  background: var(--gray-100);
+}
+
+.sv-bank-tab.active:hover {
   background: var(--gray-100);
 }
 
@@ -3146,6 +3160,210 @@ html.dark-mode .sv-optimizer-title {
   font-weight: 600;
   border-radius: 9px;
   margin-left: 2px;
+}
+
+.sv-bank-tab-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+/* Edit button for bank tabs */
+.sv-bank-tabs-edit {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .sv-bank-tabs-edit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--gray-500);
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+
+  .sv-bank-tabs-edit:active {
+    transform: scale(0.95);
+  }
+
+  .sv-bank-tabs-edit.active {
+    background: transparent;
+    color: #10b981;
+  }
+}
+
+/* Edit mode styles */
+.sv-bank-tab.edit-mode {
+  cursor: grab;
+  border: 1px dashed var(--gray-300);
+}
+
+.sv-bank-tab.edit-mode:active {
+  cursor: grabbing;
+}
+
+.sv-bank-tab.dragging {
+  opacity: 0.5;
+}
+
+.sv-bank-tab-drag-hint {
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-left: 4px;
+}
+
+/* Bank Reorder Panel */
+.sv-bank-reorder-panel {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .sv-bank-reorder-panel {
+    display: block;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 16px;
+  }
+
+  .sv-bank-reorder-hint {
+    font-size: 12px;
+    color: var(--gray-500);
+    text-align: center;
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  .sv-bank-reorder-list {
+    display: flex;
+    flex-direction: column;
+    background: var(--gray-100, #f3f4f6);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .sv-bank-reorder-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--gray-100, #f3f4f6);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    position: relative;
+  }
+
+  .sv-bank-reorder-item.dragging {
+    background: var(--gray-50, #f9fafb);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+
+  .sv-bank-reorder-item.floating {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+    z-index: 1000;
+    width: calc(100vw - 48px);
+    max-width: 400px;
+    opacity: 1;
+    transform: scale(1.03);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .sv-bank-reorder-item.drag-over {
+    background: var(--gray-100);
+  }
+
+  .sv-bank-reorder-handle {
+    color: var(--gray-400);
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: -2px;
+    padding: 8px 12px;
+    margin: -8px -12px -8px 0;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .sv-bank-reorder-handle:active {
+    color: var(--gray-600);
+    cursor: grabbing;
+  }
+
+  .sv-bank-reorder-logo {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    object-fit: contain;
+  }
+
+  .sv-bank-reorder-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-800);
+  }
+}
+
+/* Dark mode reorder panel */
+html.dark-mode .sv-bank-reorder-panel {
+  background: transparent;
+}
+
+html.dark-mode .sv-bank-reorder-list {
+  background: var(--bg-tertiary);
+}
+
+html.dark-mode .sv-bank-reorder-item {
+  background: var(--bg-tertiary);
+}
+
+html.dark-mode .sv-bank-reorder-item.dragging {
+  background: var(--bg-secondary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+html.dark-mode .sv-bank-reorder-item.floating {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+html.dark-mode .sv-bank-reorder-item.drag-over {
+  background: var(--bg-secondary);
+}
+
+html.dark-mode .sv-bank-reorder-name {
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-bank-reorder-handle {
+  color: var(--text-secondary);
+}
+
+/* Dark mode edit button */
+html.dark-mode .sv-bank-tabs-edit {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+html.dark-mode .sv-bank-tabs-edit.active {
+  background: transparent;
+  color: #34d399;
+}
+
+html.dark-mode .sv-bank-tab.edit-mode {
+  border-color: var(--border-color);
 }
 
 /* Mobile Bottom Action Buttons */
@@ -3306,6 +3524,8 @@ html.dark-mode .sv-optimizer-title {
 
 .sv-card-upgrade-compact {
   transition: all 0.3s ease !important;
+  overflow: hidden !important;
+  contain: paint;
 }
 
 .sv-card-upgrade-compact:hover {
@@ -4096,4 +4316,343 @@ html.dark-mode .sv-scroll-btn:active {
     background: rgba(50, 50, 50, 0.95);
     color: #f5f5f5;
   }
+}
+
+/* ========================================
+   Bank Selector (Mobile Only)
+   ======================================== */
+.sv-bank-selector-trigger-wrapper {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .sv-bank-selector-trigger-wrapper {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .sv-bank-selector-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .sv-bank-selector-trigger:active {
+    background: var(--gray-50);
+  }
+
+  .sv-bank-selector-trigger-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+
+  .sv-bank-selector-trigger-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-100);
+    border-radius: 6px;
+    color: var(--gray-500);
+  }
+
+  .sv-bank-selector-trigger-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gray-900);
+    text-align: left;
+  }
+
+  .sv-bank-selector-trigger-arrow {
+    font-size: 12px;
+    color: var(--gray-400);
+    transition: transform 0.2s ease;
+  }
+
+  .sv-bank-selector-trigger-arrow.expanded {
+    transform: rotate(180deg);
+  }
+
+  /* Panel */
+  .sv-bank-selector-panel {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* All Banks Option */
+  .sv-bank-selector-all {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gray-700);
+    text-align: left;
+    transition: background 0.15s ease;
+  }
+
+  .sv-bank-selector-all:active {
+    background: var(--gray-50);
+  }
+
+  .sv-bank-selector-all.active {
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, rgba(13, 148, 136, 0.08) 100%);
+  }
+
+  .sv-bank-selector-all-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-100);
+    border-radius: 6px;
+    color: var(--gray-500);
+  }
+
+  .sv-bank-selector-check {
+    margin-left: auto;
+    color: #059669;
+    font-size: 14px;
+  }
+
+  /* Category */
+  .sv-bank-category {
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .sv-bank-category:last-child {
+    border-bottom: none;
+  }
+
+  .sv-bank-category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .sv-bank-category-header:active {
+    background: var(--gray-50);
+  }
+
+  .sv-bank-category-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+
+  .sv-bank-category-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sv-bank-category-badge {
+    background: linear-gradient(90deg, #2563eb 0%, #0d9488 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .sv-bank-category-arrow {
+    font-size: 10px;
+    color: var(--gray-400);
+    transition: transform 0.2s ease;
+  }
+
+  .sv-bank-category-arrow.expanded {
+    transform: rotate(90deg);
+  }
+
+  /* Category List */
+  .sv-bank-category-list {
+    padding: 0 8px 8px;
+  }
+
+  .sv-bank-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-align: left;
+  }
+
+  .sv-bank-item:active {
+    background: var(--gray-100);
+  }
+
+  .sv-bank-item.active {
+    background: linear-gradient(90deg, rgba(37, 99, 235, 0.08) 0%, rgba(13, 148, 136, 0.08) 100%);
+  }
+
+  .sv-bank-item-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  .sv-bank-item-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-700);
+  }
+
+  .sv-bank-item-count {
+    font-size: 12px;
+    color: var(--gray-400);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .sv-bank-item-selected {
+    font-size: 11px;
+    color: #059669;
+    font-weight: 500;
+  }
+}
+
+/* Dark Mode - Bank Selector */
+html.dark-mode .sv-bank-selector-trigger {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html.dark-mode .sv-bank-selector-trigger-icon {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+html.dark-mode .sv-bank-selector-trigger-name {
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-bank-selector-panel {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+html.dark-mode .sv-bank-selector-all {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+html.dark-mode .sv-bank-selector-all-icon {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+html.dark-mode .sv-bank-category {
+  border-color: var(--border-color);
+}
+
+html.dark-mode .sv-bank-category-title {
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-bank-item-name {
+  color: var(--text-primary);
+}
+
+html.dark-mode .sv-bank-item-count {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   Letter Index (Mobile Only)
+   ======================================== */
+.sv-letter-index {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .sv-letter-index {
+    position: fixed;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    z-index: 100;
+    padding: 8px 4px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .sv-letter-index-item {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sv-letter-index-item:active,
+  .sv-letter-index-item.active {
+    background: linear-gradient(135deg, #2563eb 0%, #0d9488 100%);
+    color: white;
+    transform: scale(1.2);
+  }
+}
+
+/* Dark mode letter index */
+html.dark-mode .sv-letter-index {
+  background: rgba(30, 30, 30, 0.9);
+}
+
+html.dark-mode .sv-letter-index-item {
+  color: var(--text-secondary);
 }

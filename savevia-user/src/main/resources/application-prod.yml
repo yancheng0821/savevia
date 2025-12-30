@@ -41,6 +41,11 @@ apple:
 
 app:
   frontend-url: ${FRONTEND_URL:https://savevia.app}
+  version:
+    latest: ${APP_VERSION_LATEST}
+    min: ${APP_VERSION_MIN}
+    ios-store-url: https://apps.apple.com/app/id6756332569
+    android-store-url: https://play.google.com/store/apps/details?id=app.savevia
 
 ai:
   usage:

@@ -12,6 +12,9 @@ PODS:
   - CapacitorCommunityAppleSignIn (7.1.0):
     - Capacitor
   - CapacitorCordova (7.4.4)
+  - CapacitorSecureStoragePlugin (0.12.0):
+    - Capacitor
+    - SwiftKeychainWrapper
   - CapacitorShare (7.0.3):
     - Capacitor
   - CapacitorSplashScreen (7.0.4):
@@ -33,12 +36,14 @@ PODS:
   - SouthdevsCapacitorGoogleAuth (0.0.1):
     - Capacitor
     - GoogleSignIn (~> 7.1)
+  - SwiftKeychainWrapper (4.0.1)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
   - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - CapacitorSecureStoragePlugin (from `../../node_modules/capacitor-secure-storage-plugin`)
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "RevenuecatPurchasesCapacitor (from `../../node_modules/@revenuecat/purchases-capacitor`)"
@@ -52,6 +57,7 @@ SPEC REPOS:
     - GTMSessionFetcher
     - PurchasesHybridCommon
     - RevenueCat
+    - SwiftKeychainWrapper
 
 EXTERNAL SOURCES:
   Capacitor:
@@ -62,6 +68,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor-community/apple-sign-in"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorSecureStoragePlugin:
+    :path: "../../node_modules/capacitor-secure-storage-plugin"
   CapacitorShare:
     :path: "../../node_modules/@capacitor/share"
   CapacitorSplashScreen:
@@ -77,6 +85,7 @@ SPEC CHECKSUMS:
   CapacitorCamera: 6746827d82376f31cea9224945c0458c9fd0b0b2
   CapacitorCommunityAppleSignIn: 271cb2860576fd2961508bbfa7a82117d93eadca
   CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
+  CapacitorSecureStoragePlugin: 50de0808ad398aa401e00f9e58adf88c77cb3c25
   CapacitorShare: a4f4f86eabd4b3ff52ba6a11b754713c6926a8d1
   CapacitorSplashScreen: 000f7591d546907dda5cbb514bd6b6d9e6048cf8
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
@@ -86,7 +95,8 @@ SPEC CHECKSUMS:
   RevenueCat: d185cbff8be9425b5835042afd6889389bb756c8
   RevenuecatPurchasesCapacitor: d6cca993813f124f48c777d9f2b199c98b69f8f9
   SouthdevsCapacitorGoogleAuth: 453cab6e5f58fec290e30b2d918ded3434ad22c9
+  SwiftKeychainWrapper: 807ba1d63c33a7d0613288512399cd1eda1e470c
 
-PODFILE CHECKSUM: 784f6cb703099c2376f8d8052fff62d4b63f152e
+PODFILE CHECKSUM: 9b5ae02cb242f1017455b0818e79b8dc78a19163
 
 COCOAPODS: 1.16.2

@@ -79,7 +79,9 @@
     "noCardsSelected": "최소 한 장의 카드를 선택해주세요",
     "cardCount": "{{count}}장",
     "selectedCount": "{{count}}장 선택됨",
-    "details": "상세"
+    "details": "상세",
+    "dragToReorder": "길게 눌러 드래그하여 순서 변경",
+    "toggleCardStyle": "스타일 전환"
   },
   "optimizer": {
     "title": "월별 지출 입력",
@@ -238,6 +240,7 @@
     "language": "언어",
     "notifications": "알림",
     "darkMode": "다크 모드",
+    "realCardImages": "실제 카드 이미지",
     "myCards": "내 카드",
     "annualSavings": "연간 절약액",
     "support": "지원",
@@ -467,5 +470,11 @@
       "disclaimer": "* 추정치일 뿐입니다. 실제 결과는 다를 수 있습니다. 재정 조언이 아닙니다.",
       "getStarted": "절약 시작하기"
     }
+  },
+  "forceUpdate": {
+    "title": "업데이트 필요",
+    "message": "SaveVia의 새 버전이 있습니다. 계속 사용하려면 업데이트해 주세요.",
+    "newVersion": "새 버전",
+    "updateNow": "지금 업데이트"
   }
 }

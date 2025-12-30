@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightOutlined, SafetyOutlined, CloseOutlined, WalletOutlined, CreditCardOutlined, AppleOutlined } from '@ant-design/icons'
@@ -15,6 +15,7 @@ import { useAuthStore } from '../stores/useAuthStore'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useHomePageStore } from '../stores/useHomePageStore'
 import { cardApi, userApi, bankApi } from '../services/api'
+import { getCardImageUrl } from '../utils/cardImages'
 import type { SpendingCategory, CreditCard } from '../types'
 
 // Bank logo paths
@@ -42,6 +43,91 @@ const BANK_LOGOS: Record<string, string> = {
   'Meridian': '/logos/meridian.png',
   'Coast Capital': '/logos/coastcapital.png',
   'Walmart': '/logos/walmart.png',
+}
+
+// Default card style fallback
+const DEFAULT_CARD_STYLE = { gradient: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)', textColor: 'white' }
+
+// Bank fallback colors (used when imageUrl is not set)
+const BANK_FALLBACK_COLORS: Record<string, { gradient: string; textColor: string }> = {
+  'AMEX': { gradient: 'linear-gradient(135deg, #016fd0 0%, #004080 100%)', textColor: 'white' },
+  'American Express': { gradient: 'linear-gradient(135deg, #016fd0 0%, #004080 100%)', textColor: 'white' },
+  'TD': { gradient: 'linear-gradient(135deg, #34a853 0%, #1e7e34 100%)', textColor: 'white' },
+  'RBC': { gradient: 'linear-gradient(135deg, #003168 0%, #001a3a 100%)', textColor: 'white' },
+  'Scotiabank': { gradient: 'linear-gradient(135deg, #ec111a 0%, #b30d14 100%)', textColor: 'white' },
+  'CIBC': { gradient: 'linear-gradient(135deg, #8b1538 0%, #6b1029 100%)', textColor: 'white' },
+  'BMO': { gradient: 'linear-gradient(135deg, #0079c1 0%, #005a91 100%)', textColor: 'white' },
+  'Rogers': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
+  'Tangerine': { gradient: 'linear-gradient(135deg, #ff6600 0%, #cc5200 100%)', textColor: 'white' },
+  'Neo': { gradient: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)', textColor: 'white' },
+  'PC Financial': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
+  'Simplii': { gradient: 'linear-gradient(135deg, #ff6600 0%, #e65c00 100%)', textColor: 'white' },
+  'MBNA': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: 'white' },
+  'National Bank': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
+  'Home Trust': { gradient: 'linear-gradient(135deg, #1e3a5f 0%, #152a45 100%)', textColor: 'white' },
+  'Brim': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: 'white' },
+  'Wealthsimple': { gradient: 'linear-gradient(135deg, #1a1a1a 0%, #333333 100%)', textColor: 'white' },
+  'Desjardins': { gradient: 'linear-gradient(135deg, #00874e 0%, #005a34 100%)', textColor: 'white' },
+  'Canadian Tire': { gradient: 'linear-gradient(135deg, #e31837 0%, #b8132c 100%)', textColor: 'white' },
+  'Vancity': { gradient: 'linear-gradient(135deg, #00874e 0%, #005a34 100%)', textColor: 'white' },
+  'Meridian': { gradient: 'linear-gradient(135deg, #003168 0%, #001a3a 100%)', textColor: 'white' },
+  'Coast Capital': { gradient: 'linear-gradient(135deg, #0079c1 0%, #005a91 100%)', textColor: 'white' },
+  'Walmart': { gradient: 'linear-gradient(135deg, #0071dc 0%, #004c9a 100%)', textColor: 'white' },
+}
+
+// Bank abbreviations
+const BANK_ABBR: Record<string, string> = {
+  'TD': 'TD',
+  'RBC': 'RBC',
+  'Scotiabank': 'Scotia',
+  'CIBC': 'CIBC',
+  'BMO': 'BMO',
+  'American Express': 'AMEX',
+  'AMEX': 'AMEX',
+  'Rogers': 'Rogers',
+  'Tangerine': 'Tang',
+  'Neo': 'Neo',
+  'PC Financial': 'PC',
+  'Simplii': 'Simplii',
+  'MBNA': 'MBNA',
+  'National Bank': 'NBC',
+  'Home Trust': 'HT',
+  'Brim': 'Brim',
+  'Wealthsimple': 'WS',
+  'Desjardins': 'Desj',
+  'Canadian Tire': 'CT',
+  'Vancity': 'Vancity',
+  'Meridian': 'Merid',
+  'Coast Capital': 'Coast',
+  'Walmart': 'Walmart',
+}
+
+// Parse card style from imageUrl JSON or use fallback
+function getCardStyle(card: CreditCard) {
+  if (card.imageUrl) {
+    try {
+      const parsed = JSON.parse(card.imageUrl)
+      if (parsed.gradient && parsed.textColor) {
+        return { gradient: parsed.gradient, textColor: parsed.textColor }
+      }
+    } catch {
+      // Not JSON, ignore
+    }
+  }
+  return BANK_FALLBACK_COLORS[card.bank] || DEFAULT_CARD_STYLE
+}
+
+// Get card number prefix based on card network
+function getCardNumberPrefix(cardName: string): string {
+  const name = cardName.toLowerCase()
+  if (name.includes('visa')) {
+    return '4XXX'
+  } else if (name.includes('mastercard')) {
+    return '52XX'
+  } else if (name.includes('amex') || name.includes('cobalt') || name.includes('gold rewards') || name.includes('platinum') || name.includes('simplycash')) {
+    return '37XX'
+  }
+  return '4XXX'
 }
 
 // Category icons and colors
@@ -124,6 +210,32 @@ function HomePage() {
   // Track if modal is closing (for fade-out animation)
   const [isModalClosing, setIsModalClosing] = useState(false)
 
+  // Real card images setting
+  const [realCardImages, setRealCardImages] = useState(() => {
+    const saved = localStorage.getItem('sv_realCardImages')
+    return saved !== null ? saved === 'true' : true
+  })
+  const [cardImageError, setCardImageError] = useState(false)
+
+  // Listen for storage changes (when setting is updated in MePage)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('sv_realCardImages')
+      setRealCardImages(saved !== null ? saved === 'true' : true)
+    }
+    window.addEventListener('storage', handleStorageChange)
+    // Also check on focus (for same-tab updates)
+    const handleFocus = () => {
+      const saved = localStorage.getItem('sv_realCardImages')
+      setRealCardImages(saved !== null ? saved === 'true' : true)
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('focus', handleFocus)
+    }
+  }, [])
+
   // Sync selectedCategory with localStorage on first mount
   useEffect(() => {
     if (selectedCategory === null) {
@@ -140,9 +252,6 @@ function HomePage() {
 
   const [hasBankConnection, setHasBankConnection] = useState(false)
   const [bankConnectionChecked, setBankConnectionChecked] = useState(false)
-  const resultRef = useRef<HTMLDivElement>(null)
-
-
   // Check if user has bank connection
   useEffect(() => {
     const checkBankConnection = async () => {
@@ -167,14 +276,7 @@ function HomePage() {
 
   const handleCategorySelect = (category: SpendingCategory) => {
     const isSelected = selectedCategory === category
-    const newCategory = isSelected ? null : category
-    setSelectedCategory(newCategory)
-    // Scroll to result after a short delay if selecting (not deselecting)
-    if (!isSelected) {
-      setTimeout(() => {
-        resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }, 100)
-    }
+    setSelectedCategory(isSelected ? null : category)
   }
 
   // Sync selectedCategory to localStorage whenever it changes
@@ -229,6 +331,11 @@ function HomePage() {
 
     return best
   }, [selectedCategory, selectedCards])
+
+  // Reset card image error when bestCard changes
+  useEffect(() => {
+    setCardImageError(false)
+  }, [bestCard?.card.id])
 
   // Check if user can use quick select
   const canUseQuickSelect = isAuthenticated && selectedCards.length > 0
@@ -426,7 +533,7 @@ function HomePage() {
         </div>
 
         {/* Right - Visual Cards Stack */}
-        <div className="sv-home-visual" style={{ position: 'relative', height: '400px' }}>
+        <div className="sv-home-visual" style={{ position: 'relative', height: '400px', minHeight: '320px' }}>
           {/* Background Card */}
           <div className="sv-card-back" style={{
             position: 'absolute',
@@ -613,32 +720,6 @@ function HomePage() {
               ))}
             </div>
 
-            {/* Result Card - Clickable */}
-            {selectedCategory && bestCard && (
-              <div
-                ref={resultRef}
-                className="sv-quick-result"
-                onClick={handleCardClick}
-                role="button"
-                tabIndex={0}
-              >
-                {BANK_LOGOS[bestCard.card.bank] && (
-                  <img
-                    src={BANK_LOGOS[bestCard.card.bank]}
-                    alt={bestCard.card.bank}
-                    className="sv-quick-result-logo"
-                  />
-                )}
-                <div className="sv-quick-result-info">
-                  <div className="sv-quick-result-bank">{bestCard.card.bank}</div>
-                  <div className="sv-quick-result-name">{bestCard.card.name}</div>
-                </div>
-                <div className="sv-quick-result-rate">
-                  <span className="sv-quick-result-rate-value">{(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%</span>
-                  <span className="sv-quick-result-rate-label">{t('home.quickSelect.cashback')}</span>
-                </div>
-              </div>
-            )}
           </>
         ) : (
           /* Prompt to login/select cards */
@@ -692,40 +773,126 @@ function HomePage() {
         </section>
       )}
 
+      {/* Bottom Floating Result Card */}
+      {canUseQuickSelect && (
+        <div className={`sv-quick-result-float ${selectedCategory && bestCard ? 'visible' : ''}`}>
+          {selectedCategory && bestCard && (
+            <div className="sv-quick-result-float-inner">
+              <div className="sv-quick-result-float-category">
+                <span className="sv-quick-result-float-category-icon">
+                  {CATEGORY_CONFIG[selectedCategory]?.icon}
+                </span>
+                <span className="sv-quick-result-float-category-text">
+                  {t(`categories.${selectedCategory}`)}
+                </span>
+              </div>
+              <div className="sv-quick-result-float-card" onClick={handleCardClick}>
+                {BANK_LOGOS[bestCard.card.bank] && (
+                  <img
+                    src={BANK_LOGOS[bestCard.card.bank]}
+                    alt={bestCard.card.bank}
+                    className="sv-quick-result-float-logo"
+                  />
+                )}
+                <div className="sv-quick-result-float-info">
+                  <div className="sv-quick-result-float-name">{bestCard.card.name}</div>
+                  <div className="sv-quick-result-float-bank">{bestCard.card.bank}</div>
+                </div>
+                <div className="sv-quick-result-float-rate">
+                  <span className="sv-quick-result-float-rate-value">
+                    {bestCard.card.rewardType === 'POINTS'
+                      ? `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}X`
+                      : `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%`
+                    }
+                  </span>
+                  <span className="sv-quick-result-float-rate-label">
+                    {bestCard.card.rewardType === 'POINTS' ? t('home.quickSelect.points') : t('home.quickSelect.cashback')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Card Detail Modal */}
-      {showCardModal && bestCard && (
+      {showCardModal && bestCard && (() => {
+        const cardStyle = getCardStyle(bestCard.card)
+        const cardImageUrl = realCardImages && !cardImageError ? getCardImageUrl(bestCard.card.bank, bestCard.card.name) : null
+        return (
         <div className={`sv-card-modal-overlay ${isModalClosing ? 'closing' : ''}`} onClick={() => setShowCardModal(false)}>
           <div className={`sv-card-modal ${isModalClosing ? 'closing' : ''}`} onClick={e => e.stopPropagation()}>
             <button className="sv-card-modal-close" onClick={() => setShowCardModal(false)}>
               <CloseOutlined />
             </button>
 
-            <div className="sv-card-modal-header">
-              {BANK_LOGOS[bestCard.card.bank] && (
-                <img
-                  src={BANK_LOGOS[bestCard.card.bank]}
-                  alt={bestCard.card.bank}
-                  className="sv-card-modal-logo"
-                />
-              )}
-              <div className="sv-card-modal-title">
-                <h3>{bestCard.card.name}</h3>
-                <span>{bestCard.card.bank}</span>
+            {/* Card Visual Preview */}
+            <div className="sv-card-modal-card-wrapper">
+              <div
+                className="sv-card-modal-card-visual"
+                style={{
+                  background: cardImageUrl ? 'transparent' : cardStyle.gradient,
+                  color: cardStyle.textColor,
+                  overflow: 'hidden'
+                }}
+              >
+                {cardImageUrl ? (
+                  <img
+                    src={cardImageUrl}
+                    alt={`${bestCard.card.bank} ${bestCard.card.name}`}
+                    onError={() => setCardImageError(true)}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '12px'
+                    }}
+                  />
+                ) : (
+                  <>
+                    {/* Top row: bank abbr + annual fee */}
+                    <div className="sv-card-modal-card-top">
+                      <span className="sv-card-modal-card-bank">
+                        {BANK_ABBR[bestCard.card.bank] || bestCard.card.bank.substring(0, 4).toUpperCase()}
+                      </span>
+                      <span className="sv-card-modal-card-fee">
+                        {bestCard.card.annualFee === 0 ? t('cardDetail.noFee') : `$${bestCard.card.annualFee}${t('common.perYear')}`}
+                      </span>
+                    </div>
+                    {/* Card name - middle */}
+                    <div className="sv-card-modal-card-name">
+                      {bestCard.card.name}
+                    </div>
+                    {/* Bottom row: card number */}
+                    <div className="sv-card-modal-card-bottom">
+                      <span className="sv-card-modal-card-number">
+                        {getCardNumberPrefix(bestCard.card.name)} XXXX XXXX XXXX
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
-            <div className="sv-card-modal-info">
-              <div className="sv-card-modal-category">
-                <span className="sv-card-modal-category-icon">
-                  {selectedCategory && CATEGORY_CONFIG[selectedCategory]?.icon}
-                </span>
+            {/* Category & Rate Row */}
+            <div className="sv-card-modal-info-row">
+              <div className="sv-card-modal-category-simple">
+                <span>{selectedCategory && CATEGORY_CONFIG[selectedCategory]?.icon}</span>
                 <span>{selectedCategory && t(`categories.${selectedCategory}`)}</span>
               </div>
-              <div className="sv-card-modal-rate">
-                <span className="sv-card-modal-rate-value">
-                  {(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%
+              <div className="sv-card-modal-rate-simple">
+                <span className="sv-card-modal-rate-value-simple">
+                  {bestCard.card.rewardType === 'POINTS'
+                    ? `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}X`
+                    : `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%`
+                  }
                 </span>
-                <span className="sv-card-modal-rate-label">{t('home.quickSelect.cashback')}</span>
+                <span className="sv-card-modal-rate-label-simple">
+                  {bestCard.card.rewardType === 'POINTS' ? t('home.quickSelect.points') : t('home.quickSelect.cashback')}
+                </span>
               </div>
             </div>
 
@@ -748,7 +915,8 @@ function HomePage() {
             </button>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       <style>{`
         /* Desktop: Bank link in hero area */
@@ -994,8 +1162,8 @@ function HomePage() {
 
         @media (min-width: 641px) {
           .sv-card-modal {
-            width: auto;
-            max-width: 500px;
+            width: 100%;
+            max-width: 560px;
             padding: 32px;
             border-radius: 24px;
           }
@@ -1028,7 +1196,7 @@ function HomePage() {
         .sv-card-modal-close {
           position: absolute;
           top: 16px;
-          right: 16px;
+          right: 6px;
           width: 32px;
           height: 32px;
           border: none;
@@ -1040,6 +1208,7 @@ function HomePage() {
           justify-content: center;
           color: #6b7280;
           transition: all 0.2s;
+          z-index: 10;
         }
 
         .sv-card-modal-close:hover {
@@ -1092,6 +1261,73 @@ function HomePage() {
           .sv-card-modal-title span {
             font-size: 15px;
           }
+        }
+
+        /* Card Visual Preview */
+        .sv-card-modal-card-wrapper {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 16px;
+        }
+
+        .sv-card-modal-card-visual {
+          width: 100%;
+          max-width: 260px;
+          aspect-ratio: 1.586;
+          border-radius: 12px;
+          padding: 16px;
+          position: relative;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (min-width: 641px) {
+          .sv-card-modal-card-visual {
+            max-width: 280px;
+          }
+        }
+
+        .sv-card-modal-card-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+
+        .sv-card-modal-card-bank {
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          opacity: 0.95;
+        }
+
+        .sv-card-modal-card-fee {
+          font-size: 10px;
+          font-weight: 600;
+          opacity: 0.7;
+        }
+
+        .sv-card-modal-card-name {
+          position: absolute;
+          top: 45%;
+          left: 16px;
+          right: 16px;
+          transform: translateY(-50%);
+          font-size: 13px;
+          font-weight: 600;
+          line-height: 1.3;
+        }
+
+        .sv-card-modal-card-bottom {
+          position: absolute;
+          bottom: 14px;
+          left: 16px;
+          right: 16px;
+        }
+
+        .sv-card-modal-card-number {
+          font-size: 10px;
+          font-weight: 500;
+          letter-spacing: 1px;
+          opacity: 0.8;
         }
 
         .sv-card-modal-info {
@@ -1149,6 +1385,47 @@ function HomePage() {
           .sv-card-modal-rate-label {
             font-size: 13px;
           }
+        }
+
+        /* Category & Rate Row - simple layout */
+        .sv-card-modal-info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 4px;
+          margin-bottom: 16px;
+        }
+
+        .sv-card-modal-category-simple {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 15px;
+          color: #374151;
+        }
+
+        .sv-card-modal-rate-simple {
+          text-align: right;
+        }
+
+        .sv-card-modal-rate-value-simple {
+          font-size: 20px;
+          font-weight: 700;
+          color: #059669;
+        }
+
+        .sv-card-modal-rate-label-simple {
+          display: block;
+          font-size: 12px;
+          color: #6b7280;
+        }
+
+        html.dark-mode .sv-card-modal-category-simple {
+          color: #e5e7eb;
+        }
+
+        html.dark-mode .sv-card-modal-rate-label-simple {
+          color: #9ca3af;
         }
 
         .sv-card-modal-hint {
@@ -1297,6 +1574,211 @@ function HomePage() {
         html.dark-mode .sv-card-modal-detail-link:active {
           opacity: 0.7;
           transform: scale(0.98);
+        }
+
+        /* Bottom Floating Result Card */
+        .sv-quick-result-float {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 9997;
+          padding: 0 16px 16px 16px;
+          pointer-events: none;
+          transform: translateY(100%);
+          opacity: 0;
+          transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease;
+        }
+
+        /* Mobile: position above bottom nav bar */
+        @media (max-width: 640px) {
+          .sv-quick-result-float {
+            bottom: calc(77px + env(safe-area-inset-bottom, 0px));
+            padding: 0 20px 0 20px;
+          }
+
+          .sv-quick-result-float-inner {
+            width: calc(100% - 40px);
+            max-width: 360px;
+            margin: 0 auto;
+          }
+        }
+
+        .sv-quick-result-float.visible {
+          transform: translateY(0);
+          opacity: 1;
+          pointer-events: auto;
+        }
+
+        .sv-quick-result-float-inner {
+          max-width: 480px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 12px;
+          padding: 10px 12px;
+          box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1), 0 4px 24px rgba(0, 0, 0, 0.06);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .sv-quick-result-float-card {
+          cursor: pointer;
+        }
+
+        .sv-quick-result-float-card:active {
+          opacity: 0.8;
+        }
+
+        @media (min-width: 641px) {
+          .sv-quick-result-float {
+            padding: 0 24px 24px 24px;
+          }
+
+          .sv-quick-result-float-inner {
+            max-width: 560px;
+            padding: 16px 20px;
+            border-radius: 20px;
+            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.08);
+          }
+
+          .sv-quick-result-float-inner:hover {
+            box-shadow: 0 -6px 32px rgba(0, 0, 0, 0.15), 0 12px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+          }
+
+          .sv-quick-result-float-inner:active {
+            transform: scale(1) translateY(-2px);
+          }
+        }
+
+        .sv-quick-result-float-category {
+          display: none;
+        }
+
+        .sv-quick-result-float-category-icon {
+          font-size: 16px;
+        }
+
+        .sv-quick-result-float-category-text {
+          font-size: 12px;
+          font-weight: 600;
+          color: #6b7280;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .sv-quick-result-float-card {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        @media (min-width: 641px) {
+          .sv-quick-result-float-card {
+            gap: 12px;
+          }
+        }
+
+        .sv-quick-result-float-logo {
+          width: 32px;
+          height: 32px;
+          object-fit: contain;
+          border-radius: 6px;
+          flex-shrink: 0;
+        }
+
+        @media (min-width: 641px) {
+          .sv-quick-result-float-logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+          }
+        }
+
+        .sv-quick-result-float-info {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .sv-quick-result-float-name {
+          font-size: 14px;
+          font-weight: 600;
+          color: #111827;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        @media (min-width: 641px) {
+          .sv-quick-result-float-name {
+            font-size: 16px;
+          }
+        }
+
+        .sv-quick-result-float-bank {
+          font-size: 11px;
+          color: #9ca3af;
+          margin-top: 1px;
+        }
+
+        @media (min-width: 641px) {
+          .sv-quick-result-float-bank {
+            font-size: 12px;
+            margin-top: 2px;
+          }
+        }
+
+        .sv-quick-result-float-rate {
+          text-align: center;
+          flex-shrink: 0;
+        }
+
+        .sv-quick-result-float-rate-value {
+          font-size: 18px;
+          font-weight: 700;
+          color: #059669;
+          line-height: 1;
+        }
+
+        @media (min-width: 641px) {
+          .sv-quick-result-float-rate-value {
+            font-size: 26px;
+          }
+        }
+
+        .sv-quick-result-float-rate-label {
+          display: block;
+          font-size: 9px;
+          color: #9ca3af;
+          margin-top: 1px;
+        }
+
+        @media (min-width: 641px) {
+          .sv-quick-result-float-rate-label {
+            font-size: 10px;
+            margin-top: 2px;
+          }
+        }
+
+        /* Dark mode floating result */
+        html.dark-mode .sv-quick-result-float-inner {
+          background: #1a1a1a;
+          box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3), 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        html.dark-mode .sv-quick-result-float-name {
+          color: #f5f5f5;
+        }
+
+        html.dark-mode .sv-quick-result-float-bank {
+          color: #6b7280;
+        }
+
+        html.dark-mode .sv-quick-result-float-rate-value {
+          color: #10b981;
+        }
+
+        html.dark-mode .sv-quick-result-float-arrow {
+          color: #6b7280;
         }
       `}</style>
     </div>
