@@ -32,6 +32,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     private final List<String> publicPaths = List.of(
         "/api/v1/auth/**",
         "/api/v1/app/**",
+        "/api/v1/admin/**",
         "/api/v1/cards",
         "/api/v1/cards/**",
         "/api/v1/optimize/calculate",

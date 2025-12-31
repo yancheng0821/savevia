@@ -84,6 +84,12 @@ ai:
   usage:
     monthly-limit: ${AI_MONTHLY_LIMIT:100}
 
+# Admin Dashboard
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:admin123}
+  token-secret: ${ADMIN_TOKEN_SECRET:savevia-admin-secret-change-in-production}
+
 # Actuator endpoints
 management:
   endpoints:

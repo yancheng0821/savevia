@@ -50,6 +50,20 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
+        # Admin Service - Statistics and tracking (public login/track, token for stats)
+        - id: admin-service
+          uri: lb://savevia-user
+          predicates:
+            - Path=/api/v1/admin/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
         # User Service - Auth endpoints (strict rate limit)
         - id: auth-service
           uri: lb://savevia-user

@@ -137,4 +137,17 @@
         UPDATE users SET is_active = false, updated_at = UTC_TIMESTAMP() WHERE id = #{id}
     </update>
 
+    <!-- 统计所有活跃用户数 -->
+    <select id="countTotalActiveUsers" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM users WHERE is_active = true
+    </select>
+
+    <!-- 获取所有活跃用户（按创建时间倒序） -->
+    <select id="selectAllActiveUsers" resultMap="UserResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM users
+        WHERE is_active = true
+        ORDER BY created_at DESC
+    </select>
+
 </mapper>

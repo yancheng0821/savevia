@@ -51,6 +51,12 @@ ai:
   usage:
     monthly-limit: ${AI_MONTHLY_LIMIT:100}
 
+# Admin Dashboard - must be configured via environment variables
+admin:
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
+  token-secret: ${ADMIN_TOKEN_SECRET}
+
 logging:
   level:
     root: INFO

@@ -14,7 +14,7 @@ const isWeChatMobile = (): boolean => {
 import { useAuthStore } from '../stores/useAuthStore'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useHomePageStore } from '../stores/useHomePageStore'
-import { cardApi, userApi, bankApi } from '../services/api'
+import { cardApi, userApi, bankApi, adminApi } from '../services/api'
 import { getCardImageUrl } from '../utils/cardImages'
 import type { SpendingCategory, CreditCard } from '../types'
 
@@ -277,6 +277,11 @@ function HomePage() {
   const handleCategorySelect = (category: SpendingCategory) => {
     const isSelected = selectedCategory === category
     setSelectedCategory(isSelected ? null : category)
+
+    // Track quick card finder usage (only when selecting, not deselecting)
+    if (!isSelected) {
+      adminApi.track('quick_card_finder')
+    }
   }
 
   // Sync selectedCategory to localStorage whenever it changes

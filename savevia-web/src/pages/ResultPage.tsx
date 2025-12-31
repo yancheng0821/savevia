@@ -6,7 +6,7 @@ import { Capacitor } from '@capacitor/core'
 import { Share } from '@capacitor/share'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
-import { optimizerApi } from '../services/api'
+import { optimizerApi, adminApi } from '../services/api'
 import CardUpgradeRecommendation from '../components/CardUpgradeRecommendation'
 import type { SpendingCategory } from '../types'
 
@@ -198,6 +198,13 @@ function ResultPage() {
       navigate('/cards')
     }
   }, [result, navigate])
+
+  // Track result page view
+  useEffect(() => {
+    if (result) {
+      adminApi.track('result_view')
+    }
+  }, []) // Only track once on mount, not on every result change
 
   // Close share menu when clicking outside
   useEffect(() => {
