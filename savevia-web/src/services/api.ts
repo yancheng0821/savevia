@@ -847,6 +847,126 @@ export const appApi = {
   },
 }
 
+/**
+ * Admin API - Dashboard statistics
+ */
+export interface DailyEventCount {
+  date: string
+  eventType: string
+  count: number
+}
+
+export interface AdminStats {
+  totalUsers: number
+  activeUsers: number
+  eventCounts: Record<string, number>
+  dailyEvents: DailyEventCount[]
+  statsFrom: string
+  statsTo: string
+}
+
+export interface AdminLoginResponse {
+  token: string
+  expiresIn: number
+}
+
+export interface AdminUserInfo {
+  id: number
+  name: string
+  email: string
+  createdAt: string
+  subscriptionType: string | null
+  subscriptionPlatform: string | null
+  subscriptionProductId: string | null
+  subscriptionExpiresAt: string | null
+  active: boolean
+}
+
+export const adminApi = {
+  // Admin login
+  login: async (username: string, password: string): Promise<ApiResponse<AdminLoginResponse>> => {
+    return createRequest('/api/v1/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    })
+  },
+
+  // Get admin statistics
+  getStats: async (token: string): Promise<ApiResponse<AdminStats>> => {
+    return createRequest('/api/v1/admin/stats', {
+      method: 'GET',
+      headers: {
+        'X-Admin-Token': token,
+      },
+    })
+  },
+
+  // Get all users
+  getUsers: async (token: string): Promise<ApiResponse<AdminUserInfo[]>> => {
+    return createRequest('/api/v1/admin/users', {
+      method: 'GET',
+      headers: {
+        'X-Admin-Token': token,
+      },
+    })
+  },
+
+  // Get user events
+  getUserEvents: async (token: string, userId: number): Promise<ApiResponse<AdminStats>> => {
+    return createRequest(`/api/v1/admin/users/${userId}/events`, {
+      method: 'GET',
+      headers: {
+        'X-Admin-Token': token,
+      },
+    })
+  },
+
+  // Track user event (public endpoint) - fire and forget, completely silent
+  // Uses debounce to prevent duplicate events from React StrictMode or rapid clicks
+  track: (() => {
+    const recentEvents = new Map<string, number>() // eventType -> timestamp
+    const DEBOUNCE_MS = 1000 // Ignore same event within 1 second
+
+    return (eventType: string, sessionId?: string): void => {
+      // Debounce: skip if same event was sent within DEBOUNCE_MS
+      const now = Date.now()
+      const lastSent = recentEvents.get(eventType) || 0
+      if (now - lastSent < DEBOUNCE_MS) {
+        return // Skip duplicate
+      }
+      recentEvents.set(eventType, now)
+
+      // Clean up old entries (keep map small)
+      if (recentEvents.size > 20) {
+        const cutoff = now - 60000 // Remove entries older than 1 minute
+        recentEvents.forEach((time, key) => {
+          if (time < cutoff) recentEvents.delete(key)
+        })
+      }
+
+      // Fire and forget
+      try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 5000)
+
+        fetch(`${API_BASE_URL}/api/v1/admin/track`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(tokenManager.getToken() && { Authorization: `Bearer ${tokenManager.getToken()}` }),
+          },
+          body: JSON.stringify({ eventType, sessionId }),
+          signal: controller.signal,
+        })
+          .then(() => clearTimeout(timeoutId))
+          .catch(() => clearTimeout(timeoutId))
+      } catch {
+        // Silently ignore
+      }
+    }
+  })(),
+}
+
 export default {
   auth: authApi,
   card: cardApi,
@@ -857,4 +977,5 @@ export default {
   subscription: subscriptionApi,
   affiliate: affiliateApi,
   app: appApi,
+  admin: adminApi,
 }

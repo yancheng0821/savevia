@@ -15,6 +15,7 @@ import SubscriptionPage from './pages/SubscriptionPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import SupportPage from './pages/SupportPage'
+import AdminPage from './pages/AdminPage'
 import AppHeader from './components/AppHeader'
 import AuthPanel from './components/AuthPanel'
 import Paywall from './components/Paywall'
@@ -314,6 +315,8 @@ function App() {
           <Route path="/support" element={<SupportPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
+          {/* Admin page - web only */}
+          {!isNative && <Route path="/admin" element={<AdminPage />} />}
         </Routes>
       </main>
     </div>

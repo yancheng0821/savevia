@@ -4,6 +4,7 @@ import com.savevia.user.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 @Mapper
@@ -68,4 +69,14 @@ public interface UserMapper {
      * 清除邮箱验证Token
      */
     int clearEmailVerificationToken(@Param("id") Long id);
+
+    /**
+     * 统计所有活跃用户数（is_active = true）
+     */
+    long countTotalActiveUsers();
+
+    /**
+     * 获取所有活跃用户（按创建时间倒序）
+     */
+    List<User> selectAllActiveUsers();
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
 import { ArrowLeftOutlined, CheckCircleOutlined, ClockCircleOutlined, DollarOutlined } from '@ant-design/icons'
-import { cardApi, affiliateApi } from '../services/api'
+import { cardApi, affiliateApi, adminApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
 import type { SpendingCategory, CreditCard, TipType } from '../types'
@@ -460,6 +460,13 @@ function CardDetailPage() {
       window.removeEventListener('focus', handleFocus)
     }
   }, [])
+
+  // Track card detail view
+  useEffect(() => {
+    if (id) {
+      adminApi.track('card_detail_view')
+    }
+  }, [id])
 
   // Get card from router state if available (passed from CardsPage)
   const passedCard = (location.state as { card?: CreditCard })?.card
