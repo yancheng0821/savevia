@@ -69,6 +69,12 @@
       "openAppleWallet": "打开 Apple 钱包",
       "openGooglePay": "打开 Google Pay",
       "viewDetails": "查看卡片详情"
+    },
+    "appDownload": {
+      "title": "下载 App",
+      "description": "下载 SaveVia 获得更好的移动体验",
+      "comingSoon": "Android 版本即将上线！",
+      "downloadApp": "下载 iOS App"
     }
   },
   "cards": {
@@ -316,6 +322,8 @@
     "baseRatePoints": "基础积分",
     "baseRateCashback": "基础返现",
     "pointsCard": "积分卡",
+    "pointValue": "积分价值",
+    "point": "积分",
     "cashbackCard": "返现卡",
     "welcomeBonus": "开卡奖励",
     "points": "积分",

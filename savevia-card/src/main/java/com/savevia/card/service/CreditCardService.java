@@ -107,6 +107,7 @@ public class CreditCardService {
                 .baseRewardRate(card.getBaseRewardRate())
                 .rewardType(card.getRewardType())
                 .pointProgram(card.getPointProgram())
+                .pointValue(card.getPointValue())
                 .imageUrl(card.getImageUrl())
                 .applyUrl(card.getApplyUrl())
                 .noFxFee(card.getNoFxFee() != null && card.getNoFxFee())

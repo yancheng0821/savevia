@@ -29,12 +29,12 @@
 
     <select id="countByEventTypeAndDate" resultType="java.util.Map">
         SELECT
-            DATE(created_at) as eventDate,
+            DATE(CONVERT_TZ(created_at, '+00:00', 'America/Vancouver')) as eventDate,
             event_type as eventType,
             COUNT(*) as count
         FROM user_events
         WHERE created_at BETWEEN #{from} AND #{to}
-        GROUP BY DATE(created_at), event_type
+        GROUP BY DATE(CONVERT_TZ(created_at, '+00:00', 'America/Vancouver')), event_type
         ORDER BY eventDate ASC
     </select>
 
@@ -55,13 +55,24 @@
 
     <select id="countByEventTypeAndDateForUser" resultType="java.util.Map">
         SELECT
-            DATE(created_at) as eventDate,
+            DATE(CONVERT_TZ(created_at, '+00:00', 'America/Vancouver')) as eventDate,
             event_type as eventType,
             COUNT(*) as count
         FROM user_events
         WHERE user_id = #{userId}
           AND created_at BETWEEN #{from} AND #{to}
-        GROUP BY DATE(created_at), event_type
+        GROUP BY DATE(CONVERT_TZ(created_at, '+00:00', 'America/Vancouver')), event_type
+        ORDER BY eventDate ASC
+    </select>
+
+    <select id="countDailyActiveUsers" resultType="java.util.Map">
+        SELECT
+            DATE(CONVERT_TZ(created_at, '+00:00', 'America/Vancouver')) as eventDate,
+            COUNT(DISTINCT COALESCE(user_id, session_id)) as count
+        FROM user_events
+        WHERE created_at BETWEEN #{from} AND #{to}
+          AND (user_id IS NOT NULL OR session_id IS NOT NULL)
+        GROUP BY DATE(CONVERT_TZ(created_at, '+00:00', 'America/Vancouver'))
         ORDER BY eventDate ASC
     </select>
 

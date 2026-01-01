@@ -856,11 +856,17 @@ export interface DailyEventCount {
   count: number
 }
 
+export interface DailyActiveCount {
+  date: string
+  count: number
+}
+
 export interface AdminStats {
   totalUsers: number
   activeUsers: number
   eventCounts: Record<string, number>
   dailyEvents: DailyEventCount[]
+  dailyActiveUsers: DailyActiveCount[]
   statsFrom: string
   statsTo: string
 }

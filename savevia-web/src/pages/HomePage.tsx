@@ -534,7 +534,33 @@ function HomePage() {
                 </div>
               </div>
             )}
+
+            {/* App Download Link - Desktop: text link in cta-group */}
+            {!Capacitor.isNativePlatform() && (
+              <a
+                href="https://apps.apple.com/app/id6756332569"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sv-hero-download-link"
+              >
+                <AppleOutlined />
+                {t('home.appDownload.downloadApp')}
+              </a>
+            )}
           </div>
+
+          {/* Mobile: Text link below cta-group */}
+          {!Capacitor.isNativePlatform() && (
+            <a
+              href="https://apps.apple.com/app/id6756332569"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sv-hero-download-link-mobile"
+            >
+              <AppleOutlined />
+              {t('home.appDownload.downloadApp')}
+            </a>
+          )}
         </div>
 
         {/* Right - Visual Cards Stack */}
@@ -806,7 +832,10 @@ function HomePage() {
                 <div className="sv-quick-result-float-rate">
                   <span className="sv-quick-result-float-rate-value">
                     {bestCard.card.rewardType === 'POINTS'
-                      ? `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}X`
+                      ? `${(bestCard.card.pointValue && bestCard.card.pointValue > 0
+                          ? bestCard.rate / bestCard.card.pointValue
+                          : bestCard.rate * 100
+                        ).toFixed((bestCard.card.pointValue && bestCard.card.pointValue > 0 ? bestCard.rate / bestCard.card.pointValue : bestCard.rate * 100) % 1 === 0 ? 0 : 1)}X`
                       : `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%`
                     }
                   </span>
@@ -891,7 +920,10 @@ function HomePage() {
               <div className="sv-card-modal-rate-simple">
                 <span className="sv-card-modal-rate-value-simple">
                   {bestCard.card.rewardType === 'POINTS'
-                    ? `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}X`
+                    ? `${(bestCard.card.pointValue && bestCard.card.pointValue > 0
+                        ? bestCard.rate / bestCard.card.pointValue
+                        : bestCard.rate * 100
+                      ).toFixed((bestCard.card.pointValue && bestCard.card.pointValue > 0 ? bestCard.rate / bestCard.card.pointValue : bestCard.rate * 100) % 1 === 0 ? 0 : 1)}X`
                     : `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%`
                   }
                 </span>
@@ -1092,6 +1124,97 @@ function HomePage() {
 
         html.dark-mode .sv-home-bank-hint {
           color: #6b7280;
+        }
+
+        /* Hero App Download Badges */
+        .sv-hero-app-badges {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-top: 24px;
+        }
+
+        .sv-hero-app-badge {
+          display: inline-block;
+          background: none;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .sv-hero-app-badge:hover {
+          transform: scale(1.05);
+        }
+
+        .sv-hero-app-badge:active {
+          transform: scale(0.98);
+          opacity: 0.8;
+        }
+
+        .sv-hero-app-badge svg {
+          display: block;
+          height: 40px;
+          width: auto;
+        }
+
+        /* Desktop: Download text link */
+        .sv-hero-download-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #6b7280;
+          font-size: 14px;
+          text-decoration: none;
+          padding: 8px 0;
+          transition: color 0.2s;
+        }
+
+        .sv-hero-download-link:hover {
+          color: #111827;
+        }
+
+        html.dark-mode .sv-hero-download-link {
+          color: #9ca3af;
+        }
+
+        html.dark-mode .sv-hero-download-link:hover {
+          color: #f3f4f6;
+        }
+
+        /* Mobile: Text link below CTA */
+        .sv-hero-download-link-mobile {
+          display: none;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          color: #6b7280;
+          font-size: 14px;
+          text-decoration: none;
+          margin-top: 20px;
+          transition: color 0.2s;
+        }
+
+        .sv-hero-download-link-mobile:hover {
+          color: #111827;
+        }
+
+        html.dark-mode .sv-hero-download-link-mobile {
+          color: #9ca3af;
+        }
+
+        html.dark-mode .sv-hero-download-link-mobile:hover {
+          color: #f3f4f6;
+        }
+
+        @media (max-width: 640px) {
+          .sv-hero-download-link {
+            display: none;
+          }
+
+          .sv-hero-download-link-mobile {
+            display: flex;
+          }
         }
 
         html.dark-mode .sv-bank-connect-demo {
@@ -1784,6 +1907,49 @@ function HomePage() {
 
         html.dark-mode .sv-quick-result-float-arrow {
           color: #6b7280;
+        }
+
+        /* Coming Soon Toast */
+        .sv-coming-soon-toast {
+          position: fixed;
+          bottom: 100px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #1f2937;
+          color: white;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          z-index: 10000;
+          animation: toastFadeIn 0.3s ease, toastFadeOut 0.3s ease 1.7s forwards;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes toastFadeIn {
+          from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+
+        @keyframes toastFadeOut {
+          from {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
+          }
+        }
+
+        html.dark-mode .sv-coming-soon-toast {
+          background: #374151;
         }
       `}</style>
     </div>

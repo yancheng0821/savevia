@@ -1,353 +1,194 @@
-# 🚀《加拿大信用卡返现优化助手》完整技术实现方案（可直接落地）
+# SaveVia - 加拿大信用卡返现优化助手
 
-------
+> 帮助加拿大用户选择最优信用卡，最大化每笔消费的返现/积分收益
 
-# 1. 产品定位（核心一句话）
+## 产品概述
 
-> **SmartCard AI —— 加拿大首个自动计算消费记录、分析信用卡最优返现策略、帮用户每年省下 $300–$1000 的金融助手。**
+SaveVia 是一款智能信用卡优化工具，支持 iOS、Android 和 Web 平台。用户可以：
 
-------
+- **快速选卡**: 根据消费类别（餐饮、超市、加油等）推荐最佳信用卡
+- **卡片管理**: 管理个人卡片组合，查看详细返现规则
+- **AI 优化**: 基于消费习惯，AI 分析最优卡片组合
+- **银行连接**: 通过 Flinks 连接银行账户，自动分析交易记录
 
-# 2. 产品功能（MVP → V1 → V2 发展路线）
+## 技术栈
 
-## **MVP（不接银行）｜约 2 周**
+### 前端
+- **React 18** + TypeScript + Vite
+- **Capacitor 7** (iOS/Android 原生应用)
+- **Ant Design 5** + TailwindCSS
+- **React Query** + Zustand (状态管理)
+- **i18next** (多语言: EN, FR, ZH, JA, KO, ES)
 
-- 用户选择自己的信用卡
-- 输入消费类别（外食、超市等占比）
-- 系统输出最优卡组合
-- 展示可节省返现估算
-- 信用卡知识库（年费、返现结构）
+### 后端 (Spring Boot 微服务)
+- **savevia-gateway** - API 网关 (端口 8080)
+- **savevia-user** - 用户服务 (端口 8081)
+- **savevia-optimizer** - 优化算法服务 (端口 8082)
+- **savevia-card** - 卡片数据服务 (端口 8083)
+- **savevia-eureka** - 服务发现 (端口 8761)
 
-**主要目标：让用户快速意识到“我真的可以省钱”。**
+### 基础设施
+- **MySQL 8** - 主数据库
+- **Redis 7** - 缓存
+- **AWS**: EC2, RDS, ElastiCache, S3, CloudFront
 
-------
-
-## **V1（接银行，自动化分析）｜约 6–8 周**
-
-集成 Flinks（只读，不触钱）实现：
-
-- 自动获取用户 90 天交易数据
-- 解析商户、MCC、消费类别
-- 计算历史 90 天实际返现 vs 最优返现
-- 输出“你错失了 X 元返现”报告
-- 自动推荐用户应该刷哪张卡
-- 月度返现优化报告（PDF 或页面显示）
-
-------
-
-## **V2（AI 驱动）｜3–6 个月**
-
-- AI 解读每笔消费为什么推荐那张卡
-- 消费趋势预测（未来 30 天）
-- 最优卡申请推荐（signup bonus 优化）
-- 税务优化建议
-- 订阅识别（自动找出 recurring payments）
-
-------
-
-## **V3（成为加拿大财务助手）**
-
-- Phone/Internet/Hydro 账单比价
-- 保险比价
-- 房贷续约分析
-- 手机 App（实时提醒，GPS 触发提示）
-
-------
-
-# 3. 技术架构（最佳实践）
+## 项目结构
 
 ```
- ┌─────────────────────────────────┐
- │             Web 前端 (React)    │
- │  - 用户操作界面                  │
- │  - Flinks Connect Widget         │
- │  - Dashboard + 报告展示          │
- └─────────────────────────────────┘
-                 ↓ REST API
- ┌─────────────────────────────────┐
- │    Spring Boot 主后端服务        │
- │  Modules:                       │
- │   - User Service                │
- │   - Card Rule Engine            │
- │   - Cashback Optimizer          │
- │   - Transaction Parser          │
- │   - Flinks Integration          │
- │   - Report Generator            │
- │   - Security & Token            │
- └─────────────────────────────────┘
-                ↓ 
- ┌───────────────┬────────────────┬──────────────┐
- │ MySQL 8       │ Redis 7        │ Python AI     │
- │ 用户/交易表   │ 规则缓存/MCC   │ Claude/ML模型 │
- │ 卡片规则      │ 会话缓存       │ 分类/解释文本 │
- └───────────────┴────────────────┴──────────────┘
+savevia/
+├── savevia-web/          # React 前端 + Capacitor
+│   ├── src/
+│   │   ├── pages/        # 页面组件
+│   │   ├── components/   # 公共组件
+│   │   ├── services/     # API 服务
+│   │   ├── i18n/         # 多语言
+│   │   └── stores/       # Zustand 状态
+│   ├── ios/              # iOS 原生项目
+│   └── android/          # Android 原生项目
+│
+├── savevia-gateway/      # API 网关
+├── savevia-user/         # 用户服务 (认证, 订阅, 管理后台)
+├── savevia-optimizer/    # 优化算法服务
+├── savevia-card/         # 卡片数据服务
+├── savevia-eureka/       # 服务发现
+├── savevia-common/       # 公共模块
+│
+├── deployment/           # 生产部署配置
+├── docker/               # Docker & MySQL 初始化脚本
+└── scripts/              # 工具脚本
 ```
 
-------
+## 本地开发
 
-# 4. 模块设计（后端 Java）
+### 环境要求
+- Node.js 18+
+- Java 17+
+- MySQL 8
+- Redis 7
 
-## **4.1 User Module**
+### 启动后端
 
-- 用户注册 / 登录
-- OAuth Token
-- Bank Connection 状态
+```bash
+# 1. 启动 MySQL 和 Redis (Docker)
+docker-compose up -d
 
-## **4.2 Flinks Integration Module**
-
-- 触发获取银行账户列表
-- 拉取 90 天交易明细
-- 标准化转换为内部 Transaction DTO
-
-## **4.3 Transaction Parser**
-
-- 去重
-- 格式化金额
-- 识别商户、类别、MCC
-- 存入数据库
-
-## **4.4 Card Rule Engine（核心）**
-
-实现业务逻辑：
-
-```
-double calculateReward(Card card, Transaction tx) {
-    double percent = ruleRepository.getRate(card.id, tx.mcc);
-    return tx.amount * percent;
-}
+# 2. 启动所有后端服务
+./restart-backend.sh
 ```
 
-支持：
+### 启动前端
 
-- MCC → 类别转换
-- 年费折算
-- 分段奖励类别（如 Amex Cobalt：餐饮 5%，外卖 5%）
-- 每月上限（如 gas 每月 $500 封顶）
-- 限时奖励（季度 category）
+```bash
+cd savevia-web
 
-## **4.5 Cashback Optimizer**
+# 安装依赖
+npm install
 
-- 基于交易记录计算实际返现
-- 再计算用户应该刷的最优方案
-- 产生“错失返现报告”
+# 开发模式
+npm run dev
 
-## **4.6 AI Explanation Service（Python）**
+# 构建 iOS
+npm run cap:ios:prod
 
-使用 Claude：
-
-输入：
-
-- 交易信息
-- 最优卡规则
-   输出：
-- 文本解释（用户为什么应该用这张卡）
-
-------
-
-# 5. 数据库设计（MySQL）
-
-## **cards（信用卡定义表）**
-
-| 字段              | 类型    | 说明                  |
-| ----------------- | ------- | --------------------- |
-| id                | bigint  | PK                    |
-| bank              | varchar | RBC / TD / BMO / Amex |
-| name              | varchar | 卡名                  |
-| annual_fee        | int     | 年费                  |
-| reward_rules_json | json    | 返现规则              |
-| promo_json        | json    | 开卡奖励              |
-
-------
-
-## **transactions（用户交易数据）**
-
-| 字段     | 类型          |
-| -------- | ------------- |
-| id       | bigint        |
-| user_id  | bigint        |
-| amount   | decimal(10,2) |
-| merchant | varchar       |
-| mcc      | varchar       |
-| category | varchar       |
-| date     | datetime      |
-
-------
-
-## **user_cards（用户持有卡）**
-
-| 字段    | 类型   |
-| ------- | ------ |
-| id      | bigint |
-| user_id | bigint |
-| card_id | bigint |
-
-------
-
-## **reward_rule（规则缓存表）**
-
-| 字段    | 类型    |
-| ------- | ------- |
-| card_id | bigint  |
-| mcc     | varchar |
-| reward  | double  |
-
-------
-
-# 6. 关键算法（返现优化引擎）
-
-## **算法 1：给每笔消费选最优卡**
-
-```
-Card bestCard = null;
-double bestReward = 0;
-
-for (Card card : userCards) {
-    double reward = calculateReward(card, tx);
-    if (reward > bestReward) {
-        bestReward = reward;
-        bestCard = card;
-    }
-}
-return bestCard;
+# 构建 Android
+npm run cap:android
 ```
 
-------
+## 生产部署
 
-## **算法 2：计算用户错失返现**
-
+### AWS 架构
 ```
-double lost = optimalReward - actualReward;
-```
+CloudFront (CDN)
+    ↓
+S3 (前端静态资源)
 
-------
+EC2 (后端服务)
+    ├── savevia-gateway:8080
+    ├── savevia-user:8081
+    ├── savevia-optimizer:8082
+    ├── savevia-card:8083
+    └── savevia-eureka:8761
 
-## **算法 3：未来30天消费预测（简单版）**
-
-使用 Python:
-
-```
-import pandas as pd
-
-prediction = df['amount'].rolling(30).mean()
-```
-
-------
-
-# 7. API 设计（REST）
-
-## **POST /auth/register**
-
-## **POST /auth/login**
-
-## **POST /bank/connect**
-
-启动 Flinks 连接流程。
-
-## **GET /bank/transactions**
-
-获取用户交易。
-
-## **GET /cards/recommend**
-
-根据交易 + 卡片给出最优推荐。
-
-## **GET /cashback/report**
-
-返回：
-
-- 实际返现
-- 最优返现
-- 错失金额
-- 每笔消费该用哪张卡
-
-## **POST /ai/explain**
-
-调用 Claude 分析。
-
-------
-
-# 8. 前端（React）结构
-
-```
-/src
- ├── pages
- │    ├── LandingPage.jsx
- │    ├── Dashboard.jsx
- │    ├── ConnectBank.jsx
- │    ├── CashbackReport.jsx
- │    ├── CardCompare.jsx
- ├── components
- │    ├── CardSelector.jsx
- │    ├── TransactionTable.jsx
- │    ├── SavingsChart.jsx
- │    ├── BankConnectWidget.jsx
- ├── services
- │    ├── api.js
- ├── utils
- └── styles
+RDS MySQL (savevia-prod-db)
+ElastiCache Redis (savevia-prod-redis)
 ```
 
-------
+### 部署命令
+```bash
+cd deployment
 
-# 9. 部署方案
+# 部署后端
+./deploy.sh
 
-## **后端**
+# 部署前端
+./deploy-frontend.sh
+```
 
-- AWS ECS or EC2 + Docker
-- NGINX 反向代理
-- RDS MySQL
-- Elasticache Redis
+## API 概览
 
-## **前端**
+### 认证
+- `POST /api/v1/auth/google` - Google 登录
+- `POST /api/v1/auth/apple` - Apple 登录
+- `GET /api/v1/auth/check` - 验证 Token
 
-- S3 + CloudFront CDN
-- HTTPS 强制
+### 卡片
+- `GET /api/v1/cards` - 获取卡片列表
+- `GET /api/v1/cards/{id}` - 卡片详情
+- `GET /api/v1/cards/my` - 用户卡片
 
-## **AI 服务（Python）**
+### 优化
+- `POST /api/v1/optimizer/optimize` - AI 优化分析
+- `GET /api/v1/optimizer/quick-pick` - 快速选卡
 
-- AWS Lambda + API Gateway 或 EC2 容器
+### 用户
+- `GET /api/v1/user/profile` - 用户信息
+- `PUT /api/v1/user/profile` - 更新信息
+- `POST /api/v1/user/cards` - 添加卡片
 
-------
+### 管理后台
+- `POST /api/v1/admin/login` - 管理员登录
+- `GET /api/v1/admin/stats` - 统计数据
+- `GET /api/v1/admin/users` - 用户列表
 
-# 10. 安全与合规（关键）
+## 环境变量
 
-### ✔ 不保存银行密码
+主要环境变量 (见 `.env.example`):
 
-### ✔ 使用 Flinks（只读 access）
+```bash
+# MySQL
+MYSQL_HOST=localhost
+MYSQL_DATABASE=savevia
+MYSQL_USER=savevia
+MYSQL_PASSWORD=savevia123
 
-### ✔ 数据加密（AES-256）
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
-### ✔ 存储在加拿大机房（AWS ca-central-1）
+# JWT
+JWT_SECRET=your-secret-key
 
-### ✔ 用户可随时 revoke 权限
+# OAuth
+GOOGLE_CLIENT_ID=xxx
+GOOGLE_CLIENT_SECRET=xxx
+APPLE_CLIENT_ID=com.savevia.app
 
-### ✔ 完整 Privacy Policy + Terms
+# OpenAI
+OPENAI_API_KEY=sk-xxx
+OPENAI_MODEL=gpt-4o-mini
 
-------
+# Flinks
+FLINKS_API_URL=https://toolbox-api.private.fin.ag/v3
+FLINKS_CUSTOMER_ID=xxx
+```
 
-# 11. 货币化模式
+## 版本历史
 
-## **1. 订阅（最核心）**
+- **v1.0.4** (2024-12) - 积分卡价值优化, 强制更新机制
+- **v1.0.3** (2024-12) - Admin Dashboard, 多语言支持
+- **v1.0.2** (2024-11) - iOS/Android 应用发布
+- **v1.0.0** (2024-10) - 首次发布
 
-$4.99–$9.99 / 月
+## 许可证
 
-## **2. 信用卡申请佣金（最高利润）**
-
-每申请一张卡：$50–$200 奖励。
-
-## **3. Premium AI 版**
-
-- 税务优化
-- 订阅检测
-- 房贷建议
-
-------
-
-# 12. 项目时间线（现实估计）
-
-| 阶段 | 功能              | 时间   |
-| ---- | ----------------- | ------ |
-| MVP  | 静态推荐          | 2 周   |
-| V1   | Flinks + 自动分析 | 6–8 周 |
-| V2   | AI + 强化优化     | 3–6 月 |
-| V3   | 扩展财务助手      | 1 年   |
+Private - All Rights Reserved

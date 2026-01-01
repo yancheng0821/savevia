@@ -68,6 +68,12 @@
       "openAppleWallet": "Abrir Apple Wallet",
       "openGooglePay": "Abrir Google Pay",
       "viewDetails": "Ver detalles"
+    },
+    "appDownload": {
+      "title": "Descargar la app",
+      "description": "Descarga SaveVia para una mejor experiencia móvil",
+      "comingSoon": "¡Versión Android próximamente!",
+      "downloadApp": "Descargar iOS App"
     }
   },
   "cards": {
@@ -292,6 +298,8 @@
     "baseRatePoints": "Tasa base de puntos",
     "baseRateCashback": "Reembolso base",
     "pointsCard": "Tarjeta de puntos",
+    "pointValue": "Valor del punto",
+    "point": "punto",
     "cashbackCard": "Tarjeta de reembolso",
     "welcomeBonus": "Bono de bienvenida",
     "points": "Puntos",

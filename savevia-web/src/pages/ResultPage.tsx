@@ -14,8 +14,18 @@ import type { SpendingCategory } from '../types'
 const isNativeApp = Capacitor.isNativePlatform()
 
 // Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
-function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS'): string {
-  const value = rate * 100
+// For POINTS cards, calculate multiplier from rate / pointValue
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number): string {
+  let value: number
+
+  if (rewardType === 'POINTS' && pointValue && pointValue > 0) {
+    // For POINTS cards: calculate multiplier = rate / pointValue
+    value = rate / pointValue
+  } else {
+    // For CASHBACK cards or fallback: show percentage
+    value = rate * 100
+  }
+
   // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
   let formatted: string
   if (value % 1 === 0) {
@@ -582,7 +592,7 @@ function ResultPage() {
                       }}
                     >
                       <span className="sv-result-rate">
-                        {formatRewardRate(rec.rewardRate, rec.recommendedCard?.rewardType)}
+                        {formatRewardRate(rec.rewardRate, rec.recommendedCard?.rewardType, rec.recommendedCard?.pointValue)}
                       </span>
                       <span className="sv-result-reward">
                         ${rec.monthlyReward.toFixed(2)}/mo

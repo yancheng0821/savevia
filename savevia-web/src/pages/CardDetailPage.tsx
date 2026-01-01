@@ -157,8 +157,19 @@ const CATEGORY_ICONS: Record<SpendingCategory, string> = {
 }
 
 // Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
-function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS'): string {
-  const value = rate * 100
+// For POINTS cards, calculate multiplier from rate / pointValue
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number): string {
+  let value: number
+
+  if (rewardType === 'POINTS' && pointValue && pointValue > 0) {
+    // For POINTS cards: calculate multiplier = rate / pointValue
+    // e.g., 0.09 (9% cashback) / 0.018 (1.8¢/point) = 5x
+    value = rate / pointValue
+  } else {
+    // For CASHBACK cards or fallback: show percentage
+    value = rate * 100
+  }
+
   // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
   let formatted: string
   if (value % 1 === 0) {
@@ -711,7 +722,16 @@ function CardDetailPage() {
             fontSize: '12px',
             fontWeight: '600'
           }}>
-            {t(card.rewardType === 'POINTS' ? 'cardDetail.pointsCard' : 'cardDetail.cashbackCard')}
+            {card.rewardType === 'POINTS' ? (
+              <>
+                {t('cardDetail.pointsCard')}
+                {card.pointValue && (
+                  <span style={{ color: '#6b7280', fontWeight: '400' }}>
+                    {' · '}1{t('cardDetail.point')}≈{(card.pointValue * 100).toFixed(1)}¢
+                  </span>
+                )}
+              </>
+            ) : t('cardDetail.cashbackCard')}
           </span>
           {/* Update time - pushed to the right */}
           <span style={{
@@ -788,7 +808,7 @@ function CardDetailPage() {
               </div>
               <div className="sv-card-detail-rule-right">
                 <div className="sv-card-detail-rule-rate">
-                  {formatRewardRate(rule.rewardRate, card.rewardType)}
+                  {formatRewardRate(rule.rewardRate, card.rewardType, card.pointValue)}
                 </div>
                 {rule.monthlyCapAmount && (
                   <div className="sv-card-detail-rule-cap">
@@ -814,7 +834,7 @@ function CardDetailPage() {
               </div>
               <div className="sv-card-detail-rule-right">
                 <div className="sv-card-detail-rule-rate">
-                  +{formatRewardRate(card.amexTravelBonusRate, card.rewardType)}
+                  +{formatRewardRate(card.amexTravelBonusRate, card.rewardType, card.pointValue)}
                 </div>
               </div>
             </div>
@@ -831,7 +851,7 @@ function CardDetailPage() {
             </div>
             <div className="sv-card-detail-rule-right">
               <div className="sv-card-detail-rule-rate">
-                {formatRewardRate(card.baseRewardRate, card.rewardType)}
+                {formatRewardRate(card.baseRewardRate, card.rewardType, card.pointValue)}
               </div>
             </div>
           </div>

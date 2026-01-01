@@ -74,8 +74,8 @@ spring.mail:
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   version:
-    latest: ${APP_VERSION_LATEST:1.0.2}
-    min: ${APP_VERSION_MIN:1.0.2}
+    latest: ${APP_VERSION_LATEST:1.0.4}
+    min: ${APP_VERSION_MIN:1.0.4}
     ios-store-url: https://apps.apple.com/app/id6756332569
     android-store-url: https://play.google.com/store/apps/details?id=app.savevia
 
@@ -86,9 +86,9 @@ ai:
 
 # Admin Dashboard
 admin:
-  username: ${ADMIN_USERNAME:}
-  password: ${ADMIN_PASSWORD:}
-  token-secret: ${ADMIN_TOKEN_SECRET:}
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:admin123}
+  token-secret: ${ADMIN_TOKEN_SECRET:savevia-admin-secret-change-in-production}
 
 # Actuator endpoints
 management:

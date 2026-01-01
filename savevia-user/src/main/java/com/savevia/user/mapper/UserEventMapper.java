@@ -73,4 +73,12 @@ public interface UserEventMapper {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    /**
+     * Count daily active users (distinct users per day)
+     */
+    List<Map<String, Object>> countDailyActiveUsers(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
 }

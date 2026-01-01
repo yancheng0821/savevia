@@ -6,8 +6,18 @@ import { optimizerApi } from '../services/api'
 import type { OptimizationResult, SpendingCategory } from '../types'
 
 // Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
-function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS'): string {
-  const value = rate * 100
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number): string {
+  let value: number
+
+  if (rewardType === 'POINTS' && pointValue && pointValue > 0) {
+    // For POINTS cards: calculate multiplier = rate / pointValue
+    // e.g., 0.09 (9% cashback) / 0.018 (1.8¢/point) = 5x
+    value = rate / pointValue
+  } else {
+    // For CASHBACK cards or fallback: show percentage
+    value = rate * 100
+  }
+
   // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
   let formatted: string
   if (value % 1 === 0) {
@@ -382,7 +392,7 @@ function SharedResultPage() {
                       {cardName}
                     </span>
                     <span className="sv-result-rate">
-                      {formatRewardRate(rewardRate, rec.recommendedCard?.rewardType)}
+                      {formatRewardRate(rewardRate, rec.recommendedCard?.rewardType, rec.recommendedCard?.pointValue)}
                     </span>
                     <span className="sv-result-reward">
                       ${monthlyReward.toFixed(2)}/mo

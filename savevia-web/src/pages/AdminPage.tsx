@@ -145,34 +145,39 @@ function AdminPage() {
     }))
   }, [users])
 
-  // Calculate event trend data by type (last 30 days)
+  // Calculate event trend data by type (last 30 days) - Vancouver time
   const eventTrendData = useMemo(() => {
     const eventTypes = ['quick_card_finder', 'card_detail_view', 'result_view']
-    const result: Record<string, Array<{ date: string; count: number }>> = {}
+    const result: Record<string, Array<{ date: string; fullDate: string; count: number }>> = {}
 
-    // Initialize empty data for all event types
+    // Initialize empty data for all event types using Vancouver timezone
     const today = new Date()
     eventTypes.forEach(eventType => {
       const data: Record<string, number> = {}
       for (let i = 29; i >= 0; i--) {
         const date = new Date(today)
         date.setDate(date.getDate() - i)
-        const dateStr = date.toISOString().split('T')[0] // YYYY-MM-DD
+        const dateStr = date.toLocaleDateString('en-CA', {
+          timeZone: 'America/Vancouver',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        })
         data[dateStr] = 0
       }
       result[eventType] = Object.entries(data).map(([date, count]) => ({
         date: date.slice(5), // MM-DD
+        fullDate: date,
         count,
       }))
     })
 
-    // Fill in actual data from stats
+    // Fill in actual data from stats (backend now returns Vancouver dates)
     if (stats?.dailyEvents) {
       stats.dailyEvents.forEach(event => {
         if (event.date && eventTypes.includes(event.eventType)) {
-          const dateKey = event.date.slice(5) // MM-DD
           const eventData = result[event.eventType]
-          const idx = eventData.findIndex(d => d.date === dateKey)
+          const idx = eventData.findIndex(d => d.fullDate === event.date)
           if (idx !== -1) {
             eventData[idx].count = event.count
           }
@@ -181,6 +186,39 @@ function AdminPage() {
     }
 
     return result
+  }, [stats])
+
+  // Calculate daily active users trend data (last 30 days) - Vancouver time
+  const dauTrendData = useMemo(() => {
+    // Initialize empty data for last 30 days using Vancouver timezone
+    const today = new Date()
+    const data: Record<string, number> = {}
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toLocaleDateString('en-CA', {
+        timeZone: 'America/Vancouver',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      })
+      data[dateStr] = 0
+    }
+
+    // Fill in actual data from stats (backend now returns Vancouver dates)
+    if (stats?.dailyActiveUsers) {
+      stats.dailyActiveUsers.forEach(item => {
+        if (item.date && data.hasOwnProperty(item.date)) {
+          data[item.date] = item.count
+        }
+      })
+    }
+
+    return Object.entries(data).map(([date, count]) => ({
+      date: date.slice(5), // MM-DD
+      fullDate: date,
+      count,
+    }))
   }, [stats])
 
   // Filter and paginate users
@@ -215,10 +253,10 @@ function AdminPage() {
     setCurrentPage(1)
   }, [searchEmail, filterActive])
 
-  // Calculate user event trend data
+  // Calculate user event trend data - Vancouver time
   const userEventTrendData = useMemo(() => {
     const eventTypes = ['quick_card_finder', 'card_detail_view', 'result_view']
-    const result: Record<string, Array<{ date: string; count: number }>> = {}
+    const result: Record<string, Array<{ date: string; fullDate: string; count: number }>> = {}
 
     const today = new Date()
     eventTypes.forEach(eventType => {
@@ -226,11 +264,17 @@ function AdminPage() {
       for (let i = 29; i >= 0; i--) {
         const date = new Date(today)
         date.setDate(date.getDate() - i)
-        const dateStr = date.toISOString().split('T')[0]
+        const dateStr = date.toLocaleDateString('en-CA', {
+          timeZone: 'America/Vancouver',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        })
         data[dateStr] = 0
       }
       result[eventType] = Object.entries(data).map(([date, count]) => ({
         date: date.slice(5),
+        fullDate: date,
         count,
       }))
     })
@@ -238,9 +282,8 @@ function AdminPage() {
     if (userEvents?.dailyEvents) {
       userEvents.dailyEvents.forEach(event => {
         if (event.date && eventTypes.includes(event.eventType)) {
-          const dateKey = event.date.slice(5)
           const eventData = result[event.eventType]
-          const idx = eventData.findIndex(d => d.date === dateKey)
+          const idx = eventData.findIndex(d => d.fullDate === event.date)
           if (idx !== -1) {
             eventData[idx].count = event.count
           }
@@ -463,7 +506,7 @@ function AdminPage() {
         {/* User Usage Statistics */}
         <div className="sv-admin-section">
           <h3>Usage Statistics</h3>
-          <p className="sv-admin-section-desc">Last 30 days</p>
+          <p className="sv-admin-section-desc">Last 30 days (Vancouver time)</p>
 
           {userEventsLoading ? (
             <div className="sv-admin-empty">Loading...</div>
@@ -727,10 +770,60 @@ function AdminPage() {
         </div>
       </div>
 
+      {/* Daily Active Users Chart */}
+      <div className="sv-admin-section">
+        <h3>Daily Active Users</h3>
+        <p className="sv-admin-section-desc">Last 30 days (Vancouver time) • Total: {stats?.activeUsers.toLocaleString() || 0} unique users</p>
+
+        <div className="sv-admin-chart">
+          {statsLoading ? (
+            <div className="sv-admin-empty">Loading...</div>
+          ) : dauTrendData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={dauTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#fff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 8,
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  }}
+                  formatter={(value: number) => [value, 'Active Users']}
+                  labelFormatter={(label) => `Date: ${label}`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#10b981' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="sv-admin-empty">No activity data</div>
+          )}
+        </div>
+      </div>
+
       {/* Usage Statistics - 3 Trend Charts */}
       <div className="sv-admin-section">
         <h3>Usage Statistics</h3>
-        <p className="sv-admin-section-desc">Last 30 days</p>
+        <p className="sv-admin-section-desc">Last 30 days (Vancouver time)</p>
 
         <div className="sv-admin-charts-row">
           {/* Quick Card Finder */}

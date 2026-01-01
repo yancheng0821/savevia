@@ -68,6 +68,12 @@
       "openAppleWallet": "Apple Wallet 열기",
       "openGooglePay": "Google Pay 열기",
       "viewDetails": "카드 상세 보기"
+    },
+    "appDownload": {
+      "title": "앱 다운로드",
+      "description": "SaveVia를 다운로드하여 더 나은 모바일 경험을 누리세요",
+      "comingSoon": "Android 버전 곧 출시!",
+      "downloadApp": "iOS 앱 다운로드"
     }
   },
   "cards": {
@@ -292,6 +298,8 @@
     "baseRatePoints": "기본 포인트",
     "baseRateCashback": "기본 캐시백",
     "pointsCard": "포인트 카드",
+    "pointValue": "포인트 가치",
+    "point": "포인트",
     "cashbackCard": "캐시백 카드",
     "welcomeBonus": "가입 혜택",
     "points": "포인트",
