@@ -11,7 +11,11 @@ public interface AiUsageMapper {
 
     int incrementUsage(@Param("userId") Long userId, @Param("yearMonth") String yearMonth);
 
+    int incrementChatUsage(@Param("userId") Long userId, @Param("yearMonth") String yearMonth);
+
     int updateMonthlyLimit(@Param("userId") Long userId, @Param("yearMonth") String yearMonth, @Param("limit") int limit);
+
+    int updateChatMonthlyLimit(@Param("userId") Long userId, @Param("yearMonth") String yearMonth, @Param("limit") int limit);
 
     int insert(AiUsage aiUsage);
 }

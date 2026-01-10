@@ -22,6 +22,12 @@ const config: CapacitorConfig = {
     allowMixedContent: true,
   },
   plugins: {
+    Keyboard: {
+      // Don't resize webview when keyboard shows - we handle it manually
+      resize: 'none',
+      // iOS keyboard style (light/dark)
+      style: 'light',
+    },
     SplashScreen: {
       launchAutoHide: false,
       launchFadeOutDuration: 200,

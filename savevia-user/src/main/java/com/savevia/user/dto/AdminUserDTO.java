@@ -18,5 +18,6 @@ public class AdminUserDTO {
     private String subscriptionExpiresAt; // ISO date
 
     // Activity info
-    private boolean active; // Has events in last 7 days
+    private boolean active; // Has events in last 30 days
+    private String lastActiveAt; // Last activity time (ISO date)
 }

@@ -101,17 +101,16 @@ public class AdminStatsService {
     public AdminStatsDTO getStats() {
         // Use UTC to match database timezone
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        LocalDateTime sevenDaysAgo = now.minusDays(7);
         LocalDateTime thirtyDaysAgo = now.minusDays(30);
 
         // Get total users
         long totalUsers = userMapper.countTotalActiveUsers();
 
-        // Get active users (last 7 days)
-        long activeUsers = userEventMapper.countActiveUsers(sevenDaysAgo, now);
+        // Get active users (last 30 days)
+        long activeUsers = userEventMapper.countActiveUsers(thirtyDaysAgo, now);
 
-        // Get event counts by type (last 7 days)
-        List<Map<String, Object>> eventCounts = userEventMapper.countByEventType(sevenDaysAgo, now);
+        // Get event counts by type (last 30 days)
+        List<Map<String, Object>> eventCounts = userEventMapper.countByEventType(thirtyDaysAgo, now);
         Map<String, Long> eventCountMap = new HashMap<>();
         for (Map<String, Object> row : eventCounts) {
             String eventType = (String) row.get("eventType");
@@ -135,13 +134,28 @@ public class AdminStatsService {
                     .build());
         }
 
+        // Get daily active users (last 30 days) for DAU trend chart
+        List<Map<String, Object>> dailyActiveUserCounts = userEventMapper.countDailyActiveUsers(thirtyDaysAgo, now);
+        List<AdminStatsDTO.DailyActiveCount> dailyActiveUsers = new java.util.ArrayList<>();
+        for (Map<String, Object> row : dailyActiveUserCounts) {
+            Object dateObj = row.get("eventDate");
+            String dateStr = dateObj != null ? dateObj.toString() : null;
+            Long count = ((Number) row.get("count")).longValue();
+
+            dailyActiveUsers.add(AdminStatsDTO.DailyActiveCount.builder()
+                    .date(dateStr)
+                    .count(count)
+                    .build());
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         return AdminStatsDTO.builder()
                 .totalUsers(totalUsers)
                 .activeUsers(activeUsers)
                 .eventCounts(eventCountMap)
                 .dailyEvents(dailyEvents)
-                .statsFrom(sevenDaysAgo.format(formatter))
+                .dailyActiveUsers(dailyActiveUsers)
+                .statsFrom(thirtyDaysAgo.format(formatter))
                 .statsTo(now.format(formatter))
                 .build();
     }
@@ -167,11 +181,28 @@ public class AdminStatsService {
     public List<AdminUserDTO> getAllUsers() {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-        // Get active user IDs (last 7 days)
+        // Get active user IDs (last 30 days)
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        LocalDateTime sevenDaysAgo = now.minusDays(7);
-        List<Long> activeUserIdList = userEventMapper.getActiveUserIds(sevenDaysAgo, now);
+        LocalDateTime thirtyDaysAgo = now.minusDays(30);
+        List<Long> activeUserIdList = userEventMapper.getActiveUserIds(thirtyDaysAgo, now);
         java.util.Set<Long> activeUserIds = new java.util.HashSet<>(activeUserIdList);
+
+        // Get last active time for active users
+        Map<Long, String> lastActiveTimeMap = new HashMap<>();
+        if (!activeUserIdList.isEmpty()) {
+            List<Map<String, Object>> lastActiveTimes = userEventMapper.getLastActiveTimeByUserIds(activeUserIdList);
+            for (Map<String, Object> row : lastActiveTimes) {
+                Long userId = ((Number) row.get("userId")).longValue();
+                Object lastActiveAt = row.get("lastActiveAt");
+                if (lastActiveAt != null) {
+                    if (lastActiveAt instanceof java.time.LocalDateTime) {
+                        lastActiveTimeMap.put(userId, ((java.time.LocalDateTime) lastActiveAt).format(formatter));
+                    } else {
+                        lastActiveTimeMap.put(userId, lastActiveAt.toString());
+                    }
+                }
+            }
+        }
 
         return userMapper.selectAllActiveUsers().stream()
                 .map(user -> AdminUserDTO.builder()
@@ -184,6 +215,7 @@ public class AdminStatsService {
                         .subscriptionProductId(user.getSubscriptionProductId())
                         .subscriptionExpiresAt(user.getSubscriptionExpiresAt() != null ? user.getSubscriptionExpiresAt().format(formatter) : null)
                         .active(activeUserIds.contains(user.getId()))
+                        .lastActiveAt(lastActiveTimeMap.get(user.getId()))
                         .build())
                 .toList();
     }

@@ -39,7 +39,28 @@ public class AiUsageController {
         if (success) {
             return Result.success(true);
         } else {
-            return Result.error(429, "AI usage limit exceeded (100/month)");
+            return Result.error(429, "AI usage limit exceeded");
+        }
+    }
+
+    /**
+     * Check if user can use AI chat (called by optimizer service via Feign)
+     */
+    @GetMapping("/chat/check/{userId}")
+    public Result<Boolean> checkCanUseChat(@PathVariable("userId") Long userId) {
+        return Result.success(aiUsageService.canUseChat(userId));
+    }
+
+    /**
+     * Record chat usage (called by optimizer service via Feign after successful chat)
+     */
+    @PostMapping("/chat/record/{userId}")
+    public Result<Boolean> recordChatUsage(@PathVariable("userId") Long userId) {
+        boolean success = aiUsageService.incrementChatUsage(userId);
+        if (success) {
+            return Result.success(true);
+        } else {
+            return Result.error(429, "Chat usage limit exceeded");
         }
     }
 }

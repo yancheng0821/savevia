@@ -7,6 +7,7 @@ import { Share } from '@capacitor/share'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
 import { optimizerApi, adminApi } from '../services/api'
+import { ratingService } from '../services/ratingService'
 import CardUpgradeRecommendation from '../components/CardUpgradeRecommendation'
 import type { SpendingCategory } from '../types'
 
@@ -14,13 +15,26 @@ import type { SpendingCategory } from '../types'
 const isNativeApp = Capacitor.isNativePlatform()
 
 // Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
-function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS'): string {
-  const value = rate * 100
+// For POINTS cards, calculate multiplier intelligently:
+// - If pointValue/baseRewardRate > 5 (e.g., AIR MILES), use baseRewardRate
+// - Otherwise, use pointValue (standard cards like Aeroplan, Amex, Cobalt)
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number, baseRewardRate?: number): string {
+  let value: number
+
+  if (rewardType === 'POINTS' && pointValue && pointValue > 0) {
+    const ratio = baseRewardRate && baseRewardRate > 0 ? pointValue / baseRewardRate : 1
+    const divisor = ratio > 5 ? baseRewardRate! : pointValue
+    value = Math.round((rate / divisor) * 100) / 100
+  } else {
+    // For CASHBACK cards or fallback: show percentage
+    value = Math.round(rate * 10000) / 100
+  }
+
   // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
   let formatted: string
-  if (value % 1 === 0) {
-    formatted = value.toFixed(0)  // e.g., 1, 2, 3
-  } else if ((value * 10) % 1 === 0) {
+  if (Math.abs(value - Math.round(value)) < 0.001) {
+    formatted = Math.round(value).toString()  // e.g., 1, 2, 3
+  } else if (Math.abs(value * 10 - Math.round(value * 10)) < 0.001) {
     formatted = value.toFixed(1)  // e.g., 1.5, 2.5
   } else {
     formatted = value.toFixed(2)  // e.g., 1.25, 1.75
@@ -205,6 +219,13 @@ function ResultPage() {
       adminApi.track('result_view')
     }
   }, []) // Only track once on mount, not on every result change
+
+  // Schedule rating prompt for first-time users
+  useEffect(() => {
+    if (result && isAuthenticated) {
+      ratingService.scheduleRatingPrompt()
+    }
+  }, [result, isAuthenticated])
 
   // Close share menu when clicking outside
   useEffect(() => {
@@ -460,9 +481,25 @@ function ResultPage() {
             <div className="sv-result-savings-label">
               {t('result.netSavings')}
             </div>
-            <div className="sv-result-amount">
-              ${result.netAnnualSavings.toFixed(0)}
-              <span className="sv-result-unit">{t('common.perYear')}</span>
+            <div className="sv-result-amount-row">
+              <div className="sv-result-amount">
+                ${result.netAnnualSavings.toFixed(0)}
+                <span className="sv-result-unit">{t('common.perYear')}</span>
+              </div>
+              {(() => {
+                // Calculate savings vs 1% baseline card
+                const totalMonthlySpending = Object.values(monthlySpending).reduce((sum, v) => sum + v, 0)
+                const baselineAnnualReward = totalMonthlySpending * 12 * 0.01 // 1% cashback, no annual fee
+                const extraSavings = result.netAnnualSavings - baselineAnnualReward
+                if (extraSavings > 0) {
+                  return (
+                    <span className="sv-result-vs-baseline">
+                      {t('result.vsBaseline')} <span className="sv-result-vs-baseline-amount">${extraSavings.toFixed(0)}</span>
+                    </span>
+                  )
+                }
+                return null
+              })()}
             </div>
           </div>
 
@@ -483,6 +520,7 @@ function ResultPage() {
               <div className="sv-result-stat-value sv-result-stat-fees">-${result.totalAnnualFees.toFixed(0)}</div>
             </div>
           </div>
+
         </div>
 
         {/* Right Column - Card Upgrade Recommendation on Desktop */}
@@ -582,7 +620,7 @@ function ResultPage() {
                       }}
                     >
                       <span className="sv-result-rate">
-                        {formatRewardRate(rec.rewardRate, rec.recommendedCard?.rewardType)}
+                        {formatRewardRate(rec.rewardRate, rec.recommendedCard?.rewardType, rec.recommendedCard?.pointValue, rec.recommendedCard?.baseRewardRate)}
                       </span>
                       <span className="sv-result-reward">
                         ${rec.monthlyReward.toFixed(2)}/mo

@@ -22,6 +22,7 @@ public class CreditCardDTO {
     private BigDecimal baseRewardRate;
     private String rewardType;  // CASHBACK or POINTS
     private String pointProgram;  // e.g., "AIR MILES", "Aeroplan", "MR Points"
+    private BigDecimal pointValue;  // Value per point in dollars (e.g., 0.018 = 1.8¢/point)
     private String imageUrl;
     private String applyUrl;
     private Boolean noFxFee;

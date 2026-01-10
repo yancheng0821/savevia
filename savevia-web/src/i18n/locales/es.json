@@ -5,6 +5,7 @@
     "loading": "Cargando...",
     "save": "Guardar",
     "cancel": "Cancelar",
+    "done": "Listo",
     "confirm": "Confirmar",
     "delete": "Eliminar",
     "edit": "Editar",
@@ -17,7 +18,11 @@
     "error": "Error",
     "warning": "Advertencia",
     "perMonth": "/mes",
-    "perYear": "/año"
+    "perYear": "/año",
+    "yes": "Sí",
+    "no": "No",
+    "close": "Cerrar",
+    "selectAll": "Seleccionar todo"
   },
   "nav": {
     "home": "Inicio",
@@ -31,7 +36,7 @@
   },
   "home": {
     "title": "Bienvenido a SaveVia",
-    "subtitle": "El optimizador de reembolsos líder en Canadá impulsado por IA",
+    "subtitle": "Recordamos tus tarjetas para que no tengas que hacerlo",
     "step1Title": "Selecciona tus tarjetas",
     "step1Desc": "Elige las tarjetas de crédito que tienes actualmente",
     "step2Title": "Ingresa tus gastos",
@@ -49,7 +54,7 @@
     "cashbackLabel": "REEMBOLSO",
     "quickSelect": {
       "title": "Buscador rápido",
-      "description": "Selecciona una categoría para encontrar la mejor tarjeta",
+      "description": "Toca una categoría, te decimos qué tarjeta usar",
       "bestCard": "Mejor tarjeta",
       "cashback": "reembolso",
       "loginFirst": "Inicia sesión y agrega tus tarjetas",
@@ -68,6 +73,12 @@
       "openAppleWallet": "Abrir Apple Wallet",
       "openGooglePay": "Abrir Google Pay",
       "viewDetails": "Ver detalles"
+    },
+    "appDownload": {
+      "title": "Descargar la app",
+      "description": "Descarga SaveVia para una mejor experiencia móvil",
+      "comingSoon": "¡Versión Android próximamente!",
+      "downloadApp": "Descargar iOS App"
     }
   },
   "cards": {
@@ -81,7 +92,14 @@
     "selectedCount": "{{count}} seleccionadas",
     "details": "Detalles",
     "dragToReorder": "Mantén presionado y arrastra para reordenar",
-    "toggleCardStyle": "Cambiar estilo"
+    "toggleCardStyle": "Cambiar estilo",
+    "searchPlaceholder": "Buscar tarjetas...",
+    "resultsFound": "resultados encontrados",
+    "baseReward": "base",
+    "gridView": "Vista cuadrícula",
+    "listView": "Vista lista",
+    "points": "Puntos",
+    "cashback": "Reembolso"
   },
   "optimizer": {
     "title": "Ingresa tus gastos mensuales",
@@ -91,7 +109,7 @@
     "calculateSavings": "Calcular mis ahorros",
     "total": "Total",
     "perMonth": "/mes",
-    "calculate": "Optimizar con IA",
+    "calculate": "Optimización Inteligente",
     "calculateBasic": "Optimizar",
     "calculating": "Analizando con IA",
     "calculatingBasic": "Analizando...",
@@ -105,6 +123,7 @@
     "annualReward": "Reembolso anual",
     "annualFees": "Cuotas anuales",
     "netSavings": "Ahorros anuales netos",
+    "vsBaseline": "Ahorro extra",
     "recommendations": "Recomendaciones por categoría",
     "quickReference": "Referencia rápida",
     "whichCardToUse": "Qué tarjeta usar:",
@@ -251,7 +270,7 @@
     "reportBugDesc": "Reportar problemas en GitHub",
     "rateUs": "Califícanos",
     "shareApp": "Compartir con amigos",
-    "shareText": "¡Prueba SaveVia - maximiza tu cashback!",
+    "shareText": "¡Prueba SaveVia - recuerda qué tarjeta usar por ti!",
     "linkCopied": "¡Enlace copiado!",
     "legal": "Legal",
     "privacyPolicy": "Política de privacidad",
@@ -269,7 +288,22 @@
     "bankTransactions": "Transacciones bancarias",
     "missedCashback": "Reembolso perdido",
     "restartOnboarding": "Configuración personalizada",
-    "onboardingReset": "Personalización restablecida, por favor actualiza la página"
+    "onboardingReset": "Personalización restablecida, por favor actualiza la página",
+    "optimizations": "Optimizaciones",
+    "daysUsing": "Días de uso",
+    "superSaver": "Super Ahorrador",
+    "savedOver500": "Ahorrando $500+/año"
+  },
+  "myCards": {
+    "title": "Mis Tarjetas",
+    "cards": "tarjetas",
+    "emptyTitle": "Sin tarjetas seleccionadas",
+    "emptyDesc": "Agrega tus tarjetas de crédito para obtener recomendaciones personalizadas",
+    "addCards": "Agregar tarjetas",
+    "addMore": "Agregar más tarjetas",
+    "remove": "Eliminar",
+    "noFee": "Sin cuota",
+    "upTo": "Hasta"
   },
   "errors": {
     "serviceUnavailable": "Servicio no disponible, intenta más tarde",
@@ -292,6 +326,8 @@
     "baseRatePoints": "Tasa base de puntos",
     "baseRateCashback": "Reembolso base",
     "pointsCard": "Tarjeta de puntos",
+    "pointValue": "Valor del punto",
+    "point": "punto",
     "cashbackCard": "Tarjeta de reembolso",
     "welcomeBonus": "Bono de bienvenida",
     "points": "Puntos",
@@ -385,7 +421,7 @@
     "loginRequired": "Inicia sesión para ver transacciones",
     "loginDesc": "Conecta tu banco para ver tus transacciones y obtener recomendaciones de tarjetas.",
     "connectBank": "Descubre tus ahorros ocultos",
-    "connectBankDesc": "Analizaremos tus gastos y calcularemos el cashback perdido por no usar la tarjeta óptima. Los canadienses pierden $300-$1,000/año así — ¡te ayudaremos a ahorrarlo!",
+    "connectBankDesc": "Analizaremos tus transacciones y te mostraremos qué tarjeta debiste usar. Sin adivinar - usa la tarjeta correcta cada vez.",
     "connectBankBtn": "Conexión segura",
     "connectingBank": "Conectando al servicio bancario...",
     "selectBank": "Selecciona tu banco",
@@ -403,7 +439,7 @@
     "totalSpent": "Total gastado",
     "missedCashback": "Cashback perdido",
     "earnedCashback": "Ganado",
-    "opportunityText": "Podrías haber ganado ${{amount}} más ({{percentage}}% del total) usando la tarjeta óptima.",
+    "opportunityText": "Si hubieras usado la tarjeta correcta, habrías ganado ${{amount}} más ({{percentage}}%).",
     "tabSummary": "Resumen",
     "tabTransactions": "Transacciones",
     "categoryBreakdown": "Desglose por categoría",
@@ -442,7 +478,7 @@
     "continue": "Continuar",
     "step1": {
       "title": "¿Cuántas tarjetas de crédito tienes?",
-      "description": "Te ayudaremos a maximizar el reembolso en todas tus tarjetas."
+      "description": "Recordaremos qué tarjeta usar para cada compra."
     },
     "step2": {
       "title": "¿Cuál es tu gasto anual con tarjeta?",
@@ -476,5 +512,27 @@
     "message": "Una nueva versión de SaveVia está disponible. Por favor actualice para continuar.",
     "newVersion": "Nueva versión",
     "updateNow": "Actualizar ahora"
+  },
+  "chat": {
+    "title": "Asesor de Tarjetas",
+    "ask": "Preguntar",
+    "askSaveVia": "Preguntar a SaveVia",
+    "askSaveViaDesc": "Preguntas sobre tarjetas",
+    "loginRequired": "Inicie sesión para usar el asesor",
+    "cardsSelected": "{{count}} tarjetas seleccionadas",
+    "noCards": "Sin tarjetas seleccionadas",
+    "chatRemaining": "{{count}} chats restantes",
+    "emptyTitle": "¿Cómo puedo ayudarte?",
+    "emptySubtitle": "Prueba: \"¿Qué tarjeta para supermercado?\" Escribe abajo y presiona Enter",
+    "inputPlaceholder": "Escribe tu pregunta...",
+    "newChat": "Nueva conversación",
+    "newChatConfirm": "¿Iniciar nueva conversación?",
+    "voiceStart": "Iniciar entrada de voz",
+    "voiceStop": "Detener grabación",
+    "voiceListening": "Escuchando...",
+    "voiceError": "Reconocimiento de voz fallido",
+    "voiceNotSupported": "Entrada de voz no soportada",
+    "voicePermissionDenied": "Acceso al micrófono denegado",
+    "voiceTimeout": "Grabación detenida (límite 30s)"
   }
 }

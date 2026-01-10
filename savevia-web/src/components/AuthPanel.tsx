@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { MailOutlined, LockOutlined, UserOutlined, EyeOutlined, EyeInvisibleOutlined, CheckOutlined } from '@ant-design/icons'
 import { Modal, message } from 'antd'
 import { Capacitor } from '@capacitor/core'
+import { Keyboard } from '@capacitor/keyboard'
 import { GoogleAuth } from '@southdevs/capacitor-google-auth'
 import { useGoogleLogin } from '@react-oauth/google'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -72,6 +73,34 @@ function AuthPanel() {
   const [showPassword, setShowPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [legalModal, setLegalModal] = useState<LegalType | null>(null)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+
+  // Listen for keyboard events on native platforms
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+
+    const showListener = Keyboard.addListener('keyboardWillShow', (info) => {
+      setKeyboardHeight(info.keyboardHeight)
+    })
+
+    const hideListener = Keyboard.addListener('keyboardWillHide', () => {
+      setKeyboardHeight(0)
+    })
+
+    return () => {
+      showListener.then(l => l.remove())
+      hideListener.then(l => l.remove())
+    }
+  }, [])
+
+  // Handle input focus to scroll into view when keyboard opens
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (Capacitor.isNativePlatform()) {
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    }
+  }
 
   // Load Apple Sign In JS SDK for web
   useEffect(() => {
@@ -238,9 +267,16 @@ function AuthPanel() {
         footer={null}
         centered
         width={420}
-        className="auth-modal"
+        className="auth-modal sv-bottom-sheet-modal"
+        wrapClassName="sv-bottom-sheet-wrap"
+        destroyOnClose
+        maskClosable
+        style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
       >
-        <div className="auth-modal-content">
+        <div
+          className="auth-modal-content"
+          style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 24 } : undefined}
+        >
           <h2>{authMode === 'login' ? t('auth.welcomeBack') : t('auth.joinUs')}</h2>
           <p>
             {authMode === 'login'
@@ -287,6 +323,7 @@ function AuthPanel() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    onFocus={handleInputFocus}
                     placeholder={t('auth.namePlaceholder')}
                     required
                   />
@@ -302,6 +339,7 @@ function AuthPanel() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={handleInputFocus}
                   placeholder={t('auth.emailPlaceholder')}
                   required
                 />
@@ -316,11 +354,16 @@ function AuthPanel() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(authMode === 'register' ? filterPassword(e.target.value) : e.target.value)}
+                  onFocus={handleInputFocus}
                   placeholder={t('auth.passwordPlaceholder')}
                   required
                   minLength={8}
                 />
-                <span className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                <span
+                  className="password-toggle"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
                   {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                 </span>
               </div>
@@ -640,6 +683,80 @@ function AuthPanel() {
 
         .auth-modal-social-terms button:hover {
           color: #374151;
+        }
+
+        /* Mobile Bottom Sheet Style */
+        @media (max-width: 640px) {
+          .sv-bottom-sheet-wrap {
+            display: flex !important;
+            align-items: flex-end !important;
+            justify-content: center !important;
+            z-index: 10000 !important;
+          }
+
+          .sv-bottom-sheet-wrap .ant-modal {
+            top: auto !important;
+            bottom: 0 !important;
+            margin: 0 !important;
+            padding-bottom: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            transform-origin: bottom center !important;
+          }
+
+          .sv-bottom-sheet-wrap .ant-modal-content {
+            border-radius: 16px 16px 0 0 !important;
+            max-height: 90vh;
+            overflow-y: auto;
+          }
+
+          .sv-bottom-sheet-wrap.ant-modal-centered::before {
+            display: none !important;
+            content: none !important;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-content {
+            padding: 28px 24px calc(40px + env(safe-area-inset-bottom));
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-content h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-content > p {
+            font-size: 14px;
+            margin-bottom: 24px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-socials {
+            margin-bottom: 20px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-social {
+            padding: 14px 16px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-divider {
+            margin: 20px 0;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-form {
+            gap: 16px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-input input {
+            padding: 14px 42px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-submit {
+            padding: 16px 20px;
+            margin-top: 12px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-switch {
+            margin-top: 20px;
+          }
         }
       `}</style>
     </>

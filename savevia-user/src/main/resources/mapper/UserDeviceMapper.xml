@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.UserDeviceMapper">
+
+    <resultMap id="UserDeviceResultMap" type="com.savevia.user.entity.UserDevice">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="device_token" property="deviceToken"/>
+        <result column="platform" property="platform"/>
+        <result column="device_name" property="deviceName"/>
+        <result column="app_version" property="appVersion"/>
+        <result column="os_version" property="osVersion"/>
+        <result column="locale" property="locale"/>
+        <result column="is_active" property="isActive"/>
+        <result column="last_used_at" property="lastUsedAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.savevia.user.entity.UserDevice" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_devices (user_id, device_token, platform, device_name, app_version, os_version, locale, is_active, last_used_at)
+        VALUES (#{userId}, #{deviceToken}, #{platform}, #{deviceName}, #{appVersion}, #{osVersion}, #{locale}, #{isActive}, #{lastUsedAt})
+        ON DUPLICATE KEY UPDATE
+            user_id = #{userId},
+            platform = #{platform},
+            device_name = #{deviceName},
+            app_version = #{appVersion},
+            os_version = #{osVersion},
+            locale = #{locale},
+            is_active = TRUE,
+            last_used_at = NOW(),
+            updated_at = NOW()
+    </insert>
+
+    <update id="update" parameterType="com.savevia.user.entity.UserDevice">
+        UPDATE user_devices
+        SET platform = #{platform},
+            device_name = #{deviceName},
+            app_version = #{appVersion},
+            os_version = #{osVersion},
+            locale = #{locale},
+            is_active = #{isActive},
+            last_used_at = #{lastUsedAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByToken" resultMap="UserDeviceResultMap">
+        SELECT * FROM user_devices WHERE device_token = #{deviceToken}
+    </select>
+
+    <select id="findByUserId" resultMap="UserDeviceResultMap">
+        SELECT * FROM user_devices WHERE user_id = #{userId} ORDER BY last_used_at DESC
+    </select>
+
+    <select id="findActiveByUserId" resultMap="UserDeviceResultMap">
+        SELECT * FROM user_devices WHERE user_id = #{userId} AND is_active = TRUE ORDER BY last_used_at DESC
+    </select>
+
+    <update id="deactivateByToken">
+        UPDATE user_devices SET is_active = FALSE, updated_at = NOW() WHERE device_token = #{deviceToken}
+    </update>
+
+    <update id="deactivateAllByUserId">
+        UPDATE user_devices SET is_active = FALSE, updated_at = NOW() WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateLastUsed">
+        UPDATE user_devices SET last_used_at = NOW(), updated_at = NOW() WHERE device_token = #{deviceToken}
+    </update>
+
+    <select id="findAllActiveUserIds" resultType="java.lang.Long">
+        SELECT DISTINCT user_id FROM user_devices WHERE is_active = TRUE
+    </select>
+
+    <select id="findInactiveUserIds" resultType="java.lang.Long">
+        SELECT DISTINCT user_id FROM user_devices
+        WHERE is_active = TRUE AND last_used_at &lt; #{lastActiveTime}
+    </select>
+
+</mapper>

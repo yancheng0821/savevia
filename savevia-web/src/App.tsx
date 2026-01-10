@@ -8,6 +8,7 @@ import OptimizerPage from './pages/OptimizerPage'
 import ResultPage from './pages/ResultPage'
 import SharedResultPage from './pages/SharedResultPage'
 import MePage from './pages/MePage'
+import MyCardsPage from './pages/MyCardsPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import TransactionsPage from './pages/TransactionsPage'
@@ -22,14 +23,18 @@ import Paywall from './components/Paywall'
 import Onboarding from './components/Onboarding'
 import AnimatedSplash from './components/AnimatedSplash'
 import ForceUpdate from './components/ForceUpdate'
+import ChatButton from './components/ChatButton'
+import ChatWindow from './components/ChatWindow'
 import { useAuthStore } from './stores/useAuthStore'
 import { useOptimizerStore } from './stores/useOptimizerStore'
 import { useSubscriptionStore } from './stores/useSubscriptionStore'
 import { useOnboardingStore } from './stores/useOnboardingStore'
 import { useHomePageStore } from './stores/useHomePageStore'
 import { useCardsPageStore } from './stores/useCardsPageStore'
+import { useChatStore } from './stores/useChatStore'
 import { isNativePlatform, initializeIAP } from './services/iap'
 import { appApi, type AppVersionInfo } from './services/api'
+import { pushNotificationService } from './services/pushNotificationService'
 
 // Current app version (synced with package.json via vite.config.ts)
 // Fallback to "1.0.0" for old versions that don't have __APP_VERSION__ defined
@@ -141,10 +146,11 @@ function ScrollToTop() {
 }
 
 function App() {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, setPanelOpen } = useAuthStore()
   const { loadUserData } = useOptimizerStore()
   const { isSubscribed, checkSubscription } = useSubscriptionStore()
   const { hasSeenOnboarding, setHasSeenOnboarding, loadOnboardingState, isLoading: isOnboardingLoading } = useOnboardingStore()
+  const { setOpen: setChatOpen } = useChatStore()
   // Pre-hydrate CardsPageStore to prevent scroll button flicker on iOS swipe back
   useCardsPageStore()
 
@@ -161,6 +167,27 @@ function App() {
   useEffect(() => {
     preloadImages(BANK_LOGOS)
   }, [])
+
+  // Listen for iOS swipe back to reopen chat window
+  // Use popstate event since pageshow doesn't fire in Capacitor SPA
+  useEffect(() => {
+    const handlePopState = () => {
+      console.log('[App] popstate event fired')
+      const shouldReopen = sessionStorage.getItem('shouldReopenChat')
+      console.log('[App] shouldReopenChat from sessionStorage:', shouldReopen)
+      if (shouldReopen === 'true') {
+        sessionStorage.removeItem('shouldReopenChat')
+        console.log('[App] Will reopen chat in 100ms')
+        setTimeout(() => {
+          console.log('[App] Calling setChatOpen(true)')
+          setChatOpen(true)
+        }, 100)
+      }
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [setChatOpen])
 
   // Check app version immediately on native platforms (during splash screen)
   useEffect(() => {
@@ -245,6 +272,13 @@ function App() {
     }
   }, [isAuthenticated, loadUserData])
 
+  // Initialize push notifications when user is authenticated (native only)
+  useEffect(() => {
+    if (isAuthenticated && isNative) {
+      pushNotificationService.initialize().catch(console.error)
+    }
+  }, [isAuthenticated, isNative])
+
   const handleOnboardingComplete = () => {
     setHasSeenOnboarding(true)
     setShowOnboarding(false)
@@ -294,6 +328,11 @@ function App() {
     return <Paywall onSubscribed={handleSubscribed} />
   }
 
+  // Handle auth required for chat
+  const handleChatAuthRequired = () => {
+    setPanelOpen(true)
+  }
+
   return (
     <div className="sv-app-wrapper">
       <ScrollToTop />
@@ -308,6 +347,7 @@ function App() {
           <Route path="/result" element={<ResultPage />} />
           <Route path="/share/:shareId" element={<SharedResultPage />} />
           <Route path="/me" element={<MePage />} />
+          <Route path="/my-cards" element={<MyCardsPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/subscription" element={<SubscriptionPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
@@ -319,6 +359,9 @@ function App() {
           {!isNative && <Route path="/admin" element={<AdminPage />} />}
         </Routes>
       </main>
+      {/* AI Chat Advisor */}
+      <ChatButton onAuthRequired={handleChatAuthRequired} />
+      <ChatWindow />
     </div>
   )
 }

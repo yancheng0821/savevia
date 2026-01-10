@@ -43,6 +43,7 @@ export interface CreditCard {
   baseRewardRate: number
   rewardType?: 'CASHBACK' | 'POINTS'  // CASHBACK shows %, POINTS shows x
   pointProgram?: string  // e.g., "AIR MILES", "Aeroplan", "MR Points"
+  pointValue?: number  // Value per point in dollars (e.g., 0.018 = 1.8¢/point)
   imageUrl?: string
   applyUrl?: string
   noFxFee?: boolean

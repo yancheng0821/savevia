@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core'
 import { GoogleAuth } from '@southdevs/capacitor-google-auth'
 import { authApi, tokenManager } from '../services/api'
 import { useOptimizerStore } from './useOptimizerStore'
+import { pushNotificationService } from '../services/pushNotificationService'
 
 interface User {
   id: number
@@ -155,10 +156,13 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, isAuthenticated: false })
         // Clear optimizer data on logout
         useOptimizerStore.getState().reset()
-        // Sign out from Google on native platforms
+        // Sign out from Google and unregister push on native platforms
         if (Capacitor.isNativePlatform()) {
           GoogleAuth.signOut().catch(() => {
             // Ignore errors - user might not be signed in with Google
+          })
+          pushNotificationService.unregister().catch(() => {
+            // Ignore errors - device might not be registered
           })
         }
       },

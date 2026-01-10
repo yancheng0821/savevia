@@ -106,6 +106,48 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
+        # Chat Service - SSE stream (goes to optimizer, AI-intensive)
+        - id: chat-stream
+          uri: lb://savevia-optimizer
+          predicates:
+            - Path=/api/v1/chat/stream
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # Chat Service - Suggestions (goes to optimizer)
+        - id: chat-suggestions
+          uri: lb://savevia-optimizer
+          predicates:
+            - Path=/api/v1/chat/suggestions
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # Chat Service - Conversations (goes to user service)
+        - id: chat-conversations
+          uri: lb://savevia-user
+          predicates:
+            - Path=/api/v1/chat/conversations/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
         # Optimizer Service - Calculate endpoint (expensive, strict limit)
         - id: optimizer-calculate
           uri: lb://savevia-optimizer

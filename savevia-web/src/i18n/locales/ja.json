@@ -5,6 +5,7 @@
     "loading": "読み込み中...",
     "save": "保存",
     "cancel": "キャンセル",
+    "done": "完了",
     "confirm": "確認",
     "delete": "削除",
     "edit": "編集",
@@ -17,7 +18,11 @@
     "error": "エラー",
     "warning": "警告",
     "perMonth": "/月",
-    "perYear": "/年"
+    "perYear": "/年",
+    "yes": "はい",
+    "no": "いいえ",
+    "close": "閉じる",
+    "selectAll": "すべて選択"
   },
   "nav": {
     "home": "ホーム",
@@ -31,7 +36,7 @@
   },
   "home": {
     "title": "SaveViaへようこそ",
-    "subtitle": "カナダをリードするAI搭載クレジットカードキャッシュバック最適化サービス",
+    "subtitle": "カードを覚えておくから、考えなくていい",
     "step1Title": "カードを選択",
     "step1Desc": "お持ちのクレジットカードを選択してください",
     "step2Title": "支出を入力",
@@ -49,7 +54,7 @@
     "cashbackLabel": "キャッシュバック",
     "quickSelect": {
       "title": "クイック検索",
-      "description": "カテゴリを選択して最適なカードを見つける",
+      "description": "カテゴリをタップ、使うべきカードをお伝えします",
       "bestCard": "おすすめカード",
       "cashback": "キャッシュバック",
       "loginFirst": "ログインしてカードを追加してください",
@@ -68,6 +73,12 @@
       "openAppleWallet": "Apple Walletを開く",
       "openGooglePay": "Google Payを開く",
       "viewDetails": "カード詳細を見る"
+    },
+    "appDownload": {
+      "title": "アプリをダウンロード",
+      "description": "SaveViaをダウンロードして、より良いモバイル体験を",
+      "comingSoon": "Android版は近日公開！",
+      "downloadApp": "iOS Appをダウンロード"
     }
   },
   "cards": {
@@ -81,7 +92,14 @@
     "selectedCount": "{{count}}枚選択中",
     "details": "詳細",
     "dragToReorder": "長押しでドラッグして並び替え",
-    "toggleCardStyle": "スタイル切替"
+    "toggleCardStyle": "スタイル切替",
+    "searchPlaceholder": "カードを検索...",
+    "resultsFound": "件の結果",
+    "baseReward": "基本",
+    "gridView": "グリッド表示",
+    "listView": "リスト表示",
+    "points": "ポイント",
+    "cashback": "キャッシュバック"
   },
   "optimizer": {
     "title": "月間支出を入力",
@@ -91,7 +109,7 @@
     "calculateSavings": "節約額を計算",
     "total": "合計",
     "perMonth": "/月",
-    "calculate": "AI 最適化",
+    "calculate": "スマート最適化",
     "calculateBasic": "最適化",
     "calculating": "AI 分析中",
     "calculatingBasic": "分析中...",
@@ -105,6 +123,7 @@
     "annualReward": "年間キャッシュバック",
     "annualFees": "年会費",
     "netSavings": "純年間節約額",
+    "vsBaseline": "追加節約",
     "recommendations": "カテゴリ別の推奨",
     "quickReference": "クイックリファレンス",
     "whichCardToUse": "使用するカード：",
@@ -122,7 +141,7 @@
     "rewardRateIncrease": "全体の還元率の上昇",
     "annualSavings": "年間節約額",
     "viewCardDetails": "カード詳細を表示",
-    "bestFor": "おすすめの用途"
+    "bestFor": "最適な用途"
   },
   "categoryGroups": {
     "daily": "日常",
@@ -251,7 +270,7 @@
     "reportBugDesc": "GitHubで問題を報告",
     "rateUs": "評価する",
     "shareApp": "友達に共有",
-    "shareText": "SaveViaを試してみて - キャッシュバックを最大化！",
+    "shareText": "SaveViaを試してみて - どのカードを使うか覚えてくれる！",
     "linkCopied": "リンクをコピーしました！",
     "legal": "法的情報",
     "privacyPolicy": "プライバシーポリシー",
@@ -269,7 +288,22 @@
     "bankTransactions": "銀行取引履歴",
     "missedCashback": "損失キャッシュバック",
     "restartOnboarding": "パーソナライズ設定",
-    "onboardingReset": "パーソナライズ設定がリセットされました。ページを更新してください"
+    "onboardingReset": "パーソナライズ設定がリセットされました。ページを更新してください",
+    "optimizations": "回最適化",
+    "daysUsing": "日間使用",
+    "superSaver": "スーパーセーバー",
+    "savedOver500": "年間$500+節約"
+  },
+  "myCards": {
+    "title": "マイカード",
+    "cards": "枚",
+    "emptyTitle": "カードが選択されていません",
+    "emptyDesc": "クレジットカードを追加して、パーソナライズされた推奨を受け取りましょう",
+    "addCards": "カードを追加",
+    "addMore": "カードを追加",
+    "remove": "削除",
+    "noFee": "年会費無料",
+    "upTo": "最大"
   },
   "errors": {
     "serviceUnavailable": "サービスを利用できません。後でもう一度お試しください",
@@ -292,6 +326,8 @@
     "baseRatePoints": "基本ポイント",
     "baseRateCashback": "基本キャッシュバック",
     "pointsCard": "ポイントカード",
+    "pointValue": "ポイント価値",
+    "point": "ポイント",
     "cashbackCard": "キャッシュバックカード",
     "welcomeBonus": "入会特典",
     "points": "ポイント",
@@ -385,7 +421,7 @@
     "loginRequired": "取引履歴を見るにはログインしてください",
     "loginDesc": "銀行を連携して取引履歴を確認し、カードのおすすめを受け取りましょう。",
     "connectBank": "隠れたキャッシュバックを発見",
-    "connectBankDesc": "お支払いを分析し、最適なカード未使用で逃したキャッシュバックをお知らせします。カナダ人は年間$300〜$1,000をこうして逃しています — 節約をお手伝いします！",
+    "connectBankDesc": "お取引を分析し、どのカードを使うべきだったかをお知らせします。もう迷わない - 毎回正しいカードを。",
     "connectBankBtn": "安全に連携",
     "connectingBank": "銀行サービスに接続中...",
     "selectBank": "銀行を選択",
@@ -403,7 +439,7 @@
     "totalSpent": "総支出",
     "missedCashback": "逃したキャッシュバック",
     "earnedCashback": "獲得済み",
-    "opportunityText": "最適なカードを使用していれば、さらに${{amount}}（{{percentage}}%）獲得できました。",
+    "opportunityText": "毎回正しいカードを使っていれば、${{amount}}（{{percentage}}%）多く獲得できました。",
     "tabSummary": "概要",
     "tabTransactions": "取引",
     "categoryBreakdown": "カテゴリ別内訳",
@@ -442,7 +478,7 @@
     "continue": "続ける",
     "step1": {
       "title": "何枚のクレジットカードをお持ちですか？",
-      "description": "すべてのカードでキャッシュバックを最大化するお手伝いをします。"
+      "description": "どの買い物でどのカードを使うか、覚えておきます。"
     },
     "step2": {
       "title": "年間のカード利用額はどれくらいですか？",
@@ -476,5 +512,27 @@
     "message": "SaveViaの新しいバージョンが利用可能です。続行するにはアップデートしてください。",
     "newVersion": "最新バージョン",
     "updateNow": "今すぐアップデート"
+  },
+  "chat": {
+    "title": "カードアドバイザー",
+    "ask": "聞く",
+    "askSaveVia": "SaveViaに聞く",
+    "askSaveViaDesc": "カードに関する質問",
+    "loginRequired": "アドバイザーを使用するにはログインしてください",
+    "cardsSelected": "{{count}}枚のカードを選択中",
+    "noCards": "カードが選択されていません",
+    "chatRemaining": "残りチャット{{count}}回",
+    "emptyTitle": "何かお手伝いできますか？",
+    "emptySubtitle": "例:「食料品にどのカード？」下に入力してEnterで送信",
+    "inputPlaceholder": "質問を入力...",
+    "newChat": "新しい会話",
+    "newChatConfirm": "新しい会話を始めますか？",
+    "voiceStart": "音声入力を開始",
+    "voiceStop": "録音を停止",
+    "voiceListening": "聞いています...",
+    "voiceError": "音声認識に失敗しました",
+    "voiceNotSupported": "音声入力はサポートされていません",
+    "voicePermissionDenied": "マイクのアクセスが拒否されました",
+    "voiceTimeout": "録音が停止しました（30秒制限）"
   }
 }

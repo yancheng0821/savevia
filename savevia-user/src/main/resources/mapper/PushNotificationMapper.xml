@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.PushNotificationMapper">
+
+    <resultMap id="PushNotificationResultMap" type="com.savevia.user.entity.PushNotification">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="notification_type" property="notificationType"/>
+        <result column="title" property="title"/>
+        <result column="body" property="body"/>
+        <result column="data" property="data"/>
+        <result column="locale" property="locale"/>
+        <result column="scheduled_at" property="scheduledAt"/>
+        <result column="sent_at" property="sentAt"/>
+        <result column="read_at" property="readAt"/>
+        <result column="status" property="status"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.savevia.user.entity.PushNotification" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO push_notifications (user_id, notification_type, title, body, data, locale, scheduled_at, status)
+        VALUES (#{userId}, #{notificationType}, #{title}, #{body}, #{data}, #{locale}, #{scheduledAt}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.savevia.user.entity.PushNotification">
+        UPDATE push_notifications
+        SET title = #{title},
+            body = #{body},
+            data = #{data},
+            scheduled_at = #{scheduledAt},
+            status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="PushNotificationResultMap">
+        SELECT * FROM push_notifications WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="PushNotificationResultMap">
+        SELECT * FROM push_notifications
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findPendingToSend" resultMap="PushNotificationResultMap">
+        SELECT * FROM push_notifications
+        WHERE status = 'pending'
+          AND (scheduled_at IS NULL OR scheduled_at &lt;= #{now})
+        ORDER BY scheduled_at ASC
+        LIMIT 100
+    </select>
+
+    <update id="updateStatus">
+        UPDATE push_notifications
+        SET status = #{status},
+            error_message = #{errorMessage}
+        WHERE id = #{id}
+    </update>
+
+    <update id="markAsSent">
+        UPDATE push_notifications
+        SET status = 'sent',
+            sent_at = #{sentAt}
+        WHERE id = #{id}
+    </update>
+
+    <update id="markAsRead">
+        UPDATE push_notifications
+        SET status = 'read',
+            read_at = #{readAt}
+        WHERE id = #{id}
+    </update>
+
+    <select id="countTodayByUserId" resultType="int">
+        SELECT COUNT(*)
+        FROM push_notifications
+        WHERE user_id = #{userId}
+          AND status IN ('sent', 'read')
+          AND sent_at >= #{startOfDay}
+    </select>
+
+    <update id="cancelPending">
+        UPDATE push_notifications
+        SET status = 'cancelled'
+        WHERE user_id = #{userId}
+          AND notification_type = #{notificationType}
+          AND status = 'pending'
+    </update>
+
+    <select id="countRecentByUserId" resultType="int">
+        SELECT COUNT(*)
+        FROM push_notifications
+        WHERE user_id = #{userId}
+          AND status IN ('sent', 'read')
+          AND sent_at >= #{since}
+    </select>
+
+    <select id="findRecentMessageTypes" resultType="java.lang.String">
+        SELECT JSON_UNQUOTE(JSON_EXTRACT(data, '$.messageType'))
+        FROM push_notifications
+        WHERE user_id = #{userId}
+          AND status IN ('sent', 'read')
+          AND sent_at >= #{since}
+          AND data IS NOT NULL
+        ORDER BY sent_at DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

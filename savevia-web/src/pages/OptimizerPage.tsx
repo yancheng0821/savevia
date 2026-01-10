@@ -4,12 +4,16 @@ import { message } from 'antd'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowRightOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Capacitor } from '@capacitor/core'
+import { Keyboard } from '@capacitor/keyboard'
 import { optimizerApi, userApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
 import { useSubscriptionStore } from '../stores/useSubscriptionStore'
 import Paywall from '../components/Paywall'
 import type { SpendingCategory } from '../types'
+
+const isNativeApp = Capacitor.isNativePlatform()
 
 // Category config with icons
 const CATEGORY_CONFIG: Record<SpendingCategory, { icon: string; color: string }> = {
@@ -69,8 +73,38 @@ function OptimizerPage() {
   )
   const [showPaywall, setShowPaywall] = useState(false)
   const [checkingUsage, setCheckingUsage] = useState(false)
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const isInitialLoadRef = useRef(true)
+
+  // Listen for keyboard events on native platforms
+  useEffect(() => {
+    if (!isNativeApp) return
+
+    const showListener = Keyboard.addListener('keyboardWillShow', (info) => {
+      setKeyboardHeight(info.keyboardHeight)
+    })
+
+    const hideListener = Keyboard.addListener('keyboardWillHide', () => {
+      setKeyboardHeight(0)
+    })
+
+    return () => {
+      showListener.then(l => l.remove())
+      hideListener.then(l => l.remove())
+    }
+  }, [])
+
+  // Hide keyboard
+  const hideKeyboard = () => {
+    if (isNativeApp) {
+      Keyboard.hide()
+    }
+    // Also blur active element
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+  }
 
   // Load user's saved spending when authenticated
   useEffect(() => {
@@ -200,8 +234,19 @@ function OptimizerPage() {
     )
   }
 
+  // Handle click on non-input areas to dismiss keyboard
+  const handleContainerClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    // If clicking on input or inside input container, don't dismiss
+    if (target.tagName === 'INPUT' || target.closest('.sv-optimizer-card-input')) {
+      return
+    }
+    // Dismiss keyboard
+    hideKeyboard()
+  }
+
   return (
-    <div className="sv-optimizer">
+    <div className="sv-optimizer" onClick={handleContainerClick}>
       {/* Header */}
       <div className="sv-optimizer-header">
         <h1 className="sv-optimizer-title">{t('optimizer.title')}</h1>
@@ -222,7 +267,10 @@ function OptimizerPage() {
       </div>
 
       {/* Category Grid */}
-      <div className="sv-optimizer-grid">
+      <div
+        className="sv-optimizer-grid"
+        style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
+      >
         {CATEGORY_ORDER.map((category) => {
           const config = CATEGORY_CONFIG[category]
           const value = localSpending[category] || 0
@@ -246,6 +294,13 @@ function OptimizerPage() {
                   inputMode="numeric"
                   value={value || ''}
                   onChange={(e) => handleSpendingChange(category, e.target.value)}
+                  onFocus={(e) => {
+                    if (isNativeApp) {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }, 300)
+                    }
+                  }}
                   placeholder="0"
                 />
               </div>
@@ -255,7 +310,10 @@ function OptimizerPage() {
       </div>
 
       {/* Fixed Bottom Bar */}
-      <div className="sv-optimizer-bottom">
+      <div
+        className="sv-optimizer-bottom"
+        style={keyboardHeight > 0 ? { bottom: keyboardHeight } : undefined}
+      >
         <div className="sv-optimizer-bottom-total">
           <span className="sv-optimizer-bottom-label">{t('optimizer.total')}</span>
           <span className="sv-optimizer-bottom-value">${totalMonthlySpending.toLocaleString()}</span>
