@@ -283,7 +283,7 @@ export default function AnimatedSplash({ onComplete, duration = 2500 }: Animated
             transition: 'opacity 0.5s ease 0.2s',
           }}
         >
-          MAXIMIZE YOUR CASHBACK
+          USE THE RIGHT CARD
         </text>
 
         {/* Progress bar */}

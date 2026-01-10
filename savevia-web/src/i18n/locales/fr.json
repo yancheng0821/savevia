@@ -5,6 +5,7 @@
     "loading": "Chargement...",
     "save": "Enregistrer",
     "cancel": "Annuler",
+    "done": "Terminé",
     "confirm": "Confirmer",
     "delete": "Supprimer",
     "edit": "Modifier",
@@ -17,7 +18,11 @@
     "error": "Erreur",
     "warning": "Avertissement",
     "perMonth": "/mois",
-    "perYear": "/an"
+    "perYear": "/an",
+    "yes": "Oui",
+    "no": "Non",
+    "close": "Fermer",
+    "selectAll": "Tout sélectionner"
   },
   "nav": {
     "home": "Accueil",
@@ -31,7 +36,7 @@
   },
   "home": {
     "title": "Bienvenue sur SaveVia",
-    "subtitle": "L'optimiseur de remises en argent leader au Canada propulsé par l'IA",
+    "subtitle": "On retient vos cartes pour vous",
     "step1Title": "Sélectionnez vos cartes",
     "step1Desc": "Choisissez les cartes de crédit que vous possédez",
     "step2Title": "Entrez vos dépenses",
@@ -49,7 +54,7 @@
     "cashbackLabel": "REMISE",
     "quickSelect": {
       "title": "Recherche rapide",
-      "description": "Sélectionnez une catégorie pour trouver la meilleure carte",
+      "description": "Touchez une catégorie, on vous dit quelle carte utiliser",
       "bestCard": "Meilleure carte",
       "cashback": "remise",
       "loginFirst": "Connectez-vous et ajoutez vos cartes",
@@ -87,7 +92,14 @@
     "selectedCount": "{{count}} sélectionnées",
     "details": "Détails",
     "dragToReorder": "Maintenez et faites glisser pour réorganiser",
-    "toggleCardStyle": "Changer le style"
+    "toggleCardStyle": "Changer le style",
+    "searchPlaceholder": "Rechercher des cartes...",
+    "resultsFound": "résultats trouvés",
+    "baseReward": "base",
+    "gridView": "Vue grille",
+    "listView": "Vue liste",
+    "points": "Points",
+    "cashback": "Remise"
   },
   "optimizer": {
     "title": "Entrez vos dépenses mensuelles",
@@ -97,7 +109,7 @@
     "calculateSavings": "Calculer mes économies",
     "total": "Total",
     "perMonth": "/mois",
-    "calculate": "Optimisation IA",
+    "calculate": "Optimisation Intelligente",
     "calculateBasic": "Optimiser",
     "calculating": "Analyse IA",
     "calculatingBasic": "Analyse...",
@@ -111,6 +123,7 @@
     "annualReward": "Remise annuelle",
     "annualFees": "Frais annuels",
     "netSavings": "Économies annuelles nettes",
+    "vsBaseline": "Économies en plus",
     "recommendations": "Recommandations par catégorie",
     "quickReference": "Référence rapide",
     "whichCardToUse": "Quelle carte utiliser:",
@@ -257,7 +270,7 @@
     "reportBugDesc": "Signaler un problème sur GitHub",
     "rateUs": "Évaluez-nous",
     "shareApp": "Partager avec des amis",
-    "shareText": "Découvrez SaveVia - maximisez vos remises en argent!",
+    "shareText": "Découvrez SaveVia - il retient quelle carte utiliser pour vous!",
     "linkCopied": "Lien copié!",
     "legal": "Mentions légales",
     "privacyPolicy": "Politique de confidentialité",
@@ -275,7 +288,22 @@
     "bankTransactions": "Transactions bancaires",
     "missedCashback": "Remise manquée",
     "restartOnboarding": "Paramètres de personnalisation",
-    "onboardingReset": "Personnalisation réinitialisée, veuillez rafraîchir la page"
+    "onboardingReset": "Personnalisation réinitialisée, veuillez rafraîchir la page",
+    "optimizations": "Optimisations",
+    "daysUsing": "Jours d'utilisation",
+    "superSaver": "Super Épargnant",
+    "savedOver500": "Économie $500+/an"
+  },
+  "myCards": {
+    "title": "Mes Cartes",
+    "cards": "cartes",
+    "emptyTitle": "Aucune carte sélectionnée",
+    "emptyDesc": "Ajoutez vos cartes de crédit pour obtenir des recommandations personnalisées",
+    "addCards": "Ajouter des cartes",
+    "addMore": "Ajouter plus de cartes",
+    "remove": "Supprimer",
+    "noFee": "Sans frais",
+    "upTo": "Jusqu'à"
   },
   "errors": {
     "serviceUnavailable": "Service indisponible, veuillez réessayer plus tard",
@@ -393,7 +421,7 @@
     "loginRequired": "Connectez-vous pour voir les transactions",
     "loginDesc": "Connectez votre banque pour voir vos transactions et obtenir des recommandations de cartes.",
     "connectBank": "Découvrez vos économies cachées",
-    "connectBankDesc": "Nous analyserons vos dépenses et calculerons les remises manquées. Les Canadiens perdent 300 $ à 1 000 $/an en n'utilisant pas la bonne carte — nous vous aiderons à économiser !",
+    "connectBankDesc": "Nous analyserons vos transactions et vous montrerons quelle carte vous auriez dû utiliser. Fini les devinettes - utilisez la bonne carte à chaque fois.",
     "connectBankBtn": "Connexion sécurisée",
     "connectingBank": "Connexion au service bancaire...",
     "selectBank": "Sélectionnez votre banque",
@@ -411,7 +439,7 @@
     "totalSpent": "Total dépensé",
     "missedCashback": "Remises manquées",
     "earnedCashback": "Gagné",
-    "opportunityText": "Vous auriez pu gagner ${{amount}} de plus ({{percentage}}% du total) en utilisant la carte optimale.",
+    "opportunityText": "En utilisant la bonne carte à chaque fois, vous auriez gagné ${{amount}} de plus ({{percentage}}%).",
     "tabSummary": "Résumé",
     "tabTransactions": "Transactions",
     "categoryBreakdown": "Répartition par catégorie",
@@ -450,7 +478,7 @@
     "continue": "Continuer",
     "step1": {
       "title": "Combien de cartes de crédit avez-vous ?",
-      "description": "Nous vous aiderons à maximiser les remises sur toutes vos cartes."
+      "description": "On retiendra quelle carte utiliser pour chaque achat."
     },
     "step2": {
       "title": "Quel est votre budget annuel de carte ?",
@@ -484,5 +512,27 @@
     "message": "Une nouvelle version de SaveVia est disponible. Veuillez mettre à jour pour continuer.",
     "newVersion": "Nouvelle version",
     "updateNow": "Mettre à jour"
+  },
+  "chat": {
+    "title": "Conseiller Cartes",
+    "ask": "Demander",
+    "askSaveVia": "Demander à SaveVia",
+    "askSaveViaDesc": "Questions sur les cartes",
+    "loginRequired": "Connectez-vous pour utiliser le conseiller",
+    "cardsSelected": "{{count}} cartes sélectionnées",
+    "noCards": "Aucune carte sélectionnée",
+    "chatRemaining": "{{count}} conversations restantes",
+    "emptyTitle": "Comment puis-je vous aider?",
+    "emptySubtitle": "Essayez: \"Quelle carte pour l'épicerie?\" Tapez ci-dessous et appuyez Entrée",
+    "inputPlaceholder": "Tapez votre question...",
+    "newChat": "Nouvelle conversation",
+    "newChatConfirm": "Commencer une nouvelle conversation?",
+    "voiceStart": "Démarrer la saisie vocale",
+    "voiceStop": "Arrêter l'enregistrement",
+    "voiceListening": "Écoute en cours...",
+    "voiceError": "Échec de la reconnaissance vocale",
+    "voiceNotSupported": "Saisie vocale non supportée",
+    "voicePermissionDenied": "Accès au microphone refusé",
+    "voiceTimeout": "Enregistrement arrêté (limite 30s)"
   }
 }

@@ -187,6 +187,23 @@ public class AdminStatsService {
         List<Long> activeUserIdList = userEventMapper.getActiveUserIds(thirtyDaysAgo, now);
         java.util.Set<Long> activeUserIds = new java.util.HashSet<>(activeUserIdList);
 
+        // Get last active time for active users
+        Map<Long, String> lastActiveTimeMap = new HashMap<>();
+        if (!activeUserIdList.isEmpty()) {
+            List<Map<String, Object>> lastActiveTimes = userEventMapper.getLastActiveTimeByUserIds(activeUserIdList);
+            for (Map<String, Object> row : lastActiveTimes) {
+                Long userId = ((Number) row.get("userId")).longValue();
+                Object lastActiveAt = row.get("lastActiveAt");
+                if (lastActiveAt != null) {
+                    if (lastActiveAt instanceof java.time.LocalDateTime) {
+                        lastActiveTimeMap.put(userId, ((java.time.LocalDateTime) lastActiveAt).format(formatter));
+                    } else {
+                        lastActiveTimeMap.put(userId, lastActiveAt.toString());
+                    }
+                }
+            }
+        }
+
         return userMapper.selectAllActiveUsers().stream()
                 .map(user -> AdminUserDTO.builder()
                         .id(user.getId())
@@ -198,6 +215,7 @@ public class AdminStatsService {
                         .subscriptionProductId(user.getSubscriptionProductId())
                         .subscriptionExpiresAt(user.getSubscriptionExpiresAt() != null ? user.getSubscriptionExpiresAt().format(formatter) : null)
                         .active(activeUserIds.contains(user.getId()))
+                        .lastActiveAt(lastActiveTimeMap.get(user.getId()))
                         .build())
                 .toList();
     }

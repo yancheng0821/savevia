@@ -19,4 +19,5 @@ public class AdminUserDTO {
 
     // Activity info
     private boolean active; // Has events in last 30 days
+    private String lastActiveAt; // Last activity time (ISO date)
 }

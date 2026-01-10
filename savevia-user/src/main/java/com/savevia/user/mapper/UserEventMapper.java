@@ -81,4 +81,21 @@ public interface UserEventMapper {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    /**
+     * Get last active time for each user in the given list
+     */
+    List<Map<String, Object>> getLastActiveTimeByUserIds(
+            @Param("userIds") List<Long> userIds
+    );
+
+    /**
+     * Get inactive user IDs (users who haven't had any events since the given time)
+     */
+    List<Long> getInactiveUserIds(@Param("since") LocalDateTime since);
+
+    /**
+     * Get all user IDs who have ever had events
+     */
+    List<Long> getAllUserIdsWithEvents();
 }

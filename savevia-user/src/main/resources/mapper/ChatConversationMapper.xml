@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.ChatConversationMapper">
+
+    <resultMap id="conversationResultMap" type="com.savevia.user.entity.ChatConversation">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- Insert a new conversation -->
+    <insert id="insert" parameterType="com.savevia.user.entity.ChatConversation"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO chat_conversations (user_id, title, created_at, updated_at)
+        VALUES (#{userId}, #{title}, UTC_TIMESTAMP(), UTC_TIMESTAMP())
+    </insert>
+
+    <!-- Get conversation by id -->
+    <select id="selectById" parameterType="java.lang.Long" resultMap="conversationResultMap">
+        SELECT * FROM chat_conversations WHERE id = #{id}
+    </select>
+
+    <!-- Get conversations for a user -->
+    <select id="selectByUserId" resultMap="conversationResultMap">
+        SELECT * FROM chat_conversations
+        WHERE user_id = #{userId}
+        ORDER BY updated_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- Update title -->
+    <update id="updateTitle">
+        UPDATE chat_conversations
+        SET title = #{title}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Update timestamp -->
+    <update id="updateTimestamp" parameterType="java.lang.Long">
+        UPDATE chat_conversations
+        SET updated_at = UTC_TIMESTAMP()
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete by id -->
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM chat_conversations WHERE id = #{id}
+    </delete>
+
+    <!-- Delete by user id -->
+    <delete id="deleteByUserId" parameterType="java.lang.Long">
+        DELETE FROM chat_conversations WHERE user_id = #{userId}
+    </delete>
+
+    <!-- Check ownership -->
+    <select id="countByIdAndUserId" resultType="int">
+        SELECT COUNT(*) FROM chat_conversations
+        WHERE id = #{id} AND user_id = #{userId}
+    </select>
+
+</mapper>

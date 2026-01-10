@@ -140,11 +140,19 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - ADMIN_TOKEN_SECRET=${ADMIN_TOKEN_SECRET}
       - LOGGING_FILE_PATH=/app/logs
+      # APNs Push Notification
+      - APNS_ENABLED=${APNS_ENABLED:-false}
+      - APNS_PRODUCTION=${APNS_PRODUCTION:-false}
+      - APNS_KEY_ID=${APNS_KEY_ID}
+      - APNS_TEAM_ID=${APNS_TEAM_ID}
+      - APNS_KEY_PATH=${APNS_KEY_PATH:-/app/keys/AuthKey.p8}
+      - APNS_BUNDLE_ID=${APNS_BUNDLE_ID:-com.savevia.app}
     ports:
       - "8081:8081"
     volumes:
       - uploads-data:/app/uploads
       - ./logs:/app/logs
+      - ./keys:/app/keys:ro
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8081/actuator/health"]
       interval: 30s

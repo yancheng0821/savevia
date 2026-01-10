@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.UserInsightMapper">
+
+    <resultMap id="UserInsightResultMap" type="com.savevia.user.entity.UserInsight">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="insight_type" property="insightType"/>
+        <result column="insight_key" property="insightKey"/>
+        <result column="insight_value" property="insightValue"/>
+        <result column="confidence" property="confidence"/>
+        <result column="source" property="source"/>
+        <result column="expires_at" property="expiresAt"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.savevia.user.entity.UserInsight" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_insights (user_id, insight_type, insight_key, insight_value, confidence, source, expires_at)
+        VALUES (#{userId}, #{insightType}, #{insightKey}, #{insightValue}, #{confidence}, #{source}, #{expiresAt})
+    </insert>
+
+    <update id="update" parameterType="com.savevia.user.entity.UserInsight">
+        UPDATE user_insights
+        SET insight_type = #{insightType},
+            insight_key = #{insightKey},
+            insight_value = #{insightValue},
+            confidence = #{confidence},
+            source = #{source},
+            expires_at = #{expiresAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="UserInsightResultMap">
+        SELECT * FROM user_insights WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="UserInsightResultMap">
+        SELECT * FROM user_insights WHERE user_id = #{userId} ORDER BY updated_at DESC
+    </select>
+
+    <select id="findActiveByUserId" resultMap="UserInsightResultMap">
+        SELECT * FROM user_insights
+        WHERE user_id = #{userId}
+          AND (expires_at IS NULL OR expires_at > #{now})
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="findByUserIdAndType" resultMap="UserInsightResultMap">
+        SELECT * FROM user_insights
+        WHERE user_id = #{userId}
+          AND insight_type = #{insightType}
+        ORDER BY updated_at DESC
+    </select>
+
+    <insert id="upsertByKey">
+        INSERT INTO user_insights (user_id, insight_type, insight_key, insight_value, confidence, source, expires_at)
+        VALUES (#{userId}, #{insight.insightType}, #{insightKey}, #{insight.insightValue}, #{insight.confidence}, #{insight.source}, #{insight.expiresAt})
+        ON DUPLICATE KEY UPDATE
+            insight_type = #{insight.insightType},
+            insight_value = #{insight.insightValue},
+            confidence = #{insight.confidence},
+            source = #{insight.source},
+            expires_at = #{insight.expiresAt},
+            updated_at = NOW()
+    </insert>
+
+    <delete id="deleteExpired">
+        DELETE FROM user_insights WHERE expires_at IS NOT NULL AND expires_at &lt; #{now}
+    </delete>
+
+</mapper>

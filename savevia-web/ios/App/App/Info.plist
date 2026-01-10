@@ -4,6 +4,16 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>zh-Hans</string>
+		<string>zh-Hant</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>es</string>
+		<string>fr</string>
+	</array>
 	<key>CFBundleDisplayName</key>
         <string>SaveVia</string>
 	<key>CFBundleExecutable</key>
@@ -67,5 +77,9 @@
 	<string>SaveVia needs photo library access to select a profile photo.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>SaveVia needs permission to save photos to your library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SaveVia needs microphone access for voice input in chat.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>SaveVia uses speech recognition to convert your voice to text.</string>
 </dict>
 </plist>

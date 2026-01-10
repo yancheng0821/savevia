@@ -437,21 +437,11 @@ function HomePage() {
         marginBottom: '60px'
       }}>
         {/* Left - Text Content (order 1 on mobile) */}
-        <div className="sv-home-text">
-          {/* Savings Text */}
-          <div style={{
-            display: 'inline-block',
-            background: '#ecfdf5',
-            color: '#059669',
-            fontSize: '14px',
-            fontWeight: '600',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            marginBottom: '24px'
-          }}>
-            {t('home.savingsBadge')}
-          </div>
-
+        <div className="sv-home-text" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center'
+        }}>
           <h1 className="sv-home-title" style={{
             fontSize: '52px',
             fontWeight: '700',
@@ -564,12 +554,22 @@ function HomePage() {
         </div>
 
         {/* Right - Visual Cards Stack */}
-        <div className="sv-home-visual" style={{ position: 'relative', height: '400px', minHeight: '320px' }}>
+        <div className="sv-home-visual" style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {/* Cards Container */}
+          <div className="sv-cards-stack" style={{
+            position: 'relative',
+            width: '380px',
+            height: '320px'
+          }}>
           {/* Background Card */}
           <div className="sv-card-back" style={{
             position: 'absolute',
-            top: '40px',
-            right: '20px',
+            top: '0',
+            right: '0',
             width: '280px',
             height: '170px',
             background: 'linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%)',
@@ -580,8 +580,8 @@ function HomePage() {
           {/* Middle Card */}
           <div className="sv-card-mid" style={{
             position: 'absolute',
-            top: '80px',
-            right: '60px',
+            top: '40px',
+            right: '40px',
             width: '280px',
             height: '170px',
             background: 'linear-gradient(135deg, #fef3c7 0%, #fce7f3 100%)',
@@ -593,8 +593,8 @@ function HomePage() {
           {/* Front Card */}
           <div className="sv-card-front" style={{
             position: 'absolute',
-            top: '120px',
-            right: '100px',
+            top: '80px',
+            right: '80px',
             width: '280px',
             height: '170px',
             background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
@@ -637,57 +637,6 @@ function HomePage() {
               •••• •••• •••• 4242
             </div>
           </div>
-
-          {/* Floating Tagline - Top (positioned via CSS) */}
-          <div className="sv-tagline-top" style={{
-            background: 'white',
-            borderRadius: '6px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-          }}>
-            <div className="sv-tagline-label" style={{ fontSize: '12px', fontWeight: '500', color: '#9ca3af' }}>{t('home.tagline1')}</div>
-            <div className="sv-tagline-value" style={{ fontSize: '20px', fontWeight: '700', color: '#059669' }}>+$847</div>
-          </div>
-
-          {/* Floating Tagline - Bottom (positioned via CSS) */}
-          <div className="sv-tagline-bottom" style={{
-            background: 'white',
-            borderRadius: '6px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-          }}>
-            <span style={{ fontSize: '13px', fontWeight: '500', color: '#6b7280' }}>{t('home.tagline2')}</span>
-          </div>
-
-          {/* Mobile Taglines Row - shown only on mobile */}
-          <div className="sv-mobile-taglines" style={{
-            display: 'none',
-            position: 'absolute',
-            bottom: '0',
-            left: '0',
-            right: '0',
-            justifyContent: 'center',
-            gap: '12px',
-            padding: '0 10px'
-          }}>
-            <div style={{
-              background: 'white',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '10px', fontWeight: '500', color: '#9ca3af' }}>{t('home.tagline1')}</div>
-              <div style={{ fontSize: '16px', fontWeight: '700', color: '#059669' }}>+$847</div>
-            </div>
-            <div style={{
-              background: 'white',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-              display: 'flex',
-              alignItems: 'center'
-            }}>
-              <span style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280' }}>{t('home.tagline2')}</span>
-            </div>
           </div>
         </div>
 
@@ -750,7 +699,6 @@ function HomePage() {
                 </div>
               ))}
             </div>
-
           </>
         ) : (
           /* Prompt to login/select cards */
@@ -831,13 +779,19 @@ function HomePage() {
                 </div>
                 <div className="sv-quick-result-float-rate">
                   <span className="sv-quick-result-float-rate-value">
-                    {bestCard.card.rewardType === 'POINTS'
-                      ? `${(bestCard.card.pointValue && bestCard.card.pointValue > 0
-                          ? bestCard.rate / bestCard.card.pointValue
-                          : bestCard.rate * 100
-                        ).toFixed((bestCard.card.pointValue && bestCard.card.pointValue > 0 ? bestCard.rate / bestCard.card.pointValue : bestCard.rate * 100) % 1 === 0 ? 0 : 1)}X`
-                      : `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%`
-                    }
+                    {(() => {
+                      const pv = bestCard.card.pointValue
+                      const br = bestCard.card.baseRewardRate
+                      const ratio = (pv && br && br > 0) ? pv / br : 1
+                      const divisor = ratio > 5 ? br : (pv || br)
+                      const mult = bestCard.card.rewardType === 'POINTS' && divisor && divisor > 0
+                        ? Math.round((bestCard.rate / divisor) * 100) / 100
+                        : Math.round(bestCard.rate * 10000) / 100
+                      const isWhole = Math.abs(mult - Math.round(mult)) < 0.001
+                      return bestCard.card.rewardType === 'POINTS'
+                        ? `${isWhole ? Math.round(mult) : mult.toFixed(1)}X`
+                        : `${isWhole ? Math.round(mult) : mult.toFixed(1)}%`
+                    })()}
                   </span>
                   <span className="sv-quick-result-float-rate-label">
                     {bestCard.card.rewardType === 'POINTS' ? t('home.quickSelect.points') : t('home.quickSelect.cashback')}
@@ -919,13 +873,19 @@ function HomePage() {
               </div>
               <div className="sv-card-modal-rate-simple">
                 <span className="sv-card-modal-rate-value-simple">
-                  {bestCard.card.rewardType === 'POINTS'
-                    ? `${(bestCard.card.pointValue && bestCard.card.pointValue > 0
-                        ? bestCard.rate / bestCard.card.pointValue
-                        : bestCard.rate * 100
-                      ).toFixed((bestCard.card.pointValue && bestCard.card.pointValue > 0 ? bestCard.rate / bestCard.card.pointValue : bestCard.rate * 100) % 1 === 0 ? 0 : 1)}X`
-                    : `${(bestCard.rate * 100).toFixed(bestCard.rate * 100 % 1 === 0 ? 0 : 1)}%`
-                  }
+                  {(() => {
+                    const pv = bestCard.card.pointValue
+                    const br = bestCard.card.baseRewardRate
+                    const ratio = (pv && br && br > 0) ? pv / br : 1
+                    const divisor = ratio > 5 ? br : (pv || br)
+                    const mult = bestCard.card.rewardType === 'POINTS' && divisor && divisor > 0
+                      ? Math.round((bestCard.rate / divisor) * 100) / 100
+                      : Math.round(bestCard.rate * 10000) / 100
+                    const isWhole = Math.abs(mult - Math.round(mult)) < 0.001
+                    return bestCard.card.rewardType === 'POINTS'
+                      ? `${isWhole ? Math.round(mult) : mult.toFixed(1)}X`
+                      : `${isWhole ? Math.round(mult) : mult.toFixed(1)}%`
+                  })()}
                 </span>
                 <span className="sv-card-modal-rate-label-simple">
                   {bestCard.card.rewardType === 'POINTS' ? t('home.quickSelect.points') : t('home.quickSelect.cashback')}

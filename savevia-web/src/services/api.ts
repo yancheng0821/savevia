@@ -535,7 +535,15 @@ export const userApi = {
   },
 
   // 获取AI使用情况
-  getAiUsage: async (): Promise<ApiResponse<{ used: number; limit: number; remaining: number; isProUser: boolean }>> => {
+  getAiUsage: async (): Promise<ApiResponse<{
+    used: number
+    limit: number
+    remaining: number
+    chatUsed: number
+    chatLimit: number
+    chatRemaining: number
+    isProUser: boolean
+  }>> => {
     return createRequest('/api/v1/users/ai-usage', {
       method: 'GET',
     })
@@ -886,6 +894,7 @@ export interface AdminUserInfo {
   subscriptionProductId: string | null
   subscriptionExpiresAt: string | null
   active: boolean
+  lastActiveAt: string | null
 }
 
 export const adminApi = {
@@ -973,6 +982,221 @@ export const adminApi = {
   })(),
 }
 
+/**
+ * Chat API - AI Card Advisor
+ */
+export const chatApi = {
+  /**
+   * Stream chat message via SSE
+   * Returns a function to abort the stream
+   */
+  streamMessage: (
+    message: string,
+    conversationId: number | null,
+    locale: string,
+    callbacks: {
+      onConversationId?: (id: number) => void
+      onChunk?: (chunk: string) => void
+      onDone?: () => void
+      onError?: (error: string) => void
+    }
+  ): (() => void) => {
+    const token = tokenManager.getToken()
+    const controller = new AbortController()
+
+    const fetchStream = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/chat/stream`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({
+            message,
+            conversationId,
+            locale,
+          }),
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          callbacks.onError?.(errorData.message || `HTTP ${response.status}`)
+          return
+        }
+
+        const reader = response.body?.getReader()
+        if (!reader) {
+          callbacks.onError?.('No response body')
+          return
+        }
+
+        const decoder = new TextDecoder()
+        let buffer = ''
+        let currentEventType = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            // Skip empty lines
+            if (!line || line.trim() === '') continue
+
+            // Track event type (Spring sends "event:name" without space)
+            if (line.startsWith('event:')) {
+              currentEventType = line.startsWith('event: ') ? line.slice(7) : line.slice(6)
+              continue
+            }
+            // Handle data lines (Spring sends "data:content" without space)
+            if (line.startsWith('data:')) {
+              // Preserve spaces - data can be just a space character
+              const data = line.startsWith('data: ') ? line.slice(6) : line.slice(5)
+
+              // Handle based on event type
+              if (currentEventType === 'conversation' && /^\d+$/.test(data)) {
+                callbacks.onConversationId?.(parseInt(data, 10))
+              } else if (currentEventType === 'error') {
+                try {
+                  const parsed = JSON.parse(data)
+                  callbacks.onError?.(parsed.message || 'Unknown error')
+                } catch {
+                  callbacks.onError?.(data)
+                }
+              } else {
+                // Message content chunk - parse JSON wrapper to preserve spaces
+                try {
+                  const parsed = JSON.parse(data)
+                  if (parsed.t !== undefined) {
+                    // JSON wrapped message: {"t":"content"}
+                    callbacks.onChunk?.(parsed.t)
+                  } else if (parsed.code) {
+                    // Error response
+                    callbacks.onError?.(parsed.message || 'Unknown error')
+                  }
+                } catch {
+                  // Fallback: not JSON, use as-is
+                  if (data) {
+                    callbacks.onChunk?.(data)
+                  }
+                }
+              }
+              // Reset event type after processing data
+              currentEventType = ''
+            }
+          }
+        }
+
+        callbacks.onDone?.()
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          // User cancelled
+          return
+        }
+        callbacks.onError?.(error.message || 'Stream failed')
+      }
+    }
+
+    fetchStream()
+
+    // Return abort function
+    return () => controller.abort()
+  },
+
+  /**
+   * Get suggested questions
+   */
+  getSuggestions: async (locale: string): Promise<ApiResponse<string[]>> => {
+    return createRequest(`/api/v1/chat/suggestions?locale=${locale}`)
+  },
+
+  /**
+   * Get user's conversations
+   */
+  getConversations: async (limit = 20): Promise<ApiResponse<any[]>> => {
+    return createRequest(`/api/v1/chat/conversations?limit=${limit}`)
+  },
+
+  /**
+   * Get messages for a conversation
+   */
+  getMessages: async (conversationId: number): Promise<ApiResponse<any[]>> => {
+    return createRequest(`/api/v1/chat/conversations/${conversationId}/messages`)
+  },
+
+  /**
+   * Delete a conversation
+   */
+  deleteConversation: async (conversationId: number): Promise<ApiResponse<string>> => {
+    return createRequest(`/api/v1/chat/conversations/${conversationId}`, {
+      method: 'DELETE',
+    })
+  },
+}
+
+/**
+ * Push Notification API
+ */
+export const pushApi = {
+  /**
+   * Register device for push notifications
+   */
+  registerDevice: async (data: {
+    deviceToken: string
+    platform: 'ios' | 'android' | 'web'
+    deviceName?: string
+    appVersion?: string
+    osVersion?: string
+    locale?: string
+  }): Promise<ApiResponse<void>> => {
+    return createRequest('/api/v1/users/push/device/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Unregister device
+   */
+  unregisterDevice: async (deviceToken: string): Promise<ApiResponse<void>> => {
+    return createRequest('/api/v1/users/push/device/unregister', {
+      method: 'POST',
+      body: JSON.stringify({ deviceToken }),
+    })
+  },
+
+  /**
+   * Get notification history
+   */
+  getHistory: async (limit = 20): Promise<ApiResponse<Array<{
+    id: number
+    notificationType: string
+    title: string
+    body: string
+    status: string
+    createdAt: string
+    sentAt: string | null
+    readAt: string | null
+  }>>> => {
+    return createRequest(`/api/v1/users/push/history?limit=${limit}`)
+  },
+
+  /**
+   * Mark notification as read
+   */
+  markAsRead: async (notificationId: number): Promise<ApiResponse<void>> => {
+    return createRequest(`/api/v1/users/push/${notificationId}/read`, {
+      method: 'POST',
+    })
+  },
+}
+
 export default {
   auth: authApi,
   card: cardApi,
@@ -984,4 +1208,6 @@ export default {
   affiliate: affiliateApi,
   app: appApi,
   admin: adminApi,
+  chat: chatApi,
+  push: pushApi,
 }

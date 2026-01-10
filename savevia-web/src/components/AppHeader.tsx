@@ -133,11 +133,27 @@ function AppHeader() {
   const [name, setName] = useState('')
   const [avatarError, setAvatarError] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
 
   // Reset avatar error when user changes
   useEffect(() => {
     setAvatarError(false)
   }, [user?.avatarUrl])
+
+  // Detect keyboard visibility on mobile (using visualViewport API)
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return
+
+    const handleResize = () => {
+      // If visual viewport height is significantly less than window height, keyboard is likely open
+      const heightDiff = window.innerHeight - viewport.height
+      setIsKeyboardVisible(heightDiff > 150)
+    }
+
+    viewport.addEventListener('resize', handleResize)
+    return () => viewport.removeEventListener('resize', handleResize)
+  }, [])
 
   const navItems = [
     { path: '/', label: t('nav.home') },
@@ -261,8 +277,9 @@ function AppHeader() {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation - hide on share page and static pages (privacy/support/terms) in mobile browser */}
-      {!location.pathname.startsWith('/share') &&
+      {/* Mobile Bottom Navigation - hide on share page, static pages, and when keyboard is open */}
+      {!isKeyboardVisible &&
+       !location.pathname.startsWith('/share') &&
        !((!isNativeApp) && ['/privacy', '/support', '/terms'].includes(location.pathname)) && (
       <nav className="sv-mobile-nav">
         {navItems.map((item) => {

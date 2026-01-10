@@ -6,23 +6,26 @@ import { optimizerApi } from '../services/api'
 import type { OptimizationResult, SpendingCategory } from '../types'
 
 // Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
-function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number): string {
+// For POINTS cards, calculate multiplier intelligently:
+// - If pointValue/baseRewardRate > 5 (e.g., AIR MILES), use baseRewardRate
+// - Otherwise, use pointValue (standard cards like Aeroplan, Amex, Cobalt)
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number, baseRewardRate?: number): string {
   let value: number
 
   if (rewardType === 'POINTS' && pointValue && pointValue > 0) {
-    // For POINTS cards: calculate multiplier = rate / pointValue
-    // e.g., 0.09 (9% cashback) / 0.018 (1.8¢/point) = 5x
-    value = rate / pointValue
+    const ratio = baseRewardRate && baseRewardRate > 0 ? pointValue / baseRewardRate : 1
+    const divisor = ratio > 5 ? baseRewardRate! : pointValue
+    value = Math.round((rate / divisor) * 100) / 100
   } else {
     // For CASHBACK cards or fallback: show percentage
-    value = rate * 100
+    value = Math.round(rate * 10000) / 100
   }
 
   // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
   let formatted: string
-  if (value % 1 === 0) {
-    formatted = value.toFixed(0)  // e.g., 1, 2, 3
-  } else if ((value * 10) % 1 === 0) {
+  if (Math.abs(value - Math.round(value)) < 0.001) {
+    formatted = Math.round(value).toString()  // e.g., 1, 2, 3
+  } else if (Math.abs(value * 10 - Math.round(value * 10)) < 0.001) {
     formatted = value.toFixed(1)  // e.g., 1.5, 2.5
   } else {
     formatted = value.toFixed(2)  // e.g., 1.25, 1.75
@@ -303,14 +306,30 @@ function SharedResultPage() {
         <div style={{ fontSize: '14px', color: '#059669', fontWeight: '500', marginBottom: '8px' }}>
           {t('result.netSavings')}
         </div>
-        <div className="sv-result-amount" style={{
-          fontWeight: '800',
-          color: '#111827',
-          letterSpacing: '-3px',
-          lineHeight: 1
-        }}>
-          ${toNumber(result.netAnnualSavings).toFixed(0)}
-          <span className="sv-result-unit" style={{ fontWeight: '500', color: '#6b7280', letterSpacing: '0' }}>{t('common.perYear')}</span>
+        <div className="sv-result-amount-row">
+          <div className="sv-result-amount" style={{
+            fontWeight: '800',
+            color: '#111827',
+            letterSpacing: '-3px',
+            lineHeight: 1
+          }}>
+            ${toNumber(result.netAnnualSavings).toFixed(0)}
+            <span className="sv-result-unit" style={{ fontWeight: '500', color: '#6b7280', letterSpacing: '0' }}>{t('common.perYear')}</span>
+          </div>
+          {(() => {
+            // Calculate savings vs 1% baseline card
+            const totalMonthlySpending = result.recommendations.reduce((sum, rec) => sum + toNumber(rec.monthlySpend), 0)
+            const baselineAnnualReward = totalMonthlySpending * 12 * 0.01 // 1% cashback, no annual fee
+            const extraSavings = toNumber(result.netAnnualSavings) - baselineAnnualReward
+            if (extraSavings > 0) {
+              return (
+                <span className="sv-result-vs-baseline">
+                  {t('result.vsBaseline')} <span className="sv-result-vs-baseline-amount">${extraSavings.toFixed(0)}</span>
+                </span>
+              )
+            }
+            return null
+          })()}
         </div>
       </div>
 
@@ -392,7 +411,7 @@ function SharedResultPage() {
                       {cardName}
                     </span>
                     <span className="sv-result-rate">
-                      {formatRewardRate(rewardRate, rec.recommendedCard?.rewardType, rec.recommendedCard?.pointValue)}
+                      {formatRewardRate(rewardRate, rec.recommendedCard?.rewardType, rec.recommendedCard?.pointValue, rec.recommendedCard?.baseRewardRate)}
                     </span>
                     <span className="sv-result-reward">
                       ${monthlyReward.toFixed(2)}/mo

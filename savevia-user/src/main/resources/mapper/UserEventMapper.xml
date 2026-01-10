@@ -76,4 +76,30 @@
         ORDER BY eventDate ASC
     </select>
 
+    <select id="getLastActiveTimeByUserIds" resultType="java.util.Map">
+        SELECT user_id as userId, MAX(created_at) as lastActiveAt
+        FROM user_events
+        WHERE user_id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+        GROUP BY user_id
+    </select>
+
+    <!-- Get inactive user IDs (users whose last activity is before the given time) -->
+    <select id="getInactiveUserIds" resultType="java.lang.Long">
+        SELECT user_id
+        FROM user_events
+        WHERE user_id IS NOT NULL
+        GROUP BY user_id
+        HAVING MAX(created_at) &lt; #{since}
+    </select>
+
+    <!-- Get all user IDs who have ever had events -->
+    <select id="getAllUserIdsWithEvents" resultType="java.lang.Long">
+        SELECT DISTINCT user_id
+        FROM user_events
+        WHERE user_id IS NOT NULL
+    </select>
+
 </mapper>

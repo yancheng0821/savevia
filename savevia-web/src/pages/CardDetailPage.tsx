@@ -157,24 +157,30 @@ const CATEGORY_ICONS: Record<SpendingCategory, string> = {
 }
 
 // Format reward rate based on card type (POINTS shows "Xx", CASHBACK shows "X%")
-// For POINTS cards, calculate multiplier from rate / pointValue
-function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number): string {
+// For POINTS cards, calculate multiplier intelligently:
+// - If pointValue/baseRewardRate > 5 (e.g., AIR MILES 0.105/0.0088=12), use baseRewardRate
+// - Otherwise, use pointValue (standard cards like Aeroplan, Amex, Cobalt)
+function formatRewardRate(rate: number, rewardType?: 'CASHBACK' | 'POINTS', pointValue?: number, baseRewardRate?: number): string {
   let value: number
 
   if (rewardType === 'POINTS' && pointValue && pointValue > 0) {
-    // For POINTS cards: calculate multiplier = rate / pointValue
-    // e.g., 0.09 (9% cashback) / 0.018 (1.8¢/point) = 5x
-    value = rate / pointValue
+    // Smart divisor selection:
+    // - AIR MILES: ratio = 0.105/0.0088 = 12 (>5), use baseRewardRate → 2x
+    // - Aeroplan Visa Card: ratio = 0.012/0.006 = 2 (<5), use pointValue → 1x
+    // - Aeroplan Reserve: ratio = 0.012/0.015 = 0.8 (<5), use pointValue → 3x
+    const ratio = baseRewardRate && baseRewardRate > 0 ? pointValue / baseRewardRate : 1
+    const divisor = ratio > 5 ? baseRewardRate! : pointValue
+    value = Math.round((rate / divisor) * 100) / 100
   } else {
     // For CASHBACK cards or fallback: show percentage
-    value = rate * 100
+    value = Math.round(rate * 10000) / 100
   }
 
   // Smart formatting: show minimum necessary decimal places (0, 1, or 2)
   let formatted: string
-  if (value % 1 === 0) {
-    formatted = value.toFixed(0)  // e.g., 1, 2, 3
-  } else if ((value * 10) % 1 === 0) {
+  if (Math.abs(value - Math.round(value)) < 0.001) {
+    formatted = Math.round(value).toString()  // e.g., 1, 2, 3
+  } else if (Math.abs(value * 10 - Math.round(value * 10)) < 0.001) {
     formatted = value.toFixed(1)  // e.g., 1.5, 2.5
   } else {
     formatted = value.toFixed(2)  // e.g., 1.25, 1.75
@@ -808,7 +814,7 @@ function CardDetailPage() {
               </div>
               <div className="sv-card-detail-rule-right">
                 <div className="sv-card-detail-rule-rate">
-                  {formatRewardRate(rule.rewardRate, card.rewardType, card.pointValue)}
+                  {formatRewardRate(rule.rewardRate, card.rewardType, card.pointValue, card.baseRewardRate)}
                 </div>
                 {rule.monthlyCapAmount && (
                   <div className="sv-card-detail-rule-cap">
@@ -834,7 +840,7 @@ function CardDetailPage() {
               </div>
               <div className="sv-card-detail-rule-right">
                 <div className="sv-card-detail-rule-rate">
-                  +{formatRewardRate(card.amexTravelBonusRate, card.rewardType, card.pointValue)}
+                  +{formatRewardRate(card.amexTravelBonusRate, card.rewardType, card.pointValue, card.baseRewardRate)}
                 </div>
               </div>
             </div>
@@ -851,7 +857,7 @@ function CardDetailPage() {
             </div>
             <div className="sv-card-detail-rule-right">
               <div className="sv-card-detail-rule-rate">
-                {formatRewardRate(card.baseRewardRate, card.rewardType, card.pointValue)}
+                {formatRewardRate(card.baseRewardRate, card.rewardType, card.pointValue, card.baseRewardRate)}
               </div>
             </div>
           </div>

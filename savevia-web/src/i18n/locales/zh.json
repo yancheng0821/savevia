@@ -5,6 +5,7 @@
     "loading": "加载中...",
     "save": "保存",
     "cancel": "取消",
+    "done": "完成",
     "confirm": "确认",
     "delete": "删除",
     "edit": "编辑",
@@ -17,7 +18,11 @@
     "error": "错误",
     "warning": "警告",
     "perMonth": "/月",
-    "perYear": "/年"
+    "perYear": "/年",
+    "yes": "是",
+    "no": "否",
+    "close": "关闭",
+    "selectAll": "全选"
   },
   "nav": {
     "home": "首页",
@@ -31,7 +36,7 @@
   },
   "home": {
     "title": "欢迎使用 SaveVia",
-    "subtitle": "加拿大领先的AI信用卡返现优化助手",
+    "subtitle": "帮你记住每张卡，用对就好",
     "step1Title": "选择您的卡片",
     "step1Desc": "选择您目前持有的信用卡",
     "step2Title": "输入消费",
@@ -49,7 +54,7 @@
     "cashbackLabel": "返现",
     "quickSelect": {
       "title": "快速选卡",
-      "description": "选择消费场景，找到最佳返现卡",
+      "description": "点击消费场景，告诉你该用哪张卡",
       "bestCard": "推荐使用",
       "cashback": "返现",
       "points": "积分",
@@ -102,7 +107,14 @@
       "other": "其他银行"
     },
     "dragToReorder": "长按拖拽调整顺序，常用银行放前面",
-    "toggleCardStyle": "切换卡面"
+    "toggleCardStyle": "切换卡面",
+    "searchPlaceholder": "搜索卡片...",
+    "resultsFound": "条结果",
+    "baseReward": "基础",
+    "gridView": "卡片视图",
+    "listView": "列表视图",
+    "points": "积分",
+    "cashback": "返现"
   },
   "optimizer": {
     "title": "输入您的月度消费",
@@ -112,7 +124,7 @@
     "calculateSavings": "计算我的节省",
     "total": "合计",
     "perMonth": "/月",
-    "calculate": "AI 智能优化",
+    "calculate": "智能优化",
     "calculateBasic": "智能优化",
     "calculating": "AI 分析中",
     "calculatingBasic": "分析中...",
@@ -126,6 +138,7 @@
     "annualReward": "年度返现",
     "annualFees": "年费总计",
     "netSavings": "净年度节省",
+    "vsBaseline": "比不优化多省 ",
     "recommendations": "各类别推荐",
     "quickReference": "快速参考",
     "whichCardToUse": "该用哪张卡：",
@@ -278,7 +291,7 @@
     "reportBugDesc": "在 GitHub 上报告问题",
     "rateUs": "给我们评分",
     "shareApp": "分享给朋友",
-    "shareText": "试试 SaveVia - 最大化您的信用卡返现！",
+    "shareText": "试试 SaveVia - 帮你记住每张卡该怎么用！",
     "linkCopied": "链接已复制！",
     "legal": "法律条款",
     "privacyPolicy": "隐私政策",
@@ -299,7 +312,22 @@
     "bankTransactions": "银行交易记录",
     "missedCashback": "错过返现",
     "restartOnboarding": "个性化设置",
-    "onboardingReset": "已重置个性化设置，请刷新页面"
+    "onboardingReset": "已重置个性化设置，请刷新页面",
+    "optimizations": "次优化",
+    "daysUsing": "天使用",
+    "superSaver": "省钱达人",
+    "savedOver500": "年省$500+"
+  },
+  "myCards": {
+    "title": "我的卡片",
+    "cards": "张卡",
+    "emptyTitle": "还没有选择卡片",
+    "emptyDesc": "添加您的信用卡以获取个性化推荐",
+    "addCards": "添加卡片",
+    "addMore": "添加更多卡片",
+    "remove": "移除",
+    "noFee": "免年费",
+    "upTo": "最高"
   },
   "errors": {
     "serviceUnavailable": "服务暂不可用，请稍后重试",
@@ -418,7 +446,7 @@
     "continue": "继续",
     "step1": {
       "title": "您有多少张信用卡？",
-      "description": "我们会帮您最大化所有卡片的返现收益。"
+      "description": "我们会帮你记住每次消费该用哪张卡。"
     },
     "step2": {
       "title": "您每年的刷卡消费大约多少？",
@@ -452,7 +480,7 @@
     "loginRequired": "登录查看交易记录",
     "loginDesc": "连接银行账户，查看交易记录并获取信用卡推荐。",
     "connectBank": "发现您的隐藏返现",
-    "connectBankDesc": "我们会分析您的消费，计算因未使用最优卡而错失的返现。加拿大人平均每年因此损失 $300-$1,000 — 让我们帮您省回来！",
+    "connectBankDesc": "我们会分析您的消费记录，告诉您每笔交易本该用哪张卡。不用再猜，每次都用对。",
     "connectBankBtn": "安全连接银行",
     "connectingBank": "正在连接银行服务...",
     "selectBank": "选择您的银行",
@@ -472,7 +500,7 @@
     "totalSpent": "总消费",
     "missedCashback": "错失返现",
     "earnedCashback": "已获返现",
-    "opportunityText": "使用最优信用卡，您本可多赚 ${{amount}}（占总额 {{percentage}}%）。",
+    "opportunityText": "如果每次都用对卡，您本可多赚 ${{amount}}（{{percentage}}%）。",
     "tabSummary": "摘要",
     "tabTransactions": "交易",
     "categoryBreakdown": "分类明细",
@@ -512,5 +540,27 @@
     "message": "SaveVia 有新版本可用，请更新后继续使用。",
     "newVersion": "最新版本",
     "updateNow": "立即更新"
+  },
+  "chat": {
+    "title": "选卡顾问",
+    "ask": "问",
+    "askSaveVia": "问 SaveVia",
+    "askSaveViaDesc": "有关信用卡的任何问题",
+    "loginRequired": "请登录后使用选卡顾问",
+    "cardsSelected": "已选 {{count}} 张卡",
+    "noCards": "尚未选择卡片",
+    "chatRemaining": "剩余对话 {{count}} 次",
+    "emptyTitle": "有什么可以帮您？",
+    "emptySubtitle": "试试：\"买菜用哪张卡？\" 在下方输入并按回车发送",
+    "inputPlaceholder": "输入您的问题...",
+    "newChat": "新对话",
+    "newChatConfirm": "开始新对话？",
+    "voiceStart": "开始语音输入",
+    "voiceStop": "停止录音",
+    "voiceListening": "正在聆听...",
+    "voiceError": "语音识别失败",
+    "voiceNotSupported": "不支持语音输入",
+    "voicePermissionDenied": "麦克风权限被拒绝",
+    "voiceTimeout": "录音已停止（最长30秒）"
   }
 }

@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { useTranslation } from 'react-i18next'
-import { CheckOutlined, ArrowRightOutlined, DownOutlined, RightOutlined, VerticalAlignTopOutlined, VerticalAlignBottomOutlined, BarsOutlined } from '@ant-design/icons'
+import { CheckOutlined, ArrowRightOutlined, DownOutlined, RightOutlined, VerticalAlignTopOutlined, VerticalAlignBottomOutlined, BarsOutlined, SearchOutlined, CloseCircleFilled, AppstoreOutlined, PicLeftOutlined } from '@ant-design/icons'
 import { cardApi, userApi } from '../services/api'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
 import { useAuthStore } from '../stores/useAuthStore'
@@ -139,6 +139,15 @@ function CardsPage() {
   const { isAuthenticated } = useAuthStore()
   const { activeBank, setActiveBank, scrollPosition, setScrollPosition } = useCardsPageStore()
   const [collapsedBanks, setCollapsedBanks] = useState<Record<string, boolean>>({})
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('')
+  // View mode: 'grid' (small cards) or 'list' (large cards, one per row)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    const saved = localStorage.getItem('sv_cardViewMode')
+    return (saved === 'list' || saved === 'grid') ? saved : 'grid'
+  })
+  // Keyboard visibility detection for mobile
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
   // Real card images setting
   const [realCardImages, setRealCardImages] = useState(() => {
     const saved = localStorage.getItem('sv_realCardImages')
@@ -297,6 +306,21 @@ function CardsPage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [setScrollPosition])
 
+  // Detect keyboard visibility on mobile (using visualViewport API)
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return
+
+    const handleResize = () => {
+      // If visual viewport height is significantly less than window height, keyboard is likely open
+      const heightDiff = window.innerHeight - viewport.height
+      setIsKeyboardVisible(heightDiff > 150)
+    }
+
+    viewport.addEventListener('resize', handleResize)
+    return () => viewport.removeEventListener('resize', handleResize)
+  }, [])
+
   // Scroll to top
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -338,6 +362,29 @@ function CardsPage() {
     }
     return allBanks
   }, [groupedCards, customBankOrder])
+
+  // Filter cards based on search query
+  const filteredGroupedCards = useMemo(() => {
+    if (!groupedCards || !searchQuery.trim()) return groupedCards
+    const query = searchQuery.toLowerCase().trim()
+    const result: Record<string, CreditCard[]> = {}
+    for (const bank of Object.keys(groupedCards)) {
+      const filtered = groupedCards[bank].filter(card =>
+        card.name.toLowerCase().includes(query) ||
+        card.bank.toLowerCase().includes(query)
+      )
+      if (filtered.length > 0) {
+        result[bank] = filtered
+      }
+    }
+    return result
+  }, [groupedCards, searchQuery])
+
+  // Get filtered banks (only banks that have matching cards)
+  const filteredBanks = useMemo(() => {
+    if (!searchQuery.trim()) return banks
+    return banks.filter(bank => (filteredGroupedCards?.[bank]?.length ?? 0) > 0)
+  }, [banks, filteredGroupedCards, searchQuery])
 
   // Save custom order to localStorage
   const saveBankOrder = useCallback((newOrder: string[]) => {
@@ -538,6 +585,61 @@ function CardsPage() {
         </button>
       </div>
 
+      {/* Search Box */}
+      <div className="sv-cards-search-wrapper">
+        <div className="sv-cards-search-row">
+          <div className="sv-cards-search-box">
+            <SearchOutlined className="sv-cards-search-icon" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                if (e.target.value.trim()) {
+                  setActiveBank(null)
+                }
+              }}
+              placeholder={t('cards.searchPlaceholder') || 'Search cards...'}
+              className="sv-cards-search-input"
+            />
+            {searchQuery && (
+              <CloseCircleFilled
+                className="sv-cards-search-clear"
+                onClick={() => setSearchQuery('')}
+              />
+            )}
+          </div>
+          {/* View mode toggle */}
+          <div className="sv-view-toggle">
+            <button
+              className={`sv-view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              onClick={() => {
+                setViewMode('grid')
+                localStorage.setItem('sv_cardViewMode', 'grid')
+              }}
+              title={t('cards.gridView') || 'Grid view'}
+            >
+              <AppstoreOutlined />
+            </button>
+            <button
+              className={`sv-view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+              onClick={() => {
+                setViewMode('list')
+                localStorage.setItem('sv_cardViewMode', 'list')
+              }}
+              title={t('cards.listView') || 'List view'}
+            >
+              <PicLeftOutlined />
+            </button>
+          </div>
+        </div>
+        {searchQuery && filteredGroupedCards && (
+          <div className="sv-cards-search-result">
+            {Object.values(filteredGroupedCards).reduce((acc, cards) => acc + cards.length, 0)} {t('cards.resultsFound') || 'results found'}
+          </div>
+        )}
+      </div>
+
       {/* Mobile Bank Tabs */}
       <div className="sv-bank-tabs-wrapper">
         <div className="sv-bank-tabs" ref={tabsRef}>
@@ -619,9 +721,9 @@ function CardsPage() {
       )}
 
       {/* Cards Grid */}
-      {groupedCards &&
-        (activeBank ? [activeBank] : banks).map((bank) => {
-          const bankCards = groupedCards[bank]
+      {filteredGroupedCards &&
+        (activeBank ? [activeBank] : filteredBanks).map((bank) => {
+          const bankCards = filteredGroupedCards[bank]
           if (!bankCards) return null
           const isCollapsed = collapsedBanks[bank]
           const selectedCount = bankCards.filter(c => isSelected(c.id)).length
@@ -672,18 +774,95 @@ function CardsPage() {
               )}
             </div>
             {!isCollapsed && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-              gap: '16px'
-            }}>
+            <div className={`sv-cards-grid ${viewMode === 'list' ? 'sv-cards-list' : ''}`}>
               {bankCards.map((card) => {
                 const style = getCardStyle(card)
                 const selected = isSelected(card.id)
                 const imageKey = `${card.bank}|${card.name}`
                 const cardImageUrl = realCardImages && !failedImages.has(imageKey) ? getCardImageUrl(card.bank, card.name) : null
 
-                // Real card image version
+                // List view - horizontal layout with thumbnail and info
+                if (viewMode === 'list') {
+                  return (
+                    <div
+                      key={card.id}
+                      className={`sv-card-list-item ${selected ? 'selected' : ''}`}
+                    >
+                      {/* Card thumbnail - click to toggle selection */}
+                      <div
+                        className="sv-card-list-thumbnail"
+                        style={{ background: style.gradient }}
+                        onClick={() => handleCardToggle(card)}
+                      >
+                        {cardImageUrl && (
+                          <img
+                            src={cardImageUrl}
+                            alt={card.name}
+                            loading="lazy"
+                            onLoad={(e) => {
+                              loadedImages.add(imageKey)
+                              ;(e.target as HTMLImageElement).style.opacity = '1'
+                            }}
+                            onError={(e) => {
+                              failedImages.add(imageKey)
+                              ;(e.target as HTMLImageElement).style.display = 'none'
+                            }}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              opacity: loadedImages.has(imageKey) ? 1 : 0,
+                              transition: 'opacity 0.2s ease'
+                            }}
+                          />
+                        )}
+                        {selected && (
+                          <div className="sv-card-list-check">
+                            <CheckOutlined style={{ color: '#059669', fontSize: '10px' }} />
+                          </div>
+                        )}
+                      </div>
+                      {/* Card info + arrow - click to go to detail */}
+                      <Link
+                        to={`/cards/${card.id}`}
+                        state={{ card }}
+                        className="sv-card-list-link"
+                      >
+                        <div className="sv-card-list-info">
+                          <div className="sv-card-list-name">{card.name}</div>
+                          <div className="sv-card-list-meta">
+                            <span className="sv-card-list-fee">
+                              {card.annualFee === 0 ? t('cardDetail.noFee') : `$${card.annualFee}${t('common.perYear')}`}
+                            </span>
+                            <span className="sv-card-list-type">
+                              {card.rewardType === 'POINTS' ? t('cards.points') : t('cards.cashback')}
+                            </span>
+                            {(() => {
+                              const bestRule = card.rewardRules?.reduce((best, rule) =>
+                                rule.rewardRate > (best?.rewardRate || 0) ? rule : best,
+                                null as typeof card.rewardRules[0] | null
+                              )
+                              if (bestRule && bestRule.rewardRate > card.baseRewardRate) {
+                                const rateDisplay = card.rewardType === 'POINTS'
+                                  ? `${Math.round(bestRule.rewardRate / (card.pointValue || 0.01))}x`
+                                  : `${(bestRule.rewardRate * 100).toFixed(0)}%`
+                                return (
+                                  <span className="sv-card-list-best">
+                                    {t(`categories.${bestRule.category}`)} {rateDisplay}
+                                  </span>
+                                )
+                              }
+                              return null
+                            })()}
+                          </div>
+                        </div>
+                        <RightOutlined className="sv-card-list-arrow" />
+                      </Link>
+                    </div>
+                  )
+                }
+
+                // Grid view - Real card image version
                 if (cardImageUrl) {
                   return (
                     <div
@@ -802,7 +981,7 @@ function CardsPage() {
                   )
                 }
 
-                // Fallback: gradient card style (no image URL or image failed to load)
+                // Grid view - Fallback: gradient card style (no image URL or image failed to load)
                 return (
                   <div
                     key={card.id}
@@ -848,14 +1027,17 @@ function CardsPage() {
                       justifyContent: 'space-between',
                       alignItems: 'flex-start'
                     }}>
-                      <div style={{
-                        fontSize: '16px',
-                        fontWeight: '800',
-                        color: style.textColor,
-                        letterSpacing: '0.5px',
-                        marginLeft: selected ? '32px' : '0',
-                        transition: 'margin-left 0.2s ease'
-                      }}>
+                      <div
+                        className="sv-card-bank-abbr"
+                        style={{
+                          fontSize: '16px',
+                          fontWeight: '800',
+                          color: style.textColor,
+                          letterSpacing: '0.5px',
+                          marginLeft: selected ? '32px' : '0',
+                          transition: 'margin-left 0.2s ease'
+                        }}
+                      >
                         {BANK_ABBR[bank] || bank.substring(0, 4).toUpperCase()}
                       </div>
                       <span style={{
@@ -869,37 +1051,46 @@ function CardsPage() {
                     </div>
 
                     {/* Card name - middle */}
-                    <div style={{
-                      position: 'absolute',
-                      top: '45%',
-                      left: '16px',
-                      right: '16px',
-                      transform: 'translateY(-50%)',
-                      fontSize: '13px',
-                      fontWeight: '600',
-                      color: style.textColor,
-                      lineHeight: '1.3'
-                    }}>
+                    <div
+                      className="sv-card-name"
+                      style={{
+                        position: 'absolute',
+                        top: '45%',
+                        left: '16px',
+                        right: '16px',
+                        transform: 'translateY(-50%)',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        color: style.textColor,
+                        lineHeight: '1.3'
+                      }}
+                    >
                       {card.name}
                     </div>
 
                     {/* Bottom row: card number + details link */}
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '14px',
-                      left: '16px',
-                      right: '16px',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}>
-                      <span style={{
-                        fontSize: '10px',
-                        fontWeight: '500',
-                        color: style.textColor,
-                        opacity: 0.5,
-                        letterSpacing: '1.5px'
-                      }}>
+                    <div
+                      className="sv-card-bottom-row"
+                      style={{
+                        position: 'absolute',
+                        bottom: '14px',
+                        left: '16px',
+                        right: '16px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <span
+                        className="sv-card-number-placeholder"
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: '500',
+                          color: style.textColor,
+                          opacity: 0.5,
+                          letterSpacing: '1.5px'
+                        }}
+                      >
                         {getCardNumberPrefix(card.name)} •••• •••• ••••
                       </span>
                       <Link
@@ -935,50 +1126,20 @@ function CardsPage() {
           );
         })}
 
-      {/* Fixed Bottom - Continue button */}
-      {selectedCards.length > 0 && (
-        <div className="sv-cards-bottom-btn" style={{
-          position: 'fixed',
-          bottom: '32px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 20
-        }}>
-          <button
-            onClick={handleContinue}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              background: '#111827',
-              color: 'white',
-              padding: '16px 32px',
-              borderRadius: '50px',
-              fontSize: '15px',
-              fontWeight: '600',
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.15)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#1f2937'
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.2)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#111827'
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.15)'
-            }}
-          >
-            {t('cards.continueWith', { count: selectedCards.length })} <ArrowRightOutlined />
+      {/* Fixed Bottom - Continue button (hidden when keyboard is open) */}
+      {selectedCards.length > 0 && !isKeyboardVisible && (
+        <div className="sv-cards-continue-wrapper">
+          <button onClick={handleContinue} className="sv-cards-continue-btn">
+            <span className="sv-cards-continue-text">
+              {t('cards.continueWith', { count: selectedCards.length })}
+            </span>
+            <ArrowRightOutlined className="sv-cards-continue-arrow" />
           </button>
         </div>
       )}
 
-      {/* Scroll to Top/Bottom Buttons - Use sync-read value before hydration, store value after */}
-      {(scrollPosition > 300 || (scrollPosition === 0 && initialScrollPosition.current > 300)) && (
+      {/* Scroll to Top/Bottom Buttons - Use sync-read value before hydration, store value after (hidden when keyboard is open) */}
+      {!isKeyboardVisible && (scrollPosition > 300 || (scrollPosition === 0 && initialScrollPosition.current > 300)) && (
         <div
           className="sv-scroll-buttons"
           style={{

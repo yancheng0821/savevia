@@ -24,6 +24,7 @@ import {
   BankOutlined,
 } from '@ant-design/icons'
 import { Capacitor } from '@capacitor/core'
+import { Keyboard } from '@capacitor/keyboard'
 import { GoogleAuth } from '@southdevs/capacitor-google-auth'
 import { Share } from '@capacitor/share'
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
@@ -91,11 +92,7 @@ function MePage() {
   const [versionClickCount, setVersionClickCount] = useState(0)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('sv_notifications')
-    return saved !== null ? saved === 'true' : true
-  })
-  const [darkMode, setDarkMode] = useState(() => {
+    const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('sv_darkMode')
     return saved === 'true'
   })
@@ -118,6 +115,9 @@ function MePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [showDeletePassword, setShowDeletePassword] = useState(false)
 
+  // Keyboard height for mobile
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+
   // Missed cashback summary state - initialize from cache
   const [missedCashbackSummary, setMissedCashbackSummary] = useState<MissedCashbackSummary | null>(() => {
     const cached = localStorage.getItem('sv_missedCashbackSummary')
@@ -134,12 +134,32 @@ function MePage() {
     return localStorage.getItem('sv_hasBankConnection') === 'true'
   })
 
+
   // Load missed cashback summary on mount
   useEffect(() => {
     if (isAuthenticated) {
       loadMissedCashbackSummary()
     }
   }, [isAuthenticated])
+
+
+  // Listen for keyboard events on native platforms
+  useEffect(() => {
+    if (!isNativeApp) return
+
+    const showListener = Keyboard.addListener('keyboardWillShow', (info) => {
+      setKeyboardHeight(info.keyboardHeight)
+    })
+
+    const hideListener = Keyboard.addListener('keyboardWillHide', () => {
+      setKeyboardHeight(0)
+    })
+
+    return () => {
+      showListener.then(l => l.remove())
+      hideListener.then(l => l.remove())
+    }
+  }, [])
 
   const loadMissedCashbackSummary = async () => {
     try {
@@ -180,15 +200,12 @@ function MePage() {
     ? (result.netAnnualSavings ?? (result.annualReward - result.totalAnnualFees))
     : 0
 
-  // Handle notifications toggle
-  const handleNotificationsChange = (checked: boolean) => {
-    setNotifications(checked)
-    localStorage.setItem('sv_notifications', String(checked))
-    if (checked) {
-      // Request notification permission
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission()
-      }
+  // Open system app settings (includes notification settings)
+  const openNotificationSettings = () => {
+    if (isIOS) {
+      window.location.href = 'app-settings:'
+    } else if (isAndroid) {
+      window.location.href = 'intent:#Intent;action=android.settings.APP_NOTIFICATION_SETTINGS;end'
     }
   }
 
@@ -436,6 +453,15 @@ function MePage() {
     setConfirmNewPassword('')
   }
 
+  // Handle input focus to scroll into view when keyboard opens
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (isNativeApp) {
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    }
+  }
+
   const handlePasswordSubmit = async () => {
     // Validate new password
     const pwdError = validatePassword(newPassword)
@@ -522,7 +548,7 @@ function MePage() {
       {/* Quick Stats - Only for logged in users with data */}
       {isAuthenticated && (selectedCards.length > 0 || result || hasBankConnection) && (
         <div className="sv-me-stats">
-          <Link to="/cards" className="sv-me-stat-card">
+          <Link to="/my-cards" className="sv-me-stat-card">
             <CreditCardOutlined />
             <div className="sv-me-stat-value">{selectedCards.length}</div>
             <div className="sv-me-stat-label">{t('me.myCards')}</div>
@@ -544,7 +570,6 @@ function MePage() {
         </div>
       )}
 
-
       {/* Settings Section */}
       <div className="sv-me-section">
         <h3>{t('me.settings')}</h3>
@@ -563,18 +588,16 @@ function MePage() {
           </div>
         </Dropdown>
 
-        {/* Notifications */}
-        <div className="sv-me-item">
-          <div className="sv-me-item-left">
-            <BellOutlined />
-            <span>{t('me.notifications')}</span>
+        {/* Notifications - native only */}
+        {isNativeApp && (
+          <div className="sv-me-item" onClick={openNotificationSettings}>
+            <div className="sv-me-item-left">
+              <BellOutlined />
+              <span>{t('me.notifications')}</span>
+            </div>
+            <RightOutlined className="sv-me-arrow" />
           </div>
-          <Switch
-            checked={notifications}
-            onChange={handleNotificationsChange}
-            size="small"
-          />
-        </div>
+        )}
 
         {/* Dark Mode */}
         <div className="sv-me-item">
@@ -749,9 +772,15 @@ function MePage() {
         footer={null}
         centered
         width={400}
-        className="auth-modal sv-simple-modal"
+        className="auth-modal sv-simple-modal sv-bottom-sheet-modal"
+        wrapClassName="sv-bottom-sheet-wrap"
+        destroyOnClose
+        maskClosable
       >
-        <div className="auth-modal-content">
+        <div
+          className="auth-modal-content"
+          style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 24 } : undefined}
+        >
           <h2>{t('me.deleteAccountTitle')}</h2>
           <p>{t('me.deleteAccountConfirm')}</p>
 
@@ -765,9 +794,14 @@ function MePage() {
                     type={showDeletePassword ? 'text' : 'password'}
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
+                    onFocus={handleInputFocus}
                     placeholder={t('auth.passwordPlaceholder')}
                   />
-                  <span className="password-toggle" onClick={() => setShowDeletePassword(!showDeletePassword)}>
+                  <span
+                    className="password-toggle"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowDeletePassword(!showDeletePassword)}
+                  >
                     {showDeletePassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                   </span>
                 </div>
@@ -798,9 +832,15 @@ function MePage() {
         footer={null}
         centered
         width={400}
-        className="auth-modal sv-simple-modal"
+        className="auth-modal sv-simple-modal sv-bottom-sheet-modal"
+        wrapClassName="sv-bottom-sheet-wrap"
+        destroyOnClose
+        maskClosable
       >
-        <div className="auth-modal-content">
+        <div
+          className="auth-modal-content"
+          style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 24 } : undefined}
+        >
           <h2>{user?.hasPassword ? t('auth.changePassword') : t('auth.setPassword')}</h2>
           {!user?.hasPassword && (
             <p>{t('auth.setPasswordDesc')}</p>
@@ -817,9 +857,14 @@ function MePage() {
                     type={showCurrentPassword ? 'text' : 'password'}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
+                    onFocus={handleInputFocus}
                     placeholder={t('auth.currentPasswordPlaceholder')}
                   />
-                  <span className="password-toggle" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                  <span
+                    className="password-toggle"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
                     {showCurrentPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                   </span>
                 </div>
@@ -834,10 +879,15 @@ function MePage() {
                   type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(filterPassword(e.target.value))}
+                  onFocus={handleInputFocus}
                   placeholder={t('auth.newPasswordPlaceholder')}
                   minLength={8}
                 />
-                <span className="password-toggle" onClick={() => setShowNewPassword(!showNewPassword)}>
+                <span
+                  className="password-toggle"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
                   {showNewPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                 </span>
               </div>
@@ -851,10 +901,15 @@ function MePage() {
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(filterPassword(e.target.value))}
+                  onFocus={handleInputFocus}
                   placeholder={t('auth.confirmPasswordPlaceholder')}
                   minLength={8}
                 />
-                <span className="password-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <span
+                  className="password-toggle"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
                   {showConfirmPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                 </span>
               </div>
@@ -1201,6 +1256,7 @@ function MePage() {
           color: #9ca3af;
           margin-top: 4px;
         }
+
 
         /* Auth Modal Styles (same as AppHeader) */
         .auth-modal .ant-modal-content {
@@ -1612,6 +1668,67 @@ function MePage() {
             font-size: 13px;
             margin-bottom: 16px;
           }
+
+          /* Mobile Bottom Sheet Style */
+          .sv-bottom-sheet-wrap {
+            display: flex !important;
+            align-items: flex-end !important;
+            justify-content: center !important;
+            z-index: 10000 !important;
+          }
+
+          .sv-bottom-sheet-wrap .ant-modal {
+            top: auto !important;
+            bottom: 0 !important;
+            margin: 0 !important;
+            padding-bottom: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            transform-origin: bottom center !important;
+          }
+
+          .sv-bottom-sheet-wrap .ant-modal-content {
+            border-radius: 16px 16px 0 0 !important;
+            max-height: 90vh;
+            overflow-y: auto;
+          }
+
+          .sv-bottom-sheet-wrap.ant-modal-centered::before {
+            display: none !important;
+            content: none !important;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-content {
+            padding: 28px 24px calc(40px + env(safe-area-inset-bottom));
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-content h2 {
+            font-size: 22px;
+            margin-bottom: 12px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-content > p {
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-form {
+            gap: 16px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-input input {
+            padding: 14px 42px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-submit {
+            padding: 16px 20px;
+            margin-top: 12px;
+          }
+
+          .sv-bottom-sheet-modal .auth-modal-switch {
+            margin-top: 20px;
+          }
         }
 
         /* Dark mode for Pro badge */
@@ -1621,6 +1738,7 @@ function MePage() {
           -webkit-text-fill-color: transparent;
           background-clip: text;
         }
+
       `}</style>
     </div>
   )

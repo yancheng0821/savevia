@@ -7,6 +7,8 @@
         <result column="year_month" property="yearMonth"/>
         <result column="usage_count" property="usageCount"/>
         <result column="monthly_limit" property="monthlyLimit"/>
+        <result column="chat_usage_count" property="chatUsageCount"/>
+        <result column="chat_monthly_limit" property="chatMonthlyLimit"/>
         <result column="created_at" property="createdAt"/>
         <result column="updated_at" property="updatedAt"/>
     </resultMap>
@@ -22,14 +24,26 @@
         WHERE user_id = #{userId} AND `year_month` = #{yearMonth}
     </update>
 
+    <update id="incrementChatUsage">
+        UPDATE ai_usage
+        SET chat_usage_count = chat_usage_count + 1, updated_at = NOW()
+        WHERE user_id = #{userId} AND `year_month` = #{yearMonth}
+    </update>
+
     <update id="updateMonthlyLimit">
         UPDATE ai_usage
         SET monthly_limit = #{limit}, updated_at = NOW()
         WHERE user_id = #{userId} AND `year_month` = #{yearMonth}
     </update>
 
+    <update id="updateChatMonthlyLimit">
+        UPDATE ai_usage
+        SET chat_monthly_limit = #{limit}, updated_at = NOW()
+        WHERE user_id = #{userId} AND `year_month` = #{yearMonth}
+    </update>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO ai_usage (user_id, `year_month`, usage_count, monthly_limit, created_at, updated_at)
-        VALUES (#{userId}, #{yearMonth}, #{usageCount}, #{monthlyLimit}, NOW(), NOW())
+        INSERT INTO ai_usage (user_id, `year_month`, usage_count, monthly_limit, chat_usage_count, chat_monthly_limit, created_at, updated_at)
+        VALUES (#{userId}, #{yearMonth}, #{usageCount}, #{monthlyLimit}, #{chatUsageCount}, #{chatMonthlyLimit}, NOW(), NOW())
     </insert>
 </mapper>

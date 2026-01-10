@@ -40,4 +40,92 @@
         </foreach>
     </insert>
 
+    <!-- Get card names for a user -->
+    <select id="selectCardNamesByUserId" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT cc.name FROM user_cards uc
+        JOIN credit_cards cc ON uc.card_id = cc.id
+        WHERE uc.user_id = #{userId}
+        ORDER BY cc.name
+    </select>
+
+    <!-- Get user's top reward categories -->
+    <select id="selectTopCategoriesByUserId" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT DISTINCT rr.category FROM user_cards uc
+        JOIN reward_rules rr ON uc.card_id = rr.card_id
+        WHERE uc.user_id = #{userId}
+        AND rr.reward_rate > 0.01
+        ORDER BY rr.reward_rate DESC
+        LIMIT 3
+    </select>
+
+    <!-- Get user's card reward info for smart notifications -->
+    <select id="selectUserCardRewardInfo" parameterType="java.lang.Long" resultType="com.savevia.user.dto.UserCardRewardInfo">
+        SELECT
+            cc.id as cardId,
+            cc.name as cardName,
+            cc.bank as bank,
+            CASE
+                WHEN cc.name LIKE '%Cash Back%' OR cc.name LIKE '%CashBack%'
+                     OR cc.name LIKE '%Momentum%' OR cc.name LIKE '%SimplyCash%'
+                     OR cc.name LIKE '%Dividend%' OR cc.name LIKE '%Money-Back%'
+                THEN 'cashback'
+                WHEN cc.name LIKE '%Aeroplan%' OR cc.name LIKE '%Avion%'
+                     OR cc.name LIKE '%Cobalt%' OR cc.name LIKE '%Aventura%'
+                     OR cc.name LIKE '%Scene%' OR cc.name LIKE '%Air Miles%'
+                     OR cc.name LIKE '%PC %' OR cc.name LIKE '%Optimum%'
+                     OR cc.name LIKE '%First Class%' OR cc.name LIKE '%Eclipse%'
+                     OR cc.name LIKE '%Gold Rewards%' OR cc.name LIKE '%Platinum Card%'
+                THEN 'points'
+                ELSE 'cashback'
+            END as cardType,
+            rr.category as category,
+            rr.reward_rate as rewardRate,
+            rr.monthly_cap_amount as monthlyCap,
+            CASE
+                WHEN cc.name LIKE '%Cash Back%' OR cc.name LIKE '%CashBack%'
+                     OR cc.name LIKE '%Momentum%' OR cc.name LIKE '%SimplyCash%'
+                     OR cc.name LIKE '%Dividend%' OR cc.name LIKE '%Money-Back%'
+                THEN '%'
+                ELSE 'x'
+            END as rewardUnit
+        FROM user_cards uc
+        JOIN credit_cards cc ON uc.card_id = cc.id
+        LEFT JOIN reward_rules rr ON cc.id = rr.card_id
+        WHERE uc.user_id = #{userId}
+        AND (rr.reward_rate IS NULL OR rr.reward_rate >= 0.01)
+        ORDER BY rr.reward_rate DESC
+    </select>
+
+    <!-- Get user's best card for a specific category -->
+    <select id="selectBestCardForCategory" resultType="com.savevia.user.dto.UserCardRewardInfo">
+        SELECT
+            cc.id as cardId,
+            cc.name as cardName,
+            cc.bank as bank,
+            CASE
+                WHEN cc.name LIKE '%Cash Back%' OR cc.name LIKE '%CashBack%'
+                     OR cc.name LIKE '%Momentum%' OR cc.name LIKE '%SimplyCash%'
+                     OR cc.name LIKE '%Dividend%' OR cc.name LIKE '%Money-Back%'
+                THEN 'cashback'
+                ELSE 'points'
+            END as cardType,
+            rr.category as category,
+            rr.reward_rate as rewardRate,
+            rr.monthly_cap_amount as monthlyCap,
+            CASE
+                WHEN cc.name LIKE '%Cash Back%' OR cc.name LIKE '%CashBack%'
+                     OR cc.name LIKE '%Momentum%' OR cc.name LIKE '%SimplyCash%'
+                     OR cc.name LIKE '%Dividend%' OR cc.name LIKE '%Money-Back%'
+                THEN '%'
+                ELSE 'x'
+            END as rewardUnit
+        FROM user_cards uc
+        JOIN credit_cards cc ON uc.card_id = cc.id
+        JOIN reward_rules rr ON cc.id = rr.card_id
+        WHERE uc.user_id = #{userId}
+        AND LOWER(rr.category) = LOWER(#{category})
+        ORDER BY rr.reward_rate DESC
+        LIMIT 1
+    </select>
+
 </mapper>

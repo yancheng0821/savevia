@@ -5,6 +5,7 @@
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
+    "done": "Done",
     "confirm": "Confirm",
     "delete": "Delete",
     "edit": "Edit",
@@ -17,7 +18,11 @@
     "error": "Error",
     "warning": "Warning",
     "perMonth": "/month",
-    "perYear": "/year"
+    "perYear": "/year",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "selectAll": "Select All"
   },
   "nav": {
     "home": "Home",
@@ -31,7 +36,7 @@
   },
   "home": {
     "title": "Welcome to SaveVia",
-    "subtitle": "Canada's Leading AI-Powered Credit Card Cashback Optimizer",
+    "subtitle": "We remember your cards, so you don't have to",
     "step1Title": "Select Your Cards",
     "step1Desc": "Choose the credit cards you currently have",
     "step2Title": "Enter Spending",
@@ -49,7 +54,7 @@
     "cashbackLabel": "CASHBACK",
     "quickSelect": {
       "title": "Quick Card Finder",
-      "description": "Select a spending category to find the best card",
+      "description": "Tap a category, we'll tell you which card to use",
       "bestCard": "Best Card for This",
       "cashback": "cashback",
       "points": "points",
@@ -102,7 +107,14 @@
       "other": "Other Banks"
     },
     "dragToReorder": "Hold and drag to reorder. Move favorites to the front.",
-    "toggleCardStyle": "Switch Style"
+    "toggleCardStyle": "Switch Style",
+    "searchPlaceholder": "Search cards...",
+    "resultsFound": "results found",
+    "baseReward": "base",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "points": "Points",
+    "cashback": "Cashback"
   },
   "optimizer": {
     "title": "Enter Your Monthly Spending",
@@ -112,7 +124,7 @@
     "calculateSavings": "Calculate My Savings",
     "total": "Total",
     "perMonth": "/mo",
-    "calculate": "AI Optimize",
+    "calculate": "Smart Optimize",
     "calculateBasic": "Optimize",
     "calculating": "AI Analyzing",
     "calculatingBasic": "Analyzing...",
@@ -126,6 +138,7 @@
     "annualReward": "Annual Cashback",
     "annualFees": "Annual Fees",
     "netSavings": "Net Annual Savings",
+    "vsBaseline": "Extra savings",
     "recommendations": "Recommendations by Category",
     "quickReference": "Quick Reference",
     "whichCardToUse": "Which card to use:",
@@ -278,7 +291,7 @@
     "reportBugDesc": "Report issues on GitHub",
     "rateUs": "Rate Us",
     "shareApp": "Share with Friends",
-    "shareText": "Check out SaveVia - maximize your credit card cashback!",
+    "shareText": "Check out SaveVia - it remembers which card to use so you don't have to!",
     "linkCopied": "Link copied!",
     "legal": "Legal",
     "privacyPolicy": "Privacy Policy",
@@ -299,7 +312,22 @@
     "bankTransactions": "Bank Transactions",
     "missedCashback": "Missed Cashback",
     "restartOnboarding": "Personalization settings",
-    "onboardingReset": "Personalization reset, please refresh the page"
+    "onboardingReset": "Personalization reset, please refresh the page",
+    "optimizations": "Optimizations",
+    "daysUsing": "Days Using",
+    "superSaver": "Super Saver",
+    "savedOver500": "Saving $500+/yr"
+  },
+  "myCards": {
+    "title": "My Cards",
+    "cards": "cards",
+    "emptyTitle": "No Cards Selected",
+    "emptyDesc": "Add your credit cards to get personalized recommendations",
+    "addCards": "Add Cards",
+    "addMore": "Add More Cards",
+    "remove": "Remove",
+    "noFee": "No Fee",
+    "upTo": "Up to"
   },
   "errors": {
     "serviceUnavailable": "Service unavailable, please try again later",
@@ -418,7 +446,7 @@
     "continue": "Continue",
     "step1": {
       "title": "How many credit cards do you have?",
-      "description": "We'll help you maximize cashback across all your cards."
+      "description": "We'll remember which card to use for each purchase."
     },
     "step2": {
       "title": "What's your annual card spending?",
@@ -452,7 +480,7 @@
     "loginRequired": "Login to View Transactions",
     "loginDesc": "Connect your bank to see your transactions and get card recommendations.",
     "connectBank": "Discover Your Hidden Savings",
-    "connectBankDesc": "We'll analyze your spending and show how much cashback you've missed by not using the optimal card. Canadians lose $300-$1,000/year this way - we'll help you save it!",
+    "connectBankDesc": "We'll analyze your past transactions and show you which card you should have used. No more guessing - just use the right card every time.",
     "connectBankBtn": "Securely Connect Bank",
     "connectingBank": "Connecting to bank service...",
     "selectBank": "Select Your Bank",
@@ -472,7 +500,7 @@
     "totalSpent": "Total Spent",
     "missedCashback": "Missed Cashback",
     "earnedCashback": "Earned",
-    "opportunityText": "You could have earned ${{amount}} more ({{percentage}}% of total) by using the optimal card for each purchase.",
+    "opportunityText": "If you used the right card each time, you would have earned ${{amount}} more ({{percentage}}% of total).",
     "tabSummary": "Summary",
     "tabTransactions": "Transactions",
     "categoryBreakdown": "Category Breakdown",
@@ -512,5 +540,27 @@
     "message": "A new version of SaveVia is available. Please update to continue using the app.",
     "newVersion": "New version",
     "updateNow": "Update Now"
+  },
+  "chat": {
+    "title": "Card Advisor",
+    "ask": "Ask",
+    "askSaveVia": "Ask SaveVia",
+    "askSaveViaDesc": "Ask anything about cards",
+    "loginRequired": "Please log in to use Card Advisor",
+    "cardsSelected": "{{count}} cards selected",
+    "noCards": "No cards selected",
+    "chatRemaining": "{{count}} chats remaining",
+    "emptyTitle": "How can I help you?",
+    "emptySubtitle": "Try: \"Which card for groceries?\" Type below and press Enter",
+    "inputPlaceholder": "Type your question...",
+    "newChat": "New Chat",
+    "newChatConfirm": "Start a new conversation?",
+    "voiceStart": "Start voice input",
+    "voiceStop": "Stop recording",
+    "voiceListening": "Listening...",
+    "voiceError": "Voice recognition failed",
+    "voiceNotSupported": "Voice input not supported",
+    "voicePermissionDenied": "Microphone access denied",
+    "voiceTimeout": "Recording stopped (30s limit)"
   }
 }

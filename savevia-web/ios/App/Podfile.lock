@@ -7,11 +7,25 @@ PODS:
     - AppAuth/Core
   - Capacitor (7.4.4):
     - CapacitorCordova
+  - CapacitorApp (8.0.0):
+    - Capacitor
+  - CapacitorBrowser (8.0.0):
+    - Capacitor
   - CapacitorCamera (7.0.3):
     - Capacitor
   - CapacitorCommunityAppleSignIn (7.1.0):
     - Capacitor
+  - CapacitorCommunityInAppReview (6.0.0):
+    - Capacitor
+  - CapacitorCommunitySpeechRecognition (7.0.1):
+    - Capacitor
   - CapacitorCordova (7.4.4)
+  - CapacitorDevice (8.0.0):
+    - Capacitor
+  - CapacitorKeyboard (6.0.4):
+    - Capacitor
+  - CapacitorPushNotifications (8.0.0):
+    - Capacitor
   - CapacitorSecureStoragePlugin (0.12.0):
     - Capacitor
     - SwiftKeychainWrapper
@@ -40,9 +54,16 @@ PODS:
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorBrowser (from `../../node_modules/@capacitor/browser`)"
   - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
   - "CapacitorCommunityAppleSignIn (from `../../node_modules/@capacitor-community/apple-sign-in`)"
+  - "CapacitorCommunityInAppReview (from `../../node_modules/@capacitor-community/in-app-review`)"
+  - "CapacitorCommunitySpeechRecognition (from `../../node_modules/@capacitor-community/speech-recognition`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorPushNotifications (from `../../node_modules/@capacitor/push-notifications`)"
   - CapacitorSecureStoragePlugin (from `../../node_modules/capacitor-secure-storage-plugin`)
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
@@ -62,12 +83,26 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorBrowser:
+    :path: "../../node_modules/@capacitor/browser"
   CapacitorCamera:
     :path: "../../node_modules/@capacitor/camera"
   CapacitorCommunityAppleSignIn:
     :path: "../../node_modules/@capacitor-community/apple-sign-in"
+  CapacitorCommunityInAppReview:
+    :path: "../../node_modules/@capacitor-community/in-app-review"
+  CapacitorCommunitySpeechRecognition:
+    :path: "../../node_modules/@capacitor-community/speech-recognition"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorDevice:
+    :path: "../../node_modules/@capacitor/device"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorPushNotifications:
+    :path: "../../node_modules/@capacitor/push-notifications"
   CapacitorSecureStoragePlugin:
     :path: "../../node_modules/capacitor-secure-storage-plugin"
   CapacitorShare:
@@ -82,9 +117,16 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   Capacitor: 358dd1c3fdd71d969547b17e159fd8a7736cb45f
+  CapacitorApp: 3963a84197280757b84f126afd1520a85ae3b092
+  CapacitorBrowser: b7d7f05f840fe042e46f6528bb8db853e3058fb2
   CapacitorCamera: 6746827d82376f31cea9224945c0458c9fd0b0b2
   CapacitorCommunityAppleSignIn: 271cb2860576fd2961508bbfa7a82117d93eadca
+  CapacitorCommunityInAppReview: e5c93959637a956ce993134734d7df90390ea167
+  CapacitorCommunitySpeechRecognition: 3e03566c44c2bb3b52391a33d4518b1adbdeb38f
   CapacitorCordova: bf648a636f3c153f652d312ae145fb508b6ffced
+  CapacitorDevice: 9a16fb36a19ff391bf75afbe3cf16f883b3b3aa0
+  CapacitorKeyboard: e8cd50fd5cbdd023a5947a5c0f5cca6e5aa5a253
+  CapacitorPushNotifications: 722c1528eabbefd355f47e373a4c6235d01e85e9
   CapacitorSecureStoragePlugin: 50de0808ad398aa401e00f9e58adf88c77cb3c25
   CapacitorShare: a4f4f86eabd4b3ff52ba6a11b754713c6926a8d1
   CapacitorSplashScreen: 000f7591d546907dda5cbb514bd6b6d9e6048cf8
@@ -97,6 +139,6 @@ SPEC CHECKSUMS:
   SouthdevsCapacitorGoogleAuth: 453cab6e5f58fec290e30b2d918ded3434ad22c9
   SwiftKeychainWrapper: 807ba1d63c33a7d0613288512399cd1eda1e470c
 
-PODFILE CHECKSUM: 9b5ae02cb242f1017455b0818e79b8dc78a19163
+PODFILE CHECKSUM: 55ea8fab8dff799bbb644321cd02bef394ff84bc
 
 COCOAPODS: 1.16.2

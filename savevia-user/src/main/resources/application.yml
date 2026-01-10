@@ -90,6 +90,15 @@ admin:
   password: ${ADMIN_PASSWORD:admin123}
   token-secret: ${ADMIN_TOKEN_SECRET:savevia-admin-secret-change-in-production}
 
+# APNs Push Notification Configuration
+apns:
+  enabled: ${APNS_ENABLED:true}
+  production: ${APNS_PRODUCTION:false}
+  key-id: ${APNS_KEY_ID:R7YQQMMH74}
+  team-id: ${APNS_TEAM_ID:7Z7Z6FLMD8}
+  key-path: ${APNS_KEY_PATH:/Users/aisenyc/savevia/scripts/AuthKey_R7YQQMMH74.p8}
+  bundle-id: ${APNS_BUNDLE_ID:com.savevia.app}
+
 # Actuator endpoints
 management:
   endpoints:

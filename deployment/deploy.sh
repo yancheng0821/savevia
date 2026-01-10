@@ -198,7 +198,7 @@ upload_to_ec2() {
     print_msg "Uploading files to EC2..."
 
     # Create deployment directory on EC2
-    ssh -i "$EC2_KEY" "${EC2_USER}@${EC2_HOST}" "mkdir -p ${DEPLOY_DIR}/images ${DEPLOY_DIR}/logs"
+    ssh -i "$EC2_KEY" "${EC2_USER}@${EC2_HOST}" "mkdir -p ${DEPLOY_DIR}/images ${DEPLOY_DIR}/logs ${DEPLOY_DIR}/keys"
 
     # Upload docker-compose and .env
     print_step "Uploading docker-compose.yml..."
@@ -209,6 +209,15 @@ upload_to_ec2() {
         print_step "Uploading .env..."
         scp -i "$EC2_KEY" "$PROJECT_ROOT/deployment/.env" \
             "${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}/.env"
+    fi
+
+    # Upload APNs key files if they exist
+    if ls "$PROJECT_ROOT/scripts/"*.p8 1> /dev/null 2>&1; then
+        print_step "Uploading APNs key files..."
+        scp -i "$EC2_KEY" "$PROJECT_ROOT/scripts/"*.p8 \
+            "${EC2_USER}@${EC2_HOST}:${DEPLOY_DIR}/keys/"
+        ssh -i "$EC2_KEY" "${EC2_USER}@${EC2_HOST}" "chmod 644 ${DEPLOY_DIR}/keys/*.p8"
+        print_success "APNs key files uploaded"
     fi
 
     # Upload Docker images

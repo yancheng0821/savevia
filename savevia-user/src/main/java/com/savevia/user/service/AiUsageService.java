@@ -22,9 +22,13 @@ public class AiUsageService {
     private final AiUsageMapper aiUsageMapper;
     private final UserMapper userMapper;
 
-    // PRO users: 100 per month, FREE users: 3 per month
+    // Card recommendation limits: PRO users: 50 per month, FREE users: 3 per month
     private static final int FREE_USER_MONTHLY_LIMIT = 3;
-    private static final int PRO_USER_MONTHLY_LIMIT = 100;
+    private static final int PRO_USER_MONTHLY_LIMIT = 50;
+
+    // Chat limits: PRO users: unlimited (1000), FREE users: 30 per month
+    private static final int FREE_USER_CHAT_LIMIT = 30;
+    private static final int PRO_USER_CHAT_LIMIT = 1000;
 
     private String getCurrentYearMonth() {
         return LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
@@ -61,12 +65,20 @@ public class AiUsageService {
     }
 
     /**
+     * Get chat monthly limit based on subscription type
+     */
+    private int getChatMonthlyLimit(Long userId) {
+        return isProUser(userId) ? PRO_USER_CHAT_LIMIT : FREE_USER_CHAT_LIMIT;
+    }
+
+    /**
      * Get or create usage record for user in current month
      */
     public AiUsage getOrCreateUsage(Long userId) {
         String yearMonth = getCurrentYearMonth();
         AiUsage usage = aiUsageMapper.findByUserIdAndYearMonth(userId, yearMonth);
         int limit = getMonthlyLimit(userId);
+        int chatLimit = getChatMonthlyLimit(userId);
 
         if (usage == null) {
             usage = new AiUsage();
@@ -74,22 +86,38 @@ public class AiUsageService {
             usage.setYearMonth(yearMonth);
             usage.setUsageCount(0);
             usage.setMonthlyLimit(limit);
+            usage.setChatUsageCount(0);
+            usage.setChatMonthlyLimit(chatLimit);
             aiUsageMapper.insert(usage);
-        } else if (usage.getMonthlyLimit() != limit) {
-            // Update limit if subscription status changed
-            usage.setMonthlyLimit(limit);
-            aiUsageMapper.updateMonthlyLimit(userId, yearMonth, limit);
+        } else {
+            // Update limits if subscription status changed
+            if (usage.getMonthlyLimit() != limit) {
+                usage.setMonthlyLimit(limit);
+                aiUsageMapper.updateMonthlyLimit(userId, yearMonth, limit);
+            }
+            if (usage.getChatMonthlyLimit() == null || usage.getChatMonthlyLimit() != chatLimit) {
+                usage.setChatMonthlyLimit(chatLimit);
+                aiUsageMapper.updateChatMonthlyLimit(userId, yearMonth, chatLimit);
+            }
         }
 
         return usage;
     }
 
     /**
-     * Check if user can use AI optimization
+     * Check if user can use AI optimization (card recommendations)
      */
     public boolean canUseAi(Long userId) {
         AiUsage usage = getOrCreateUsage(userId);
         return usage.getUsageCount() < usage.getMonthlyLimit();
+    }
+
+    /**
+     * Check if user can use AI chat
+     */
+    public boolean canUseChat(Long userId) {
+        AiUsage usage = getOrCreateUsage(userId);
+        return usage.getChatUsageCount() < usage.getChatMonthlyLimit();
     }
 
     /**
@@ -101,7 +129,15 @@ public class AiUsageService {
     }
 
     /**
-     * Increment AI usage count
+     * Get remaining chat usage count
+     */
+    public int getRemainingChatUsage(Long userId) {
+        AiUsage usage = getOrCreateUsage(userId);
+        return Math.max(0, usage.getChatMonthlyLimit() - usage.getChatUsageCount());
+    }
+
+    /**
+     * Increment AI usage count (card recommendations)
      */
     @Transactional
     public boolean incrementUsage(Long userId) {
@@ -121,6 +157,26 @@ public class AiUsageService {
     }
 
     /**
+     * Increment chat usage count
+     */
+    @Transactional
+    public boolean incrementChatUsage(Long userId) {
+        if (!canUseChat(userId)) {
+            return false;
+        }
+
+        String yearMonth = getCurrentYearMonth();
+        AiUsage usage = aiUsageMapper.findByUserIdAndYearMonth(userId, yearMonth);
+
+        if (usage == null) {
+            getOrCreateUsage(userId);
+        }
+
+        aiUsageMapper.incrementChatUsage(userId, yearMonth);
+        return true;
+    }
+
+    /**
      * Get current usage info
      */
     public AiUsageInfo getUsageInfo(Long userId) {
@@ -131,9 +187,20 @@ public class AiUsageService {
             usage.getUsageCount(),
             usage.getMonthlyLimit(),
             Math.max(0, usage.getMonthlyLimit() - usage.getUsageCount()),
+            usage.getChatUsageCount(),
+            usage.getChatMonthlyLimit(),
+            Math.max(0, usage.getChatMonthlyLimit() - usage.getChatUsageCount()),
             isPro
         );
     }
 
-    public record AiUsageInfo(int used, int limit, int remaining, boolean isProUser) {}
+    public record AiUsageInfo(
+        int used,
+        int limit,
+        int remaining,
+        int chatUsed,
+        int chatLimit,
+        int chatRemaining,
+        boolean isProUser
+    ) {}
 }
