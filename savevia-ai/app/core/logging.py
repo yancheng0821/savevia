@@ -7,6 +7,7 @@ import structlog
 
 def configure_logging(log_level: str = "INFO", json_output: bool = True) -> None:
     """Configure structlog and stdlib logging for the application."""
+    structlog.reset_defaults()
     level = getattr(logging, log_level.upper(), logging.INFO)
 
     timestamper = structlog.processors.TimeStamper(fmt="iso", utc=True)
@@ -38,5 +39,5 @@ def configure_logging(log_level: str = "INFO", json_output: bool = True) -> None
     )
 
 
-def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
+def get_logger(name: str | None = None) -> structlog.typing.FilteringBoundLogger:
     return structlog.get_logger(name)
