@@ -17,8 +17,8 @@ RUN uv sync --frozen --no-install-project --no-dev
 
 # --- final stage: copy source ---
 COPY app ./app
-# COPY alembic ./alembic        # uncommented in Task 10
-# COPY alembic.ini ./           # uncommented in Task 10
+COPY alembic ./alembic
+COPY alembic.ini ./
 
 RUN uv sync --frozen --no-dev
 

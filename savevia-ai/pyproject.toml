@@ -28,6 +28,7 @@ dev = [
     "ruff>=0.7.0",
     "mypy>=1.13.0",
     "respx>=0.21.0",
+    "pymysql>=1.2.0",
 ]
 
 [tool.uv]
