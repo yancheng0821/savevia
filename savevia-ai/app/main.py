@@ -18,8 +18,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     log = get_logger("savevia-ai")
     log.info("service_starting", service=settings.service_name, port=settings.service_port)
-    yield
-    log.info("service_stopping")
+    try:
+        yield
+    finally:
+        from app.core.db import dispose_engine
+        await dispose_engine()
+        log.info("service_stopping")
 
 
 def create_app() -> FastAPI:
