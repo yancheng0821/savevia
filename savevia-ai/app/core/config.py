@@ -1,4 +1,5 @@
 from functools import lru_cache
+from urllib.parse import quote_plus
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -8,7 +9,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=False,
+        case_sensitive=True,
         extra="ignore",
     )
 
@@ -38,7 +39,7 @@ class Settings(BaseSettings):
     http_connect_timeout_seconds: float = Field(default=2.0, alias="HTTP_CONNECT_TIMEOUT_SECONDS")
 
     # OpenAI / LangGraph (used in later phases — declared now for completeness)
-    openai_api_key: str = Field(alias="OPENAI_API_KEY")
+    openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
     openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
     openai_base_url: str = Field(default="https://api.openai.com", alias="OPENAI_BASE_URL")
 
@@ -58,7 +59,7 @@ class Settings(BaseSettings):
     @property
     def db_url(self) -> str:
         return (
-            f"mysql+aiomysql://{self.db_user}:{self.db_password}"
+            f"mysql+aiomysql://{self.db_user}:{quote_plus(self.db_password)}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"
         )
 
@@ -70,3 +71,8 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()  # type: ignore[call-arg]
+
+
+def reset_settings_cache() -> None:
+    """Reset the cached Settings — call in tests after modifying env vars."""
+    get_settings.cache_clear()
