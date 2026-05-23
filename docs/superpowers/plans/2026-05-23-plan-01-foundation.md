@@ -1478,123 +1478,91 @@ git commit -m "feat(savevia-ai): JWT decode dependency (defense-in-depth auth)"
 - Create: `savevia-ai/tests/test_user_client.py`
 - Create: `savevia-ai/tests/test_card_client.py`
 
-**Context:** Python AI service calls Java user/card via httpx. Always forward the inbound user's JWT in `Authorization` header. Default timeout matches current Java Feign defaults (10s read / 5s connect rounded down to 2s for safety). Network errors raised as `JavaServiceError` so callers can render a user-friendly fallback.
+**Context:** Python AI service calls Java user/card via httpx.
 
-- [ ] **Step 1: Write failing test (base client)**
+**Critical contract details (verified against Java controllers):**
 
-Create `savevia-ai/tests/test_user_client.py`:
-```python
-import httpx
-import pytest
-import respx
+1. **`Result<T>` envelope** — Every Java endpoint returns
+   `{"code": 200, "message": "...", "data": <T>, "timestamp": <ms>}`.
+   Clients unwrap and return only `data`. Non-200 envelope `code`
+   (even inside HTTP 200) raises `JavaServiceError`.
 
+2. **Auth via `X-User-Id`, NOT JWT** — The gateway validates the inbound
+   JWT and forwards user identity as the `X-User-Id` header. Internal
+   Java services trust this header. The Python service follows the same
+   pattern — it does NOT pass JWTs through to internal services. The
+   `user_id` is passed per-call to client methods; clients set the
+   header.
 
-@pytest.fixture
-def user_client():
-    from app.clients.user_client import UserServiceClient
+3. **Persistent `AsyncClient` per client instance** — connection pooling
+   is preserved. `BaseJavaClient` lazy-inits one `httpx.AsyncClient` and
+   reuses it. Call `aclose()` to dispose on shutdown.
 
-    return UserServiceClient(base_url="http://user-test:8081", jwt_token="abc.def.ghi")
+4. **Retry policy** — Only idempotent GETs retry (max 2 attempts) on
+   `>=500` HTTP or `httpx.TimeoutException`. POSTs do not retry.
+   Backoff: 100 ms then 250 ms with up to 50 ms jitter.
 
+5. **Verified endpoint map**:
+   - `GET /api/v1/users/me` -> `UserDTO` (X-User-Id)
+   - `GET /api/v1/users/me/cards` -> `List<Long>` (raw card IDs, X-User-Id)
+   - `GET /api/v1/users/ai-usage` -> `AiUsageInfo` (X-User-Id)
+   - `GET /api/v1/chat/conversations/{id:Long}/messages` -> `List<ChatMessage>` (X-User-Id)
+   - `GET /api/v1/cards` -> `List<CreditCardDTO>` (public)
+   - `GET /api/v1/cards/{id}` -> `CreditCardDTO` (public)
+   - `GET /api/v1/cards/bank/{bank}` -> `List<CreditCardDTO>` (public)
+   - `POST /api/v1/cards/batch` body `List<Long>` -> `List<CreditCardDTO>` (public)
+   - `GET /api/v1/cards/{id}/usage-guide?lang=en` -> `CardUsageGuideDTO`
+     (**single** DTO, not list; public)
 
-@respx.mock
-async def test_get_user_cards_returns_parsed_json(user_client):
-    route = respx.get("http://user-test:8081/api/v1/users/42/cards").mock(
-        return_value=httpx.Response(200, json=[{"id": 1, "cardName": "TD Cash"}]),
-    )
-    cards = await user_client.get_user_cards(user_id=42)
-    assert route.called
-    assert cards == [{"id": 1, "cardName": "TD Cash"}]
-    assert route.calls.last.request.headers["Authorization"] == "Bearer abc.def.ghi"
+6. **What does NOT exist in Java today**:
+   - No `MemoryController` — user-memory will be Python-owned (added in
+     Plan 03 via the `user_memory_facts` table this service owns).
+   - No `/api/v1/cards/search` — card search must be composed in Python
+     by combining `list_all_cards()` with local filtering (Plan 02 tools).
 
+- [ ] **Step 1: Write failing tests**
 
-@respx.mock
-async def test_get_user_cards_raises_on_5xx(user_client):
-    from app.clients._base import JavaServiceError
+Both test files use a `_result(data, code=200)` helper that wraps payloads in the
+Java `Result<T>` envelope shape (`{code, message, data, timestamp}`). Construct
+clients with `base_url` only (no `jwt_token`) and pass `user_id` per call.
 
-    respx.get("http://user-test:8081/api/v1/users/42/cards").mock(
-        return_value=httpx.Response(503),
-    )
-    with pytest.raises(JavaServiceError) as exc:
-        await user_client.get_user_cards(user_id=42)
-    assert exc.value.status_code == 503
+Test coverage for `tests/test_user_client.py` (11 tests):
 
+- `test_get_user_profile_unwraps_envelope` — verifies `Result.data` unwrap and
+  that `X-User-Id` header is sent (and `Authorization` is NOT sent).
+- `test_get_user_card_ids_returns_list_of_long` — Java returns
+  `Result<List<Long>>`, so client returns `list[int]`.
+- `test_get_ai_usage_limit_unwraps` — happy path on
+  `GET /api/v1/users/ai-usage`.
+- `test_get_chat_history_uses_long_id` — `conversation_id` is `Long`,
+  X-User-Id forwarded.
+- `test_business_error_inside_http_200_raises` — HTTP 200 + `code=429` must
+  raise `JavaServiceError(status_code=429)`.
+- `test_get_retries_on_5xx_then_succeeds` — `respx.mock(side_effect=[Response(503),
+  Response(200, ...)])` exercises the GET retry path.
+- `test_get_retries_on_timeout_then_succeeds` — same, but with
+  `httpx.TimeoutException`.
+- `test_get_5xx_exhausts_retries_raises` — 2 attempts then raise.
+- `test_non_json_response_raises_gracefully` — HTML response handled cleanly.
+- `test_aclose_releases_client` — `aclose()` closes the pooled client.
+- `test_persistent_client_reused_across_calls` — same `_client` instance across
+  multiple calls (connection pooling preserved).
 
-@respx.mock
-async def test_get_user_cards_raises_on_timeout(user_client):
-    respx.get("http://user-test:8081/api/v1/users/42/cards").mock(
-        side_effect=httpx.TimeoutException("timeout"),
-    )
-    from app.clients._base import JavaServiceError
+Test coverage for `tests/test_card_client.py` (10 tests):
 
-    with pytest.raises(JavaServiceError) as exc:
-        await user_client.get_user_cards(user_id=42)
-    assert "timeout" in str(exc.value).lower()
-
-
-@respx.mock
-async def test_get_user_memory_returns_list(user_client):
-    respx.get("http://user-test:8081/api/v1/memory/users/42").mock(
-        return_value=httpx.Response(200, json=[{"id": 1, "content": "likes Costco"}]),
-    )
-    memory = await user_client.get_user_memory(user_id=42)
-    assert memory == [{"id": 1, "content": "likes Costco"}]
-
-
-@respx.mock
-async def test_get_chat_history_returns_list(user_client):
-    respx.get(
-        "http://user-test:8081/api/v1/chat/conversations/conv-1/messages"
-    ).mock(return_value=httpx.Response(200, json=[{"role": "user", "content": "hi"}]))
-    msgs = await user_client.get_chat_history(conversation_id="conv-1")
-    assert msgs == [{"role": "user", "content": "hi"}]
-```
-
-Create `savevia-ai/tests/test_card_client.py`:
-```python
-import httpx
-import pytest
-import respx
-
-
-@pytest.fixture
-def card_client():
-    from app.clients.card_client import CardServiceClient
-
-    return CardServiceClient(base_url="http://card-test:8082", jwt_token="abc.def.ghi")
-
-
-@respx.mock
-async def test_search_cards(card_client):
-    respx.get("http://card-test:8082/api/v1/cards/search").mock(
-        return_value=httpx.Response(
-            200, json=[{"id": 1, "cardName": "Costco Mastercard"}]
-        ),
-    )
-    cards = await card_client.search_cards(query="costco", category=None)
-    assert cards[0]["cardName"] == "Costco Mastercard"
-
-
-@respx.mock
-async def test_get_cards_batch(card_client):
-    route = respx.post("http://card-test:8082/api/v1/cards/batch").mock(
-        return_value=httpx.Response(
-            200, json=[{"id": 1}, {"id": 2}, {"id": 3}]
-        ),
-    )
-    cards = await card_client.get_cards_batch(card_ids=[1, 2, 3])
-    assert route.called
-    assert len(cards) == 3
-    assert route.calls.last.request.read() == b'{"ids":[1,2,3]}'
-
-
-@respx.mock
-async def test_get_card_usage_tips(card_client):
-    respx.get("http://card-test:8082/api/v1/cards/5/usage-tips").mock(
-        return_value=httpx.Response(200, json=[{"tip": "Use at gas stations"}]),
-    )
-    tips = await card_client.get_card_usage_tips(card_id=5)
-    assert tips[0]["tip"] == "Use at gas stations"
-```
+- `test_list_all_cards_unwraps_envelope` — happy path on `GET /api/v1/cards`.
+- `test_get_card_returns_single_dto` — happy path on `GET /api/v1/cards/{id}`.
+- `test_get_cards_batch_sends_raw_list` — POST body **must** be `[1,2,3]`
+  (raw JSON array), NOT `{"ids":[1,2,3]}`.
+- `test_get_card_usage_guide_returns_single_dto` — Java returns
+  `Result<CardUsageGuideDTO>` (singular). Also verifies `?lang=en` param.
+- `test_get_cards_by_bank` — happy path on `GET /api/v1/cards/bank/{bank}`.
+- `test_post_does_not_retry_on_5xx` — POST is NOT idempotent; must NOT retry.
+- `test_get_retries_on_5xx_then_succeeds` — GET retry on `list_all_cards`.
+- `test_business_error_on_get` — HTTP 200 + `code=404` raises with
+  `status_code=404`.
+- `test_no_x_user_id_sent_on_card_calls` — card endpoints are public.
+- `test_aclose_releases_client` — `aclose()` closes the pooled client.
 
 - [ ] **Step 2: Run — fails on import**
 
@@ -1607,154 +1575,64 @@ Expected: `ModuleNotFoundError`.
 
 Create `savevia-ai/app/clients/__init__.py` (empty file).
 
-Create `savevia-ai/app/clients/_base.py`:
-```python
-from typing import Any
+Create `savevia-ai/app/clients/_base.py`. The base client:
 
-import httpx
+- Stores `base_url` and a lazy-init, **persistent** `httpx.AsyncClient` so
+  connections are pooled across calls; `trust_env=False` to ignore developer
+  proxies.
+- Takes `user_id` per-call (not in constructor); sets `X-User-Id` header.
+  Does NOT forward JWT.
+- `_unwrap(response)` parses `Result<T>` envelope, returns `data`, raises
+  `JavaServiceError` on non-200 envelope `code` or non-dict body.
+- `_request(method, ...)` retries idempotent GETs on `>=500` or
+  `httpx.TimeoutException` (max 2 attempts, backoff 100 ms then 250 ms with
+  up to 50 ms jitter). POSTs do not retry.
+- `aclose()` to dispose the pooled client on shutdown.
 
-from app.core.config import get_settings
-
-
-class JavaServiceError(Exception):
-    def __init__(self, service: str, status_code: int | None, message: str):
-        super().__init__(f"[{service}] {message}")
-        self.service = service
-        self.status_code = status_code
-        self.message = message
-
-
-class BaseJavaClient:
-    """Async HTTP client base for calls to Java services."""
-
-    service_name: str = "unknown"
-
-    def __init__(self, base_url: str, jwt_token: str):
-        settings = get_settings()
-        self._base_url = base_url.rstrip("/")
-        self._jwt_token = jwt_token
-        self._timeout = httpx.Timeout(
-            settings.http_timeout_seconds,
-            connect=settings.http_connect_timeout_seconds,
-        )
-
-    def _client(self) -> httpx.AsyncClient:
-        return httpx.AsyncClient(
-            base_url=self._base_url,
-            headers={
-                "Authorization": f"Bearer {self._jwt_token}",
-                "Accept": "application/json",
-            },
-            timeout=self._timeout,
-        )
-
-    async def _get(self, path: str, params: dict[str, Any] | None = None) -> Any:
-        try:
-            async with self._client() as c:
-                r = await c.get(path, params=params)
-                self._raise_for_status(r)
-                return r.json()
-        except httpx.TimeoutException as e:
-            raise JavaServiceError(self.service_name, None, f"timeout: {e}") from e
-        except httpx.RequestError as e:
-            raise JavaServiceError(self.service_name, None, f"network error: {e}") from e
-
-    async def _post(self, path: str, json: dict[str, Any] | None = None) -> Any:
-        try:
-            async with self._client() as c:
-                r = await c.post(path, json=json)
-                self._raise_for_status(r)
-                return r.json()
-        except httpx.TimeoutException as e:
-            raise JavaServiceError(self.service_name, None, f"timeout: {e}") from e
-        except httpx.RequestError as e:
-            raise JavaServiceError(self.service_name, None, f"network error: {e}") from e
-
-    def _raise_for_status(self, response: httpx.Response) -> None:
-        if response.status_code >= 400:
-            try:
-                body = response.json()
-                msg = body.get("message") or body.get("error") or response.text
-            except Exception:
-                msg = response.text
-            raise JavaServiceError(self.service_name, response.status_code, msg)
-```
+See the implemented file for the full code — `JavaServiceError` carries
+`service`, `status_code`, `message`, `path`, `method`.
 
 - [ ] **Step 4: Implement user client**
 
-Create `savevia-ai/app/clients/user_client.py`:
-```python
-from typing import Any
+`savevia-ai/app/clients/user_client.py` exposes:
 
-from app.clients._base import BaseJavaClient
+- `get_user_profile(user_id)` -> `GET /api/v1/users/me`
+- `get_user_card_ids(user_id)` -> `GET /api/v1/users/me/cards`
+  (returns `list[int]`, not full card DTOs)
+- `get_ai_usage_limit(user_id)` -> `GET /api/v1/users/ai-usage`
+- `get_chat_history(conversation_id: int, user_id)` ->
+  `GET /api/v1/chat/conversations/{id}/messages`
 
-
-class UserServiceClient(BaseJavaClient):
-    service_name = "savevia-user"
-
-    async def get_user_cards(self, user_id: int) -> list[dict[str, Any]]:
-        return await self._get(f"/api/v1/users/{user_id}/cards")
-
-    async def get_user_profile(self, user_id: int) -> dict[str, Any]:
-        return await self._get(f"/api/v1/users/{user_id}")
-
-    async def get_user_memory(self, user_id: int) -> list[dict[str, Any]]:
-        return await self._get(f"/api/v1/memory/users/{user_id}")
-
-    async def get_chat_history(self, conversation_id: str) -> list[dict[str, Any]]:
-        return await self._get(f"/api/v1/chat/conversations/{conversation_id}/messages")
-
-    async def get_ai_usage_limit(self, user_id: int) -> dict[str, Any]:
-        return await self._get(f"/api/v1/ai-usage/users/{user_id}")
-```
+All forward `X-User-Id`. No user-memory method — that endpoint is owned by
+this Python service (added in Plan 03).
 
 - [ ] **Step 5: Implement card client**
 
-Create `savevia-ai/app/clients/card_client.py`:
-```python
-from typing import Any
+`savevia-ai/app/clients/card_client.py` exposes:
 
-from app.clients._base import BaseJavaClient
+- `list_all_cards()` -> `GET /api/v1/cards`
+- `get_card(card_id)` -> `GET /api/v1/cards/{id}`
+- `get_cards_by_bank(bank)` -> `GET /api/v1/cards/bank/{bank}`
+- `get_cards_batch(card_ids)` -> `POST /api/v1/cards/batch` body raw
+  `List<Long>`
+- `get_card_usage_guide(card_id, lang="en")` ->
+  `GET /api/v1/cards/{id}/usage-guide?lang=en` — returns a single DTO
 
-
-class CardServiceClient(BaseJavaClient):
-    service_name = "savevia-card"
-
-    async def search_cards(
-        self,
-        query: str | None = None,
-        category: str | None = None,
-        limit: int = 20,
-    ) -> list[dict[str, Any]]:
-        params: dict[str, Any] = {"limit": limit}
-        if query:
-            params["query"] = query
-        if category:
-            params["category"] = category
-        return await self._get("/api/v1/cards/search", params=params)
-
-    async def get_card(self, card_id: int) -> dict[str, Any]:
-        return await self._get(f"/api/v1/cards/{card_id}")
-
-    async def get_cards_batch(self, card_ids: list[int]) -> list[dict[str, Any]]:
-        return await self._post("/api/v1/cards/batch", json={"ids": card_ids})
-
-    async def get_card_usage_tips(self, card_id: int) -> list[dict[str, Any]]:
-        return await self._get(f"/api/v1/cards/{card_id}/usage-tips")
-```
+No `search_cards` — there is no Java search endpoint; compose
+`list_all_cards()` + Python filtering in Plan 02 tools.
 
 - [ ] **Step 6: Run tests — pass**
 
 ```bash
 uv run pytest tests/test_user_client.py tests/test_card_client.py -v
 ```
-Expected: all tests pass.
+Expected: 21 tests pass.
 
 - [ ] **Step 7: Commit**
 
 ```bash
 git add savevia-ai/
-git commit -m "feat(savevia-ai): httpx clients for savevia-user and savevia-card"
+git commit -m "fix(savevia-ai): real Java contracts (X-User-Id, Result envelope, retries, pooled client)"
 ```
 
 ---
