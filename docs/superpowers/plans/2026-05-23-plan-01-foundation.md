@@ -1168,7 +1168,7 @@ git commit -m "feat(savevia-ai): async Redis client + readiness check"
 - Create: `savevia-ai/app/core/security.py`
 - Create: `savevia-ai/tests/test_security.py`
 
-**Context:** Spring Cloud Gateway already verifies JWT before routing. Python re-verifies for defense in depth. Must use **same `JWT_SECRET`** and **HS256** algorithm. Java's `JwtService` claims include `userId` (Long), `email`, `exp`, `iat`. We extract `userId` and `email`.
+**Context:** Spring Cloud Gateway already verifies JWT before routing. Python re-verifies for defense in depth. Must use **same `JWT_SECRET`** and **HS256** algorithm. Java's `JwtService` uses the standard `sub` claim for userId (stringified Long), plus `email`, `type`, `exp`, `iat`. We extract userId from `sub` and `email` from the custom claim.
 
 - [ ] **Step 1: Write failing test**
 
@@ -1178,7 +1178,8 @@ import time
 
 import jwt
 import pytest
-from fastapi import HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
 
@@ -1200,15 +1201,26 @@ def _make_token(claims: dict, secret: str | None = None, alg: str = "HS256") -> 
     return jwt.encode(claims, secret or settings.jwt_secret, algorithm=alg)
 
 
-def test_decode_valid_token_returns_principal():
+def _java_shape_claims(user_id: int = 42, email: str = "u@example.com") -> dict:
+    now = int(time.time())
+    return {
+        "sub": str(user_id),  # Java uses subject for userId (stringified)
+        "email": email,
+        "type": "access",
+        "iat": now,
+        "exp": now + 3600,
+    }
+
+
+def test_decode_java_shape_token_returns_principal():
     from app.core.security import current_user
 
-    token = _make_token({"userId": 42, "email": "u@example.com", "exp": int(time.time()) + 3600})
+    token = _make_token(_java_shape_claims(user_id=42, email="u@x.com"))
     req = _build_request({"Authorization": f"Bearer {token}"})
 
     principal = current_user(req)
     assert principal.user_id == 42
-    assert principal.email == "u@example.com"
+    assert principal.email == "u@x.com"
 
 
 def test_missing_header_raises_401():
@@ -1220,7 +1232,7 @@ def test_missing_header_raises_401():
     assert exc.value.status_code == 401
 
 
-def test_malformed_header_raises_401():
+def test_malformed_scheme_raises_401():
     from app.core.security import current_user
 
     req = _build_request({"Authorization": "NotBearer xxx"})
@@ -1229,10 +1241,21 @@ def test_malformed_header_raises_401():
     assert exc.value.status_code == 401
 
 
+def test_empty_bearer_raises_401():
+    from app.core.security import current_user
+
+    req = _build_request({"Authorization": "Bearer "})
+    with pytest.raises(HTTPException) as exc:
+        current_user(req)
+    assert exc.value.status_code == 401
+
+
 def test_expired_token_raises_401():
     from app.core.security import current_user
 
-    token = _make_token({"userId": 1, "exp": int(time.time()) - 10})
+    claims = _java_shape_claims()
+    claims["exp"] = int(time.time()) - 10
+    token = _make_token(claims)
     req = _build_request({"Authorization": f"Bearer {token}"})
     with pytest.raises(HTTPException) as exc:
         current_user(req)
@@ -1243,7 +1266,7 @@ def test_wrong_secret_raises_401():
     from app.core.security import current_user
 
     token = _make_token(
-        {"userId": 1, "exp": int(time.time()) + 3600},
+        _java_shape_claims(),
         secret="some-other-wrong-secret-that-is-also-32-chars-long",
     )
     req = _build_request({"Authorization": f"Bearer {token}"})
@@ -1252,14 +1275,91 @@ def test_wrong_secret_raises_401():
     assert exc.value.status_code == 401
 
 
-def test_missing_user_id_raises_401():
+def test_missing_sub_claim_raises_401():
     from app.core.security import current_user
 
-    token = _make_token({"email": "x@x.com", "exp": int(time.time()) + 3600})
+    claims = _java_shape_claims()
+    del claims["sub"]
+    token = _make_token(claims)
     req = _build_request({"Authorization": f"Bearer {token}"})
     with pytest.raises(HTTPException) as exc:
         current_user(req)
     assert exc.value.status_code == 401
+
+
+def test_missing_exp_claim_raises_401():
+    from app.core.security import current_user
+
+    claims = _java_shape_claims()
+    del claims["exp"]
+    token = _make_token(claims)
+    req = _build_request({"Authorization": f"Bearer {token}"})
+    with pytest.raises(HTTPException) as exc:
+        current_user(req)
+    assert exc.value.status_code == 401
+
+
+def test_non_numeric_sub_raises_401():
+    from app.core.security import current_user
+
+    claims = _java_shape_claims()
+    claims["sub"] = "not-a-number"
+    token = _make_token(claims)
+    req = _build_request({"Authorization": f"Bearer {token}"})
+    with pytest.raises(HTTPException) as exc:
+        current_user(req)
+    assert exc.value.status_code == 401
+
+
+def test_alg_none_token_rejected():
+    """Algorithm-confusion attack: HS256-signed token forged with alg=none."""
+    from app.core.security import current_user
+
+    token = jwt.encode(_java_shape_claims(), key="", algorithm="none")
+    req = _build_request({"Authorization": f"Bearer {token}"})
+    with pytest.raises(HTTPException) as exc:
+        current_user(req)
+    assert exc.value.status_code == 401
+
+
+def test_email_optional():
+    from app.core.security import current_user
+
+    claims = _java_shape_claims()
+    del claims["email"]
+    token = _make_token(claims)
+    req = _build_request({"Authorization": f"Bearer {token}"})
+
+    principal = current_user(req)
+    assert principal.user_id == 42
+    assert principal.email is None
+
+
+def test_fastapi_depends_integration_returns_401_not_500():
+    """End-to-end: malformed token through FastAPI dep injection yields HTTP 401, not 500."""
+    from app.core.security import Principal, current_user
+
+    app = FastAPI()
+
+    @app.get("/protected")
+    async def protected(user: Principal = Depends(current_user)) -> dict:
+        return {"user_id": user.user_id}
+
+    client = TestClient(app)
+
+    # No header — must be 401
+    r = client.get("/protected")
+    assert r.status_code == 401
+
+    # Bad token — must be 401 (not 500)
+    r = client.get("/protected", headers={"Authorization": "Bearer not-a-jwt"})
+    assert r.status_code == 401
+
+    # Valid token — must be 200
+    token = _make_token(_java_shape_claims(user_id=99))
+    r = client.get("/protected", headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200
+    assert r.json() == {"user_id": 99}
 ```
 
 - [ ] **Step 2: Run — fails on import**
@@ -1279,6 +1379,9 @@ import jwt
 from fastapi import HTTPException, Request, status
 
 from app.core.config import get_settings
+from app.core.logging import get_logger
+
+_log = get_logger("savevia-ai.security")
 
 
 @dataclass(frozen=True)
@@ -1288,17 +1391,28 @@ class Principal:
 
 
 def _extract_bearer_token(request: Request) -> str:
+    """Strict RFC 6750 bearer parsing: 'Bearer <token>' with single whitespace separator."""
     auth = request.headers.get("Authorization") or request.headers.get("authorization")
-    if not auth or not auth.lower().startswith("bearer "):
+    if not auth:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="missing or malformed Authorization header",
+            detail="missing Authorization header",
         )
-    return auth.split(" ", 1)[1].strip()
+    parts = auth.split(None, 1)  # split on any whitespace, max 2 pieces
+    if len(parts) != 2 or parts[0].lower() != "bearer" or not parts[1].strip():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="malformed Authorization header",
+        )
+    return parts[1].strip()
 
 
 def current_user(request: Request) -> Principal:
-    """FastAPI dependency that verifies the inbound JWT and returns the Principal."""
+    """FastAPI dependency that verifies the inbound JWT and returns the Principal.
+
+    Reads userId from the standard `sub` claim (matches Java JwtService).
+    Requires both `sub` and `exp` claims to be present.
+    """
     token = _extract_bearer_token(request)
     settings = get_settings()
     try:
@@ -1306,25 +1420,35 @@ def current_user(request: Request) -> Principal:
             token,
             settings.jwt_secret,
             algorithms=[settings.jwt_algorithm],
+            options={"require": ["sub", "exp"]},
         )
     except jwt.PyJWTError as e:
+        _log.warning("jwt_decode_failed", error=str(e), error_type=type(e).__name__)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"invalid token: {e}",
+            detail="invalid token",
         ) from e
 
-    user_id = claims.get("userId")
-    if user_id is None:
+    sub = claims.get("sub")
+    try:
+        user_id = int(sub)
+    except (TypeError, ValueError) as e:
+        _log.warning("jwt_sub_not_numeric", sub=sub)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="token missing userId claim",
-        )
+            detail="invalid token",
+        ) from e
 
-    return Principal(user_id=int(user_id), email=claims.get("email"))
+    return Principal(user_id=user_id, email=claims.get("email"))
 
 
 def get_raw_token(request: Request) -> str:
-    """Returns the raw bearer token (for pass-through to Java services)."""
+    """Returns the raw bearer token (for pass-through to Java services).
+
+    The caller MUST NOT trust this token — it is forwarded as-is and the
+    downstream Java service re-verifies it. This helper exists only for
+    that pass-through pattern.
+    """
     return _extract_bearer_token(request)
 ```
 
@@ -1333,7 +1457,7 @@ def get_raw_token(request: Request) -> str:
 ```bash
 uv run pytest tests/test_security.py -v
 ```
-Expected: all 6 tests pass.
+Expected: all 12 tests pass.
 
 - [ ] **Step 5: Commit**
 
