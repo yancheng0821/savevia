@@ -22,7 +22,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         from app.core.db import dispose_engine
+        from app.core.redis_client import close_redis
         await dispose_engine()
+        await close_redis()
         log.info("service_stopping")
 
 
