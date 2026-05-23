@@ -29,7 +29,13 @@ class Transaction(Base):
     flinks_transaction_id: Mapped[str | None] = mapped_column(String(255))
     description: Mapped[str | None] = mapped_column(String(500))
     best_card_id: Mapped[int | None] = mapped_column(BigInteger)
-    actual_cashback: Mapped[Decimal | None] = mapped_column(Numeric(10, 4), default=Decimal("0.0000"))
-    optimal_cashback: Mapped[Decimal | None] = mapped_column(Numeric(10, 4), default=Decimal("0.0000"))
-    missed_cashback: Mapped[Decimal | None] = mapped_column(Numeric(10, 4), default=Decimal("0.0000"))
+    actual_cashback: Mapped[Decimal | None] = mapped_column(
+        Numeric(10, 4), default=Decimal("0.0000")
+    )
+    optimal_cashback: Mapped[Decimal | None] = mapped_column(
+        Numeric(10, 4), default=Decimal("0.0000")
+    )
+    missed_cashback: Mapped[Decimal | None] = mapped_column(
+        Numeric(10, 4), default=Decimal("0.0000")
+    )
     is_analyzed: Mapped[bool | None] = mapped_column(Boolean, default=False)

@@ -26,6 +26,7 @@ async def test_base_repository_crud_roundtrip():
         # based on what `SavedResult.__table__.columns` says is NOT NULL without
         # a default — minimum required: id, user_id, result_json, share_id.
         import uuid
+
         item = SavedResult(
             user_id=999_999,
             result_json='{"test": "delete-me"}',

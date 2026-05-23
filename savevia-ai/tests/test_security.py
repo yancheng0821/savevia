@@ -11,9 +11,7 @@ from app.core.config import get_settings
 def _build_request(headers: dict[str, str]) -> Request:
     scope = {
         "type": "http",
-        "headers": [
-            (k.lower().encode(), v.encode()) for k, v in headers.items()
-        ],
+        "headers": [(k.lower().encode(), v.encode()) for k, v in headers.items()],
         "method": "GET",
         "path": "/",
     }

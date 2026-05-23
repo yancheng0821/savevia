@@ -1,7 +1,4 @@
 import json
-import logging
-
-import structlog
 
 
 def test_logger_outputs_json(capsys):

@@ -14,6 +14,7 @@ NOTE: There is no MemoryController in Java today. The user-memory feature
 is owned by this Python service (`user_memory_facts` table) and exposed
 via internal Python endpoints — not by calling Java.
 """
+
 from typing import Any
 
 from app.clients._base import BaseJavaClient
@@ -34,9 +35,7 @@ class UserServiceClient(BaseJavaClient):
         """GET /api/v1/users/ai-usage — returns AiUsageInfo {limit, used, remaining, ...}."""
         return await self._get("/api/v1/users/ai-usage", user_id=user_id)
 
-    async def get_chat_history(
-        self, conversation_id: int, user_id: int
-    ) -> list[dict[str, Any]]:
+    async def get_chat_history(self, conversation_id: int, user_id: int) -> list[dict[str, Any]]:
         """GET /api/v1/chat/conversations/{id}/messages — returns List<ChatMessage>.
 
         `conversation_id` is `Long` on the Java side, not a string.

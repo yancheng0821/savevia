@@ -15,6 +15,7 @@ NOTE: There is no `/search` endpoint in the Java card service. Search must
 be composed in Python by combining `list_all_cards()` with local filtering
 (planned for Plan 02 tools).
 """
+
 from typing import Any
 
 from app.clients._base import BaseJavaClient
@@ -39,10 +40,6 @@ class CardServiceClient(BaseJavaClient):
         """POST /api/v1/cards/batch — body is a raw List<Long>, not wrapped."""
         return await self._post("/api/v1/cards/batch", json=card_ids)
 
-    async def get_card_usage_guide(
-        self, card_id: int, lang: str = "en"
-    ) -> dict[str, Any]:
+    async def get_card_usage_guide(self, card_id: int, lang: str = "en") -> dict[str, Any]:
         """GET /api/v1/cards/{id}/usage-guide — returns a single CardUsageGuideDTO."""
-        return await self._get(
-            f"/api/v1/cards/{card_id}/usage-guide", params={"lang": lang}
-        )
+        return await self._get(f"/api/v1/cards/{card_id}/usage-guide", params={"lang": lang})

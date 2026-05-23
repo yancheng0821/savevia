@@ -53,9 +53,7 @@ class TransactionRepository(BaseRepository[Transaction]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def find_recent_by_user_id(
-        self, user_id: int, limit: int = 50
-    ) -> list[Transaction]:
+    async def find_recent_by_user_id(self, user_id: int, limit: int = 50) -> list[Transaction]:
         stmt = (
             select(Transaction)
             .where(Transaction.user_id == user_id)
@@ -76,9 +74,7 @@ class TransactionRepository(BaseRepository[Transaction]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_category_summary(
-        self, user_id: int, start: datetime
-    ) -> list[CategorySummary]:
+    async def get_category_summary(self, user_id: int, start: datetime) -> list[CategorySummary]:
         """Translates `getCategorySummary` — per-category totals since `start`."""
         stmt = (
             select(

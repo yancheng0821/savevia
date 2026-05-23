@@ -20,9 +20,7 @@ class SavedResult(Base):
     net_annual_savings: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 2), default=Decimal("0.00")
     )
-    annual_reward: Mapped[Decimal | None] = mapped_column(
-        Numeric(10, 2), default=Decimal("0.00")
-    )
+    annual_reward: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), default=Decimal("0.00"))
     total_annual_fees: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 2), default=Decimal("0.00")
     )

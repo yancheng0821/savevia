@@ -29,6 +29,7 @@ async def test_all_models_match_live_schema():
 
     engine = get_engine()
     async with engine.connect() as conn:
+
         def _check(sync_conn):
             insp = inspect(sync_conn)
             errors = []

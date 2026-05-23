@@ -1,5 +1,5 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     finally:
         from app.core.db import dispose_engine
         from app.core.redis_client import close_redis
+
         await dispose_engine()
         await close_redis()
         log.info("service_stopping")

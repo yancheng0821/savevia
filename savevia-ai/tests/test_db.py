@@ -17,8 +17,9 @@ async def test_engine_executes_simple_query():
 
 
 def test_base_class_exists():
-    from app.models.base import Base
     from sqlalchemy.orm import DeclarativeBase
+
+    from app.models.base import Base
 
     assert issubclass(Base, DeclarativeBase)
 

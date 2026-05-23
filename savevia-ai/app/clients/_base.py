@@ -12,6 +12,7 @@ This base client:
 - Raises `JavaServiceError` on non-200 envelope code or HTTP error
 - Retries idempotent GETs on 5xx / timeout (max 2 attempts)
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -35,9 +36,7 @@ class JavaServiceError(Exception):
         path: str | None = None,
         method: str | None = None,
     ):
-        super().__init__(
-            f"[{service}] {method or ''} {path or ''} -> {status_code}: {message}"
-        )
+        super().__init__(f"[{service}] {method or ''} {path or ''} -> {status_code}: {message}")
         self.service = service
         self.status_code = status_code
         self.message = message
@@ -153,11 +152,7 @@ class BaseJavaClient:
                     method, path, headers=headers, params=params, json=json
                 )
                 # Retry on 5xx for GETs
-                if (
-                    method == "GET"
-                    and response.status_code >= 500
-                    and attempt < max_attempts - 1
-                ):
+                if method == "GET" and response.status_code >= 500 and attempt < max_attempts - 1:
                     _log.warning(
                         "java_service_5xx_retry",
                         service=self.service_name,
@@ -210,9 +205,7 @@ class BaseJavaClient:
         )
 
 
-def _raise_http_error(
-    service: str, response: httpx.Response, method: str, path: str
-) -> None:
+def _raise_http_error(service: str, response: httpx.Response, method: str, path: str) -> None:
     try:
         body = response.json()
         msg = body.get("message") or body.get("error") or response.text[:200]

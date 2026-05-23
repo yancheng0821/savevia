@@ -36,21 +36,27 @@ def test_settings_loads_from_env():
 
 
 def test_settings_rejects_short_jwt_secret():
-    from app.core.config import Settings
     from pydantic import ValidationError
+
+    from app.core.config import Settings
 
     with patch.dict(
         os.environ,
         {
-            "DB_HOST": "x", "DB_PORT": "3306", "DB_NAME": "x", "DB_USER": "x",
-            "DB_PASSWORD": "x", "REDIS_HOST": "x", "REDIS_PORT": "6379",
+            "DB_HOST": "x",
+            "DB_PORT": "3306",
+            "DB_NAME": "x",
+            "DB_USER": "x",
+            "DB_PASSWORD": "x",
+            "REDIS_HOST": "x",
+            "REDIS_PORT": "6379",
             "JWT_SECRET": "too-short",
-            "USER_SERVICE_URL": "http://x", "CARD_SERVICE_URL": "http://x",
+            "USER_SERVICE_URL": "http://x",
+            "CARD_SERVICE_URL": "http://x",
         },
         clear=True,
-    ):
-        with pytest.raises(ValidationError):
-            Settings(_env_file=None)
+    ), pytest.raises(ValidationError):
+        Settings(_env_file=None)
 
 
 def test_openai_api_key_optional():

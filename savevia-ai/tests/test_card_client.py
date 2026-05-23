@@ -3,6 +3,7 @@
 Card endpoints are public — no X-User-Id required.
 All responses are Java `Result<T>` envelopes; client unwraps to `data`.
 """
+
 import httpx
 import pytest
 import respx
@@ -24,9 +25,7 @@ def card_client():
 @respx.mock
 async def test_list_all_cards_unwraps_envelope(card_client):
     respx.get(f"{CARD_BASE}/api/v1/cards").mock(
-        return_value=httpx.Response(
-            200, json=_result([{"id": 1, "cardName": "TD Cash"}])
-        ),
+        return_value=httpx.Response(200, json=_result([{"id": 1, "cardName": "TD Cash"}])),
     )
     cards = await card_client.list_all_cards()
     assert cards == [{"id": 1, "cardName": "TD Cash"}]
@@ -48,9 +47,7 @@ async def test_get_cards_batch_sends_raw_list(card_client):
     Java endpoint: `getCardsByIds(@RequestBody List<Long> ids)`
     """
     route = respx.post(f"{CARD_BASE}/api/v1/cards/batch").mock(
-        return_value=httpx.Response(
-            200, json=_result([{"id": 1}, {"id": 2}, {"id": 3}])
-        ),
+        return_value=httpx.Response(200, json=_result([{"id": 1}, {"id": 2}, {"id": 3}])),
     )
     cards = await card_client.get_cards_batch(card_ids=[1, 2, 3])
     assert len(cards) == 3
@@ -121,9 +118,7 @@ async def test_business_error_on_get(card_client):
     from app.clients._base import JavaServiceError
 
     respx.get(f"{CARD_BASE}/api/v1/cards/999").mock(
-        return_value=httpx.Response(
-            200, json=_result(None, code=404, message="card not found")
-        ),
+        return_value=httpx.Response(200, json=_result(None, code=404, message="card not found")),
     )
     with pytest.raises(JavaServiceError) as exc:
         await card_client.get_card(card_id=999)

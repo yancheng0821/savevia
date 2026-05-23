@@ -20,9 +20,7 @@ class MissedCashbackReport(Base):
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     total_transactions: Mapped[int | None] = mapped_column(Integer, default=0)
-    total_spending: Mapped[Decimal | None] = mapped_column(
-        Numeric(15, 2), default=Decimal("0.00")
-    )
+    total_spending: Mapped[Decimal | None] = mapped_column(Numeric(15, 2), default=Decimal("0.00"))
     total_actual_cashback: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 2), default=Decimal("0.00")
     )

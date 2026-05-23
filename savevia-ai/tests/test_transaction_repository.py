@@ -23,10 +23,7 @@ async def _seed_user(session, user_id: int) -> None:
     seed the row up-front and let the cascade clean it up at test teardown.
     """
     await session.execute(
-        text(
-            "INSERT IGNORE INTO users (id, email, name) VALUES "
-            "(:id, :email, :name)"
-        ),
+        text("INSERT IGNORE INTO users (id, email, name) VALUES (:id, :email, :name)"),
         {"id": user_id, "email": f"tx-{user_id}@test.local", "name": f"tx{user_id}"},
     )
 
@@ -96,11 +93,15 @@ async def test_find_by_date_range(db_session):
     now = datetime.utcnow()
 
     inside = Transaction(
-        user_id=user_id, amount=Decimal("10"), merchant="A",
+        user_id=user_id,
+        amount=Decimal("10"),
+        merchant="A",
         transaction_date=now,
     )
     outside = Transaction(
-        user_id=user_id, amount=Decimal("20"), merchant="B",
+        user_id=user_id,
+        amount=Decimal("20"),
+        merchant="B",
         transaction_date=now - timedelta(days=60),
     )
     await repo.add_all([inside, outside])

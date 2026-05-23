@@ -15,9 +15,7 @@ class SavedResultRepository(BaseRepository[SavedResult]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, SavedResult)
 
-    async def find_by_user_id(
-        self, user_id: int, limit: int = 100
-    ) -> list[SavedResult]:
+    async def find_by_user_id(self, user_id: int, limit: int = 100) -> list[SavedResult]:
         stmt = (
             select(SavedResult)
             .where(SavedResult.user_id == user_id)
@@ -74,9 +72,7 @@ class SavedResultRepository(BaseRepository[SavedResult]):
         result = await self.session.execute(stmt)
         return result.rowcount or 0
 
-    async def update_share_id(
-        self, saved_id: int, share_id: str, *, ttl_days: int = 30
-    ) -> int:
+    async def update_share_id(self, saved_id: int, share_id: str, *, ttl_days: int = 30) -> int:
         """Translates `updateShareId` — assigns a share_id with 30-day TTL."""
         expires_at = datetime.utcnow() + timedelta(days=ttl_days)
         stmt = (

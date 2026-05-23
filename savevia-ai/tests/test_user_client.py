@@ -3,6 +3,7 @@
 Java returns `Result<T>` envelope; we assert the client unwraps to `data`.
 Auth is forwarded as `X-User-Id` header (gateway pattern).
 """
+
 import httpx
 import pytest
 import respx
@@ -50,9 +51,7 @@ async def test_get_user_card_ids_returns_list_of_long(user_client):
 @respx.mock
 async def test_get_ai_usage_limit_unwraps(user_client):
     respx.get(f"{USER_BASE}/api/v1/users/ai-usage").mock(
-        return_value=httpx.Response(
-            200, json=_result({"limit": 100, "used": 7, "remaining": 93})
-        ),
+        return_value=httpx.Response(200, json=_result({"limit": 100, "used": 7, "remaining": 93})),
     )
     usage = await user_client.get_ai_usage_limit(user_id=42)
     assert usage["remaining"] == 93
@@ -63,9 +62,7 @@ async def test_get_chat_history_uses_long_id(user_client):
     route = respx.get(f"{USER_BASE}/api/v1/chat/conversations/9001/messages").mock(
         return_value=httpx.Response(
             200,
-            json=_result(
-                [{"id": 1, "role": "user", "content": "hi"}]
-            ),
+            json=_result([{"id": 1, "role": "user", "content": "hi"}]),
         ),
     )
     msgs = await user_client.get_chat_history(conversation_id=9001, user_id=42)
@@ -79,9 +76,7 @@ async def test_business_error_inside_http_200_raises(user_client):
     from app.clients._base import JavaServiceError
 
     respx.get(f"{USER_BASE}/api/v1/users/ai-usage").mock(
-        return_value=httpx.Response(
-            200, json=_result(None, code=429, message="rate limited")
-        ),
+        return_value=httpx.Response(200, json=_result(None, code=429, message="rate limited")),
     )
     with pytest.raises(JavaServiceError) as exc:
         await user_client.get_ai_usage_limit(user_id=42)
