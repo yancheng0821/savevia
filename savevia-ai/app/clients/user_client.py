@@ -63,3 +63,59 @@ class UserServiceClient(BaseJavaClient):
         """
         data = await self._post(f"/api/v1/users/ai-usage/chat/record/{user_id}")
         return bool(data)
+
+    # ----- chat conversations / messages -----
+
+    async def create_conversation(
+        self, user_id: int, title: str = "New Conversation"
+    ) -> dict[str, Any]:
+        """POST /api/v1/chat/conversations — returns the created ChatConversation.
+
+        Body: {"title": "..."}. Requires X-User-Id.
+        """
+        return await self._post(
+            "/api/v1/chat/conversations",
+            user_id=user_id,
+            json={"title": title},
+        )
+
+    async def get_conversation(self, user_id: int, conversation_id: int) -> dict[str, Any]:
+        """GET /api/v1/chat/conversations/{id} — validates ownership.
+
+        Raises JavaServiceError (code=500, "Conversation not found") if the
+        conversation doesn't exist or is owned by another user. Callers
+        should catch and then fall back to creating a new conversation.
+        """
+        return await self._get(
+            f"/api/v1/chat/conversations/{conversation_id}",
+            user_id=user_id,
+        )
+
+    async def add_message(
+        self, user_id: int, conversation_id: int, role: str, content: str
+    ) -> dict[str, Any]:
+        """POST /api/v1/chat/conversations/{id}/messages — appends a message.
+
+        Body: {"role": "user"|"assistant", "content": "..."}. Returns the saved
+        ChatMessage (with id and createdAt populated by Java).
+        """
+        return await self._post(
+            f"/api/v1/chat/conversations/{conversation_id}/messages",
+            user_id=user_id,
+            json={"role": role, "content": content},
+        )
+
+    async def get_recent_messages(
+        self, user_id: int, conversation_id: int, limit: int = 10
+    ) -> list[dict[str, Any]]:
+        """GET /api/v1/chat/conversations/{id}/messages/recent?limit={limit}.
+
+        Returns the most recent `limit` messages (newest-last). This is the
+        AI-context endpoint — distinct from the un-suffixed /messages which
+        returns the full history and is used by the conversation list UI.
+        """
+        return await self._get(
+            f"/api/v1/chat/conversations/{conversation_id}/messages/recent",
+            user_id=user_id,
+            params={"limit": limit},
+        )
