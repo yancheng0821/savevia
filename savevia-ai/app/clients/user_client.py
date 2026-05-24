@@ -5,14 +5,23 @@ Endpoint map (verified against Java controllers):
     GET  /api/v1/users/me                          UserProfileController       -> UserDTO
     GET  /api/v1/users/me/cards                    UserCardController          -> List<Long>
     GET  /api/v1/users/ai-usage                    AiUsageController           -> AiUsageInfo
+    GET  /api/v1/users/ai-usage/chat/check/{id}    AiUsageController           -> Boolean
+    POST /api/v1/users/ai-usage/chat/record/{id}   AiUsageController           -> Boolean
+    POST /api/v1/chat/conversations                ChatController              -> ChatConversation
+    GET  /api/v1/chat/conversations/{id}           ChatController              -> ChatConversation
+    POST /api/v1/chat/conversations/{id}/messages  ChatController              -> ChatMessage
+    GET  /api/v1/chat/conversations/{id}/messages/recent?limit=N  -> List<ChatMessage>
     GET  /api/v1/chat/conversations/{id}/messages  ChatController              -> List<ChatMessage>
+    GET  /api/v1/internal/memory/{id}/context?categories=csv      -> MemoryContextDTO
+    POST /api/v1/admin/track                       (admin tracking, on user svc) -> void
 
-All four endpoints require the `X-User-Id` header (set by the gateway
-from the validated inbound JWT; we send the same header here).
+Auth pattern: X-User-Id is set for endpoints that key off the calling user
+(/users/me, /chat/conversations, /admin/track). Endpoints that take userId
+as a PATH parameter (/ai-usage/chat/check/{id}, /internal/memory/{id}/context)
+do NOT use X-User-Id. We never forward the raw inbound JWT to internal Java.
 
-NOTE: There is no MemoryController in Java today. The user-memory feature
-is owned by this Python service (`user_memory_facts` table) and exposed
-via internal Python endpoints — not by calling Java.
+Phase-2 note: user-memory READ is on Java (MemoryController). Phase 3 will
+port memory extraction to Python and add writeback methods here.
 """
 
 from typing import Any
@@ -118,4 +127,39 @@ class UserServiceClient(BaseJavaClient):
             f"/api/v1/chat/conversations/{conversation_id}/messages/recent",
             user_id=user_id,
             params={"limit": limit},
+        )
+
+    # ----- user memory (read-only in Phase 2; extraction is Phase 3) -----
+
+    async def get_user_memory_context(
+        self, user_id: int, categories: list[str] | None = None
+    ) -> dict[str, Any]:
+        """GET /api/v1/internal/memory/{userId}/context — returns MemoryContextDTO.
+
+        `categories` is an optional list of extended-memory categories to
+        include (e.g., ["spending", "lifestyle"]). Joined with commas for the
+        query param when present; omitted entirely when None/empty.
+        """
+        params: dict[str, Any] = {}
+        if categories:
+            params["categories"] = ",".join(categories)
+        return await self._get(
+            f"/api/v1/internal/memory/{user_id}/context",
+            params=params or None,
+        )
+
+    # ----- admin event tracking (fire-and-forget at call sites) -----
+
+    async def track_event(
+        self, event_type: str, user_id: int | None = None
+    ) -> None:
+        """POST /api/v1/admin/track — emits an analytics event.
+
+        Callers should wrap with try/except and never let a tracking failure
+        affect user-facing flow. X-User-Id is forwarded when present.
+        """
+        await self._post(
+            "/api/v1/admin/track",
+            user_id=user_id,
+            json={"eventType": event_type},
         )

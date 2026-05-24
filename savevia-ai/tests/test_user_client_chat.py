@@ -152,3 +152,77 @@ async def test_get_recent_messages_defaults_limit_to_10(user_client):
     )
     await user_client.get_recent_messages(user_id=42, conversation_id=9001)
     assert route.calls.last.request.url.params["limit"] == "10"
+
+
+# ---- memory context ----------------------------------------------------
+
+@respx.mock
+async def test_get_user_memory_context_no_categories(user_client):
+    route = respx.get(f"{USER_BASE}/api/v1/internal/memory/42/context").mock(
+        return_value=httpx.Response(
+            200,
+            json=_result({
+                "coreMemory": "User prefers cashback.",
+                "extendedMemory": None,
+                "recentSummaries": [],
+                "structuredFacts": {},
+                "hasMemory": True,
+            }),
+        ),
+    )
+    ctx = await user_client.get_user_memory_context(user_id=42)
+    assert ctx["hasMemory"] is True
+    assert ctx["coreMemory"].startswith("User")
+    # path-param endpoint must NOT also send X-User-Id
+    assert "X-User-Id" not in route.calls.last.request.headers
+    # no categories => no query param at all
+    assert route.calls.last.request.url.params.get("categories") is None
+
+
+@respx.mock
+async def test_get_user_memory_context_with_categories(user_client):
+    route = respx.get(f"{USER_BASE}/api/v1/internal/memory/42/context").mock(
+        return_value=httpx.Response(
+            200,
+            json=_result({"coreMemory": "", "hasMemory": False, "recentSummaries": []}),
+        ),
+    )
+    await user_client.get_user_memory_context(
+        user_id=42, categories=["spending", "lifestyle"]
+    )
+    assert route.calls.last.request.url.params["categories"] == "spending,lifestyle"
+
+
+@respx.mock
+async def test_get_user_memory_context_returns_none_friendly_when_no_memory(user_client):
+    """Empty/no memory is a valid response — the dict's hasMemory flag tells us."""
+    respx.get(f"{USER_BASE}/api/v1/internal/memory/42/context").mock(
+        return_value=httpx.Response(
+            200,
+            json=_result({"hasMemory": False, "recentSummaries": []}),
+        ),
+    )
+    ctx = await user_client.get_user_memory_context(user_id=42)
+    assert ctx["hasMemory"] is False
+
+
+# ---- admin tracking ----------------------------------------------------
+
+@respx.mock
+async def test_track_event_sends_body_and_x_user_id(user_client):
+    route = respx.post(f"{USER_BASE}/api/v1/admin/track").mock(
+        return_value=httpx.Response(200, json=_result(None)),
+    )
+    await user_client.track_event(event_type="ai_chat", user_id=42)
+    import json as _json
+    assert _json.loads(route.calls.last.request.content) == {"eventType": "ai_chat"}
+    assert route.calls.last.request.headers["X-User-Id"] == "42"
+
+
+@respx.mock
+async def test_track_event_without_user_id_omits_header(user_client):
+    route = respx.post(f"{USER_BASE}/api/v1/admin/track").mock(
+        return_value=httpx.Response(200, json=_result(None)),
+    )
+    await user_client.track_event(event_type="ai_chat", user_id=None)
+    assert "X-User-Id" not in route.calls.last.request.headers
