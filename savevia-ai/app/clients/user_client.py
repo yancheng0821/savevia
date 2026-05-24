@@ -44,3 +44,22 @@ class UserServiceClient(BaseJavaClient):
             f"/api/v1/chat/conversations/{conversation_id}/messages",
             user_id=user_id,
         )
+
+    async def check_can_use_chat(self, user_id: int) -> bool:
+        """GET /api/v1/users/ai-usage/chat/check/{userId} — returns Boolean.
+
+        userId is a path param; X-User-Id is NOT used (matches Java AiUsageController).
+        """
+        data = await self._get(f"/api/v1/users/ai-usage/chat/check/{user_id}")
+        return bool(data)
+
+    async def record_chat_usage(self, user_id: int) -> bool:
+        """POST /api/v1/users/ai-usage/chat/record/{userId} — increments chat counter.
+
+        Returns true on success. If the increment tips the user past their monthly
+        limit, Java responds HTTP 200 with code=429 — BaseJavaClient raises
+        JavaServiceError. Callers MUST catch and log; the chat response already
+        streamed to the user.
+        """
+        data = await self._post(f"/api/v1/users/ai-usage/chat/record/{user_id}")
+        return bool(data)
