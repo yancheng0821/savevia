@@ -24,9 +24,9 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # All available services
-ALL_SERVICES=("eureka-server" "gateway" "user-service" "card-service" "optimizer-service")
+ALL_SERVICES=("eureka-server" "gateway" "user-service" "card-service" "optimizer-service" "savevia-ai")
 
-# Get module name for service
+# Get module name for service (used to locate the Maven module)
 get_module() {
     case "$1" in
         "eureka-server") echo "savevia-eureka" ;;
@@ -34,11 +34,13 @@ get_module() {
         "user-service") echo "savevia-user" ;;
         "card-service") echo "savevia-card" ;;
         "optimizer-service") echo "savevia-optimizer" ;;
+        "savevia-ai") echo "savevia-ai" ;;
         *) echo "" ;;
     esac
 }
 
-# Get Dockerfile name for service
+# Get Dockerfile name for service (Java services live in deployment/docker/;
+# Python service has its own Dockerfile inside the module root).
 get_dockerfile() {
     case "$1" in
         "eureka-server") echo "Dockerfile.eureka" ;;
@@ -46,8 +48,14 @@ get_dockerfile() {
         "user-service") echo "Dockerfile.user" ;;
         "card-service") echo "Dockerfile.card" ;;
         "optimizer-service") echo "Dockerfile.optimizer" ;;
+        "savevia-ai") echo "savevia-ai/Dockerfile" ;;
         *) echo "" ;;
     esac
+}
+
+# Return 0 (success) if the service is the Python service (skip Maven).
+is_python_service() {
+    [ "$1" = "savevia-ai" ]
 }
 
 # Print colored message
@@ -105,8 +113,9 @@ select_services() {
     echo "  3) user-service"
     echo "  4) card-service"
     echo "  5) optimizer-service"
+    echo "  6) savevia-ai"
     echo ""
-    read -p "Enter numbers separated by space (e.g., '3 4 5'): " selection
+    read -p "Enter numbers separated by space (e.g., '3 4 6'): " selection
 
     if [ "$selection" == "0" ] || [ -z "$selection" ]; then
         SELECTED_SERVICES=("${ALL_SERVICES[@]}")
@@ -119,6 +128,7 @@ select_services() {
                 3) SELECTED_SERVICES+=("user-service") ;;
                 4) SELECTED_SERVICES+=("card-service") ;;
                 5) SELECTED_SERVICES+=("optimizer-service") ;;
+                6) SELECTED_SERVICES+=("savevia-ai") ;;
             esac
         done
     fi
@@ -134,6 +144,10 @@ build_services() {
     cd "$PROJECT_ROOT"
 
     for service in "${services[@]}"; do
+        if is_python_service "$service"; then
+            print_step "Skipping Maven build for $service (Python service)"
+            continue
+        fi
         local module=$(get_module "$service")
         if [ -n "$module" ]; then
             print_step "Building $module..."
@@ -159,15 +173,21 @@ build_docker_images() {
 
     for service in "${services[@]}"; do
         local dockerfile=$(get_dockerfile "$service")
-        if [ -n "$dockerfile" ]; then
-            print_step "Building Docker image: savevia/${service}..."
+        if [ -z "$dockerfile" ]; then
+            continue
+        fi
+        print_step "Building Docker image: savevia/${service}..."
+        if is_python_service "$service"; then
+            # Python service has its own Dockerfile + build context (savevia-ai/)
+            docker build -t savevia/${service}:latest -f "${dockerfile}" "${PROJECT_ROOT}/savevia-ai"
+        else
             docker build -t savevia/${service}:latest -f deployment/docker/${dockerfile} .
-            if [ $? -eq 0 ]; then
-                print_success "Docker image savevia/${service} built"
-            else
-                print_error "Failed to build Docker image: savevia/${service}"
-                exit 1
-            fi
+        fi
+        if [ $? -eq 0 ]; then
+            print_success "Docker image savevia/${service} built"
+        else
+            print_error "Failed to build Docker image: savevia/${service}"
+            exit 1
         fi
     done
 
@@ -263,6 +283,7 @@ start_services() {
             "user-service") compose_services+="user-service " ;;
             "card-service") compose_services+="card-service " ;;
             "optimizer-service") compose_services+="optimizer-service " ;;
+            "savevia-ai") compose_services+="savevia-ai " ;;
         esac
     done
 
@@ -312,7 +333,8 @@ verify_deployment() {
         check_health() {
             local name=$1
             local port=$2
-            local status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${port}/actuator/health" 2>/dev/null || echo "000")
+            local path=${3:-/actuator/health}
+            local status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${port}${path}" 2>/dev/null || echo "000")
             if [ "$status" == "200" ]; then
                 echo "✓ $name (port $port): healthy"
             else
@@ -325,6 +347,8 @@ verify_deployment() {
         check_health "User Service" 8081
         check_health "Card Service" 8082
         check_health "Optimizer Service" 8083
+        # savevia-ai (FastAPI): healthcheck path is /ready, not /actuator/health
+        check_health "SaveVia AI" 8002 /ready
 
         echo ""
         echo "Docker Container Status:"
@@ -404,7 +428,7 @@ usage() {
     echo "  cleanup-remote      Clean up remote server"
     echo ""
     echo "Services:"
-    echo "  eureka-server, gateway, user-service, card-service, optimizer-service"
+    echo "  eureka-server, gateway, user-service, card-service, optimizer-service, savevia-ai"
     echo ""
     echo "Examples:"
     echo "  ./deploy.sh deploy                    # Interactive selection"
