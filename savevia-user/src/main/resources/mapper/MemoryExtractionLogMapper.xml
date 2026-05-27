@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.MemoryExtractionLogMapper">
+
+    <resultMap id="logResultMap" type="com.savevia.user.entity.MemoryExtractionLog">
+        <id property="id" column="id"/>
+        <result property="conversationId" column="conversation_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="status" column="status"/>
+        <result property="processedAt" column="processed_at"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- Insert a new log entry -->
+    <insert id="insert" parameterType="com.savevia.user.entity.MemoryExtractionLog"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO memory_extraction_log
+            (conversation_id, user_id, status, error_message, created_at)
+        VALUES
+            (#{conversationId}, #{userId}, #{status}, #{errorMessage}, UTC_TIMESTAMP())
+    </insert>
+
+    <!-- Update status to processed -->
+    <update id="updateStatusProcessed">
+        UPDATE memory_extraction_log
+        SET status = 'success', error_message = NULL, processed_at = UTC_TIMESTAMP()
+        WHERE conversation_id = #{conversationId}
+    </update>
+
+    <!-- Update status to failed -->
+    <update id="updateStatusFailed">
+        UPDATE memory_extraction_log
+        SET status = 'failed', error_message = #{errorMessage}, processed_at = UTC_TIMESTAMP()
+        WHERE conversation_id = #{conversationId}
+    </update>
+
+    <!-- Check if conversation has been processed -->
+    <select id="selectByConversationId" parameterType="java.lang.Long" resultMap="logResultMap">
+        SELECT * FROM memory_extraction_log
+        WHERE conversation_id = #{conversationId}
+    </select>
+
+    <!-- Get pending extractions -->
+    <select id="selectPending" resultMap="logResultMap">
+        SELECT * FROM memory_extraction_log
+        WHERE status = 'pending'
+        ORDER BY created_at ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- Get failed extractions for retry -->
+    <select id="selectFailed" resultMap="logResultMap">
+        SELECT * FROM memory_extraction_log
+        WHERE status = 'failed'
+        ORDER BY processed_at ASC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

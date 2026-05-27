@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.UserConversationSummaryMapper">
+
+    <resultMap id="summaryResultMap" type="com.savevia.user.entity.UserConversationSummary">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="summary" column="summary"/>
+        <result property="keyTopics" column="key_topics"/>
+        <result property="recommendations" column="recommendations"/>
+        <result property="sourceConversationIds" column="source_conversation_ids"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- Insert a new summary -->
+    <insert id="insert" parameterType="com.savevia.user.entity.UserConversationSummary"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_conversation_summaries
+            (user_id, summary, key_topics, recommendations, source_conversation_ids, created_at)
+        VALUES
+            (#{userId}, #{summary}, #{keyTopics}, #{recommendations}, #{sourceConversationIds}, UTC_TIMESTAMP())
+    </insert>
+
+    <!-- Get recent summaries for a user -->
+    <select id="selectRecentByUserId" resultMap="summaryResultMap">
+        SELECT * FROM user_conversation_summaries
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- Get all summaries for a user -->
+    <select id="selectByUserId" parameterType="java.lang.Long" resultMap="summaryResultMap">
+        SELECT * FROM user_conversation_summaries
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- Delete summaries older than N days -->
+    <delete id="deleteOlderThan">
+        DELETE FROM user_conversation_summaries
+        WHERE created_at &lt; DATE_SUB(UTC_TIMESTAMP(), INTERVAL #{days} DAY)
+    </delete>
+
+    <!-- Delete all summaries for a user -->
+    <delete id="deleteByUserId" parameterType="java.lang.Long">
+        DELETE FROM user_conversation_summaries WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

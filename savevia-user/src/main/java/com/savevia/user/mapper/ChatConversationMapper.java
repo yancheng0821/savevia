@@ -48,4 +48,12 @@ public interface ChatConversationMapper {
      * Check if conversation belongs to user
      */
     int countByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
+
+    /**
+     * Get conversations that have been idle (not updated) since cutoff time.
+     * Used for memory extraction batch processing.
+     */
+    List<ChatConversation> selectIdleConversations(
+            @Param("cutoffTime") java.time.LocalDateTime cutoffTime,
+            @Param("limit") int limit);
 }

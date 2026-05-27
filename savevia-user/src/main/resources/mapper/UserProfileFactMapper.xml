@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.savevia.user.mapper.UserProfileFactMapper">
+
+    <resultMap id="factResultMap" type="com.savevia.user.entity.UserProfileFact">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="factCategory" column="fact_category"/>
+        <result property="factKey" column="fact_key"/>
+        <result property="factValue" column="fact_value"/>
+        <result property="source" column="source"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- Insert a new fact -->
+    <insert id="insert" parameterType="com.savevia.user.entity.UserProfileFact"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_profile_facts (user_id, fact_category, fact_key, fact_value, source, created_at, updated_at)
+        VALUES (#{userId}, #{factCategory}, #{factKey}, #{factValue}, #{source}, UTC_TIMESTAMP(), UTC_TIMESTAMP())
+    </insert>
+
+    <!-- Upsert: insert or update on duplicate key -->
+    <insert id="upsert" parameterType="com.savevia.user.entity.UserProfileFact">
+        INSERT INTO user_profile_facts (user_id, fact_category, fact_key, fact_value, source, created_at, updated_at)
+        VALUES (#{userId}, #{factCategory}, #{factKey}, #{factValue}, #{source}, UTC_TIMESTAMP(), UTC_TIMESTAMP())
+        ON DUPLICATE KEY UPDATE
+            fact_value = VALUES(fact_value),
+            source = VALUES(source),
+            updated_at = UTC_TIMESTAMP()
+    </insert>
+
+    <!-- Get all facts for a user -->
+    <select id="selectByUserId" parameterType="java.lang.Long" resultMap="factResultMap">
+        SELECT * FROM user_profile_facts
+        WHERE user_id = #{userId}
+        ORDER BY fact_category, fact_key
+    </select>
+
+    <!-- Get facts by user and categories -->
+    <select id="selectByUserIdAndCategories" resultMap="factResultMap">
+        SELECT * FROM user_profile_facts
+        WHERE user_id = #{userId}
+        AND fact_category IN
+        <foreach item="category" collection="categories" open="(" separator="," close=")">
+            #{category}
+        </foreach>
+        ORDER BY fact_category, fact_key
+    </select>
+
+    <!-- Get a specific fact -->
+    <select id="selectByUserIdAndCategoryAndKey" resultMap="factResultMap">
+        SELECT * FROM user_profile_facts
+        WHERE user_id = #{userId}
+          AND fact_category = #{factCategory}
+          AND fact_key = #{factKey}
+    </select>
+
+    <!-- Delete a specific fact -->
+    <delete id="deleteByUserIdAndCategoryAndKey">
+        DELETE FROM user_profile_facts
+        WHERE user_id = #{userId}
+          AND fact_category = #{factCategory}
+          AND fact_key = #{factKey}
+    </delete>
+
+    <!-- Delete all facts for a user -->
+    <delete id="deleteByUserId" parameterType="java.lang.Long">
+        DELETE FROM user_profile_facts WHERE user_id = #{userId}
+    </delete>
+
+</mapper>
