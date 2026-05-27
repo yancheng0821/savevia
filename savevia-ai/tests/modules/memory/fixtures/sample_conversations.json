@@ -108,7 +108,7 @@
   {
     "id": "09_citizen_premium_card",
     "messages": [
-      {"role": "user", "content": "I'm a Canadian citizen, $80k income, willing to pay up to $150 annual fee."},
+      {"role": "user", "content": "I'm a Canadian citizen, $80k income, willing to pay up to $200 annual fee."},
       {"role": "assistant", "content": "Premium cards with $100-200 fees offer great perks."},
       {"role": "user", "content": "I'd prefer cashback I can use on anything."},
       {"role": "assistant", "content": "Scotiabank Momentum Visa Infinite — $120 fee, 4% on groceries and gas."}
