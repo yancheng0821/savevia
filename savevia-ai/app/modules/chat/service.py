@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import AsyncIterator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from langchain_core.messages import (
     AIMessage,
@@ -23,6 +23,9 @@ from app.clients._base import JavaServiceError
 from app.clients.card_client import CardServiceClient
 from app.clients.user_client import UserServiceClient
 from app.core.logging import get_logger
+
+if TYPE_CHECKING:
+    from app.modules.memory.extraction_service import ExtractionService
 from app.modules.agent.context import use_tool_context
 from app.modules.agent.graph import (
     DEFAULT_RECURSION_LIMIT,
@@ -83,10 +86,12 @@ class ChatService:
         user_client: UserServiceClient,
         card_client: CardServiceClient,
         agent: Any,
+        extraction_service: "ExtractionService | None" = None,
     ):
         self._user = user_client
         self._card = card_client
         self._agent = agent
+        self._extraction = extraction_service
 
     async def stream(
         self,
@@ -265,6 +270,15 @@ class ChatService:
         # 7d. Fire-and-forget analytics
         asyncio.create_task(self._fire_track_event(user_id))
 
+        # 7e. Fire-and-forget memory extraction (Phase 3)
+        if self._extraction is not None:
+            convo_messages = self._build_convo_for_extraction(
+                recent=recent, user_message=message, assistant_text=full_text,
+            )
+            asyncio.create_task(self._fire_extraction(
+                user_id=user_id, conversation_id=conv_id, messages=convo_messages,
+            ))
+
         # 8. Done
         yield format_done_event()
 
@@ -297,3 +311,31 @@ class ChatService:
             await self._user.track_event(event_type="ai_chat", user_id=user_id)
         except Exception as e:  # noqa: BLE001
             _log.debug("track_event_failed", error=str(e))
+
+    @staticmethod
+    def _build_convo_for_extraction(
+        *,
+        recent: list[dict[str, Any]],
+        user_message: str,
+        assistant_text: str,
+    ) -> list[dict[str, Any]]:
+        """Assemble messages list the extraction chain will see — recent history
+        (already in order) + current user message + assistant reply."""
+        out: list[dict[str, Any]] = list(recent)
+        out.append({"role": "user", "content": user_message})
+        out.append({"role": "assistant", "content": assistant_text})
+        return out
+
+    async def _fire_extraction(
+        self,
+        *,
+        user_id: int,
+        conversation_id: int,
+        messages: list[dict[str, Any]],
+    ) -> None:
+        try:
+            await self._extraction.extract_and_save(
+                user_id=user_id, conversation_id=conversation_id, messages=messages,
+            )
+        except Exception as e:  # noqa: BLE001 — non-critical
+            _log.debug("extraction_dispatch_failed", error=str(e))

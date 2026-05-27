@@ -1,0 +1,134 @@
+[
+  {
+    "id": "01_new_immigrant_grocery",
+    "messages": [
+      {"role": "user", "content": "I just moved to Canada last year and I spend about $500 on groceries every month. What's the best card?"},
+      {"role": "assistant", "content": "Welcome! For groceries, the TD Cash Visa or CIBC Dividend Visa are great picks — 4% on groceries."},
+      {"role": "user", "content": "I prefer cashback over points, and I don't want any annual fee."},
+      {"role": "assistant", "content": "Then TD Cash Visa is your match — $0 annual fee, 4% on groceries and gas."}
+    ],
+    "expected": {
+      "identity": {"user_type": "new_immigrant"},
+      "spending": {"monthly_grocery": 500},
+      "preference": {"annual_fee_tolerance": "0", "reward_type": "cashback"}
+    }
+  },
+  {
+    "id": "02_student_transit_commute",
+    "messages": [
+      {"role": "user", "content": "I'm a student with no credit history, what card should I start with?"},
+      {"role": "assistant", "content": "Try a student card from Scotiabank or TD."},
+      {"role": "user", "content": "I commute by bus every day and don't travel much."},
+      {"role": "assistant", "content": "Then a flat-rate cashback like Scotiabank Momentum is fine — no need for travel perks."}
+    ],
+    "expected": {
+      "identity": {"user_type": "student"},
+      "lifestyle": {"commute_method": "transit", "travel_frequency": "never"}
+    }
+  },
+  {
+    "id": "03_high_income_travel_points",
+    "messages": [
+      {"role": "user", "content": "I make over $150k a year and travel internationally every quarter."},
+      {"role": "assistant", "content": "You'd benefit from a premium travel card."},
+      {"role": "user", "content": "I prefer points I can transfer to airlines."},
+      {"role": "assistant", "content": "AMEX Platinum or CIBC Aventura would suit you. Both have transfer partners."}
+    ],
+    "expected": {
+      "identity": {"income_range": "100k_plus"},
+      "preference": {"reward_type": "points"},
+      "lifestyle": {"travel_frequency": "quarterly"}
+    }
+  },
+  {
+    "id": "04_family_with_kids",
+    "messages": [
+      {"role": "user", "content": "I have two young kids and we spend a lot on groceries and gas."},
+      {"role": "assistant", "content": "Family-friendly cards focus on groceries/gas."},
+      {"role": "user", "content": "Roughly $800 on groceries, $300 on gas every month."},
+      {"role": "assistant", "content": "TD Cash Visa Infinite covers both at 3-4%."}
+    ],
+    "expected": {
+      "spending": {"monthly_grocery": 800, "monthly_gas": 300},
+      "lifestyle": {"has_children": true}
+    }
+  },
+  {
+    "id": "05_pet_owner_pr",
+    "messages": [
+      {"role": "user", "content": "I'm a permanent resident with a dog. Looking for an everyday cashback card."},
+      {"role": "assistant", "content": "Cashback cards are great for everyday spending."},
+      {"role": "user", "content": "I don't want any annual fee."},
+      {"role": "assistant", "content": "Tangerine Money-Back is a solid $0-fee choice."}
+    ],
+    "expected": {
+      "identity": {"user_type": "pr_holder"},
+      "preference": {"annual_fee_tolerance": "0", "reward_type": "cashback"},
+      "lifestyle": {"has_pets": true}
+    }
+  },
+  {
+    "id": "06_exclusion_amex",
+    "messages": [
+      {"role": "user", "content": "I don't want any AMEX cards — too many places don't accept them."},
+      {"role": "assistant", "content": "Understood. I'll focus on Visa and Mastercard options."},
+      {"role": "user", "content": "Show me grocery cards from TD or CIBC."},
+      {"role": "assistant", "content": "TD Cash Visa or CIBC Dividend Visa — both great for groceries."}
+    ],
+    "expected": {
+      "exclusion": {"excluded_networks": ["AMEX"]},
+      "preference": {"preferred_banks": ["TD", "CIBC"]}
+    }
+  },
+  {
+    "id": "07_work_permit_low_income",
+    "messages": [
+      {"role": "user", "content": "I just got my work permit. My income is around $40k."},
+      {"role": "assistant", "content": "Welcome! A starter card is best for now."},
+      {"role": "user", "content": "What's a good no-fee starter card?"},
+      {"role": "assistant", "content": "Try CIBC Costco Mastercard or PC Financial — both $0 fee."}
+    ],
+    "expected": {
+      "identity": {"user_type": "work_permit", "income_range": "30k_60k"},
+      "preference": {"annual_fee_tolerance": "0"}
+    }
+  },
+  {
+    "id": "08_high_dining_online",
+    "messages": [
+      {"role": "user", "content": "I eat out a lot — about $400 a month on dining."},
+      {"role": "assistant", "content": "Dining-focused cards earn extra on restaurants."},
+      {"role": "user", "content": "I also do $500 of online shopping monthly."},
+      {"role": "assistant", "content": "AMEX Cobalt covers both: 5x on dining, 1x on online."}
+    ],
+    "expected": {
+      "spending": {"monthly_dining": 400, "monthly_online": 500}
+    }
+  },
+  {
+    "id": "09_citizen_premium_card",
+    "messages": [
+      {"role": "user", "content": "I'm a Canadian citizen, $80k income, willing to pay up to $150 annual fee."},
+      {"role": "assistant", "content": "Premium cards with $100-200 fees offer great perks."},
+      {"role": "user", "content": "I'd prefer cashback I can use on anything."},
+      {"role": "assistant", "content": "Scotiabank Momentum Visa Infinite — $120 fee, 4% on groceries and gas."}
+    ],
+    "expected": {
+      "identity": {"user_type": "citizen", "income_range": "60k_100k"},
+      "preference": {"annual_fee_tolerance": "200", "reward_type": "cashback"}
+    }
+  },
+  {
+    "id": "10_remote_worker_recommendation",
+    "messages": [
+      {"role": "user", "content": "I work from home and rarely commute or travel. Looking for an everyday card."},
+      {"role": "assistant", "content": "For everyday spending, a flat-rate cashback card is simple and effective."},
+      {"role": "user", "content": "How about the Tangerine Money-Back?"},
+      {"role": "assistant", "content": "Great choice — $0 fee, 2% in three categories you pick. I'd recommend going for it."}
+    ],
+    "expected": {
+      "lifestyle": {"commute_method": "remote", "travel_frequency": "never"},
+      "preference": {"annual_fee_tolerance": "0"}
+    }
+  }
+]

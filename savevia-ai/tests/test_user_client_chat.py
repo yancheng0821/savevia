@@ -226,3 +226,34 @@ async def test_track_event_without_user_id_omits_header(user_client):
     )
     await user_client.track_event(event_type="ai_chat", user_id=None)
     assert "X-User-Id" not in route.calls.last.request.headers
+
+
+# ---- memory extraction writeback ---------------------------------------
+
+@respx.mock
+async def test_post_extracted_memory_sends_body_and_conversation_id(user_client):
+    route = respx.post(f"{USER_BASE}/api/v1/internal/memory/42/extracted").mock(
+        return_value=httpx.Response(200, json=_result(None)),
+    )
+    payload = {
+        "identity": {"userType": "new_immigrant"},
+        "summary": "test",
+    }
+    await user_client.post_extracted_memory(
+        user_id=42, conversation_id=9001, extraction=payload,
+    )
+    assert route.calls.last.request.url.params["conversationId"] == "9001"
+    assert "X-User-Id" not in route.calls.last.request.headers
+    import json as _json
+    assert _json.loads(route.calls.last.request.content) == payload
+
+
+@respx.mock
+async def test_post_extracted_memory_without_conversation_id_omits_param(user_client):
+    route = respx.post(f"{USER_BASE}/api/v1/internal/memory/42/extracted").mock(
+        return_value=httpx.Response(200, json=_result(None)),
+    )
+    await user_client.post_extracted_memory(
+        user_id=42, conversation_id=None, extraction={"summary": "x"},
+    )
+    assert route.calls.last.request.url.params.get("conversationId") is None

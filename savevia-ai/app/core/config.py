@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
+    # Public-facing URLs used by saved-result share-link generation + OG page
+    frontend_url: str = Field(default="https://savevia.app", alias="FRONTEND_URL")
+    share_base_url: str = Field(default="http://localhost:5173", alias="SHARE_BASE_URL")
+
     @field_validator("jwt_secret")
     @classmethod
     def jwt_secret_must_be_strong(cls, v: str) -> str:

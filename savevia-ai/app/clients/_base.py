@@ -126,9 +126,10 @@ class BaseJavaClient:
         self,
         path: str,
         user_id: int | None = None,
+        params: dict[str, Any] | None = None,
         json: Any = None,
     ) -> Any:
-        return await self._request("POST", path, user_id=user_id, json=json)
+        return await self._request("POST", path, user_id=user_id, params=params, json=json)
 
     async def _request(
         self,

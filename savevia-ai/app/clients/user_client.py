@@ -163,3 +163,26 @@ class UserServiceClient(BaseJavaClient):
             user_id=user_id,
             json={"eventType": event_type},
         )
+
+    async def post_extracted_memory(
+        self,
+        *,
+        user_id: int,
+        conversation_id: int | None,
+        extraction: dict[str, Any],
+    ) -> None:
+        """POST /api/v1/internal/memory/{userId}/extracted — writes back the
+        LLM-extracted MemoryExtractionResultDTO. Java handles dedup (upsert
+        per fact) + summary row.
+
+        `conversation_id` is forwarded as a query param so Java can stamp the
+        extraction log; omit (=None) for one-off / batch extractions.
+        """
+        params: dict[str, Any] = {}
+        if conversation_id is not None:
+            params["conversationId"] = conversation_id
+        await self._post(
+            f"/api/v1/internal/memory/{user_id}/extracted",
+            params=params or None,
+            json=extraction,
+        )

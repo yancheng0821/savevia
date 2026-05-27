@@ -1,10 +1,10 @@
 # savevia-ai Cutover — Implementation Plan (Phase 5 + 6 + 7)
 
-> **Status:** SKELETON. Step-level detail to be written when Phase 5 begins, after Phase 4 is feature-complete.
+> **Status:** SKELETON. Scope revised 2026-05-27 — **partial cutover**, Java optimizer is NOT decommissioned.
 
-**Goal:** Gateway configuration update, staging deployment, full regression validation, production cutover, observation period, and Java optimizer cleanup. After this plan, `savevia-ai` serves 100% of AI traffic in production and `savevia-optimizer` is deleted from the repo.
+**Goal (revised):** Cut over the Python-ported endpoint subset (chat / transactions / saved-results / optimize) from Java optimizer to `savevia-ai`. Java optimizer **stays in production** to keep serving Flinks / bank-connection / connection-limit endpoints (those tasks were deferred in Phase 4). No `savevia-optimizer/` deletion.
 
-**Architecture:** Spring Cloud Gateway routes flip from `lb://savevia-optimizer` to `http://savevia-ai:8002` in a single config change. Java optimizer stays running 7 days post-cutover as a rollback safety net. No data migration — Python and Java share MySQL/Redis.
+**Architecture:** Spring Cloud Gateway routes for the ported endpoints flip from `lb://savevia-optimizer` to `http://savevia-ai:8002`. Flinks-related routes (`/api/v1/bank-connections/**`, Flinks webhook path, etc.) stay pointing at Java. Both services run side by side indefinitely. No data migration — Python and Java share MySQL/Redis.
 
 **Reference spec:** `docs/superpowers/specs/2026-05-23-python-rewrite-design.md` §8, §9, §10 (Phases 5-7)
 
@@ -16,28 +16,24 @@
 
 ```
 # Modified:
-savevia-gateway/src/main/resources/application.yml      # route flips + Python URL
-docker-compose.yml                                       # uncomment savevia-ai service
+savevia-gateway/src/main/resources/application.yml      # route flips for ported endpoints only
+docker-compose.yml                                       # uncomment savevia-ai service (alongside savevia-optimizer)
 deployment/deploy.sh                                     # add savevia-ai build/push
 
 # Created:
 savevia-ai/scripts/
-├── snapshot_diff.py                # API snapshot diff Java vs Python
+├── snapshot_diff.py                # API snapshot diff Java vs Python (chat / transactions / saved-results / optimize only)
 ├── sse_replay_diff.py              # SSE format diff
 ├── agent_behavior_diff.py          # tool-call sequence diff
 ├── load_test.py                    # locust / k6 wrapper
 └── smoke_test.py                   # cutover-day end-to-end script
 
-deployment/
-├── savevia-ai.dockerfile           # (or use savevia-ai/Dockerfile) prod variant
-└── nginx/                          # if Nginx replaces Spring Cloud Gateway later (out of scope here)
-
 docs/runbooks/
 ├── cutover-runbook.md              # step-by-step cutover procedure
 └── rollback-runbook.md             # ≤5min rollback steps
 
-# Deleted (after T+7 observation):
-savevia-optimizer/                  # entire directory
+# NOT deleted (scope revised — Flinks/bank-connections deferred):
+savevia-optimizer/                  # remains in repo and in prod; serves Flinks routes only
 ```
 
 ---
@@ -70,15 +66,15 @@ savevia-optimizer/                  # entire directory
 | 15 | T+5min through T+1h: monitor error rate, p99 latency, SSE conn count, tool-call success rate | dashboards | 0.25 |
 | 16 | T+1h through T+1d: passive observation, on-call ready | dashboards | 1 |
 
-### Phase 7: Post-cutover cleanup (1 day, anytime in T+7 to T+14 window)
+### Phase 7: Post-cutover cleanup (scope revised — partial)
 
 | # | Task | Files | Days |
 |---|---|---|---|
-| 17 | T+7d (clean): shut down Java optimizer container | `docker-compose.yml`, deployment | 0.25 |
-| 18 | Remove `savevia-optimizer` from `savevia-parent/pom.xml` | `savevia-parent/pom.xml` | 0.25 |
-| 19 | Delete `savevia-optimizer/` directory | `git rm -r savevia-optimizer/` | 0.25 |
-| 20 | Update root README to reflect new architecture | `README.md`, `CLAUDE.md` | 0.25 |
-| | **Subtotal** | | **6** |
+| 17 | T+7d: trim Java optimizer config — remove dead chat/transactions/saved-results/optimize controllers & services from `savevia-optimizer` (Flinks-related code stays) | `savevia-optimizer/` | 1 |
+| 18 | Update root README + CLAUDE.md: dual-service architecture (Python AI + Java Flinks) | `README.md`, `CLAUDE.md` | 0.25 |
+| | **Subtotal (cutover only)** | | **~5** |
+
+> Java optimizer is **not** deleted. Future plan needed to port Flinks before the directory can be fully removed.
 
 ---
 
@@ -122,16 +118,17 @@ savevia-optimizer/                  # entire directory
 
 ---
 
-## Definition of Done
+## Definition of Done (revised — partial cutover)
 
-- [ ] All AI endpoints serve from Python in production
+- [ ] Chat / transactions / saved-results / optimize endpoints serve from Python in production
+- [ ] Flinks / bank-connections / connection-limits endpoints still serve from Java (no change)
 - [ ] 7 days post-cutover with no rollback needed
-- [ ] Java `savevia-optimizer/` directory deleted from repo
-- [ ] `savevia-parent/pom.xml` no longer references optimizer module
-- [ ] `docker-compose.yml` no longer has optimizer service
-- [ ] README updated; runbooks committed under `docs/runbooks/`
-- [ ] Tag `python-ai-cutover-complete` on final commit
+- [ ] Java `savevia-optimizer/` trimmed to Flinks-only (chat / optimizer / transactions / saved-results controllers + services removed)
+- [ ] `docker-compose.yml` has both `savevia-ai` AND `savevia-optimizer`
+- [ ] README + CLAUDE.md updated; runbooks committed under `docs/runbooks/`
+- [ ] Tag `python-ai-cutover-partial` on final commit
 - [ ] Retrospective written and shared
+- [ ] Follow-up issue filed: "Port Flinks integration to Python (future Phase 4.5)"
 
 ---
 

@@ -43,6 +43,9 @@ package = false
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-v --tb=short --strict-markers"
+markers = [
+    "live: tests that hit the real OpenAI API (requires OPENAI_API_KEY, costs $)",
+]
 
 [tool.ruff]
 line-length = 100

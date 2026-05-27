@@ -1,16 +1,16 @@
 # savevia-ai Remaining Endpoints — Implementation Plan (Phase 4)
 
-> **Status:** SKELETON. Step-level detail to be written when Phase 4 begins.
+> **Status:** PARTIAL — Tasks 6-11 done (transactions / saved-results / optimizer-api). Tasks 1-5 (Flinks / bank-connections / connection-limits) **DEFERRED** by user decision on 2026-05-27. Java `savevia-optimizer` keeps those endpoints; cutover in Phase 5 covers only the ported subset.
 
-**Goal:** Port the remaining non-chat business endpoints from Java optimizer to Python: Flinks bank connection integration, transactions analysis, saved results CRUD, bank connection CRUD, and the cashback optimizer (single-purchase recommendation endpoint). After this plan, **every endpoint currently served by `savevia-optimizer` is implemented in `savevia-ai`** — Java optimizer can be decommissioned (subject to staging validation in Phase 5).
+**Goal (revised):** Port the chat-adjacent business endpoints to Python: **transactions analysis**, **saved results CRUD**, and the **cashback optimizer** (single-purchase recommendation). Flinks integration, bank-connection CRUD, and connection-limit enforcement stay on Java optimizer indefinitely (until a separate future plan).
 
-**Architecture:** Standard FastAPI module pattern (router → service → repository). Flinks integration uses httpx for outbound HTTP and FastAPI routes for inbound webhook callbacks. CashbackCalculator (already implemented in Phase 2 Task 2) is reused by the OptimizerController endpoints.
+**Architecture:** Standard FastAPI module pattern (router → service → repository). CashbackCalculator (already implemented in Phase 2 Task 2) is reused by the OptimizerController endpoints.
 
 **Tech Stack:** Everything from Phase 1+2+3. No new dependencies.
 
 **Reference spec:** `docs/superpowers/specs/2026-05-23-python-rewrite-design.md` §11 (Phase 4)
 
-**Estimated effort:** 11 person-days (1.5 weeks solo).
+**Estimated effort (revised):** 6 person-days for the ported subset (Tasks 6-11). All complete as of 2026-05-27.
 
 **Reference Java code:**
 - `savevia-optimizer/src/main/java/com/savevia/optimizer/service/FlinksService.java` (585 LOC)
@@ -90,20 +90,23 @@ savevia-ai/app/
 
 ## Task List
 
-| # | Task | Files | Days |
-|---|---|---|---|
-| 1 | Flinks API client (httpx wrapper) — login/authorize/accounts/transactions | `modules/flinks/client.py` + test | 1 |
-| 2 | Flinks service: connect, refresh, disconnect, sandbox mode | `modules/flinks/service.py` + test | 1.5 |
-| 3 | Flinks webhook handler (verify signature, handle async callbacks) | `modules/flinks/webhook.py` + test | 0.5 |
-| 4 | ConnectionLimit repository + service (daily cap enforcement) | `modules/connection_limits/` + test | 1 |
-| 5 | Bank connection module (router/service/repository) | `modules/bank_connections/` + test | 1 |
-| 6 | Transaction categorization (MCC + merchant rules from merchant_categories table) | `modules/transactions/categorization.py` + test | 1 |
-| 7 | Transaction analysis (compute actual/optimal/missed cashback using CashbackCalculator) | `modules/transactions/analysis.py` + test | 1 |
-| 8 | Transaction router + service (list, analyze, summary, batch-import from Flinks) | `modules/transactions/router.py`, `service.py` + tests | 1.5 |
-| 9 | Saved results module | `modules/saved_results/` + test | 1 |
-| 10 | Optimizer API endpoints (single-purchase recommendation) | `modules/optimizer_api/` + test | 1 |
-| 11 | Wire all routers into FastAPI app | `app/main.py` (modify) | 0.5 |
-| | **Subtotal** | | **11** |
+| # | Task | Files | Days | Status |
+|---|---|---|---|---|
+| 1 | Flinks API client (httpx wrapper) — login/authorize/accounts/transactions | `modules/flinks/client.py` + test | 1 | **DEFERRED** |
+| 2 | Flinks service: connect, refresh, disconnect, sandbox mode | `modules/flinks/service.py` + test | 1.5 | **DEFERRED** |
+| 3 | Flinks webhook handler (verify signature, handle async callbacks) | `modules/flinks/webhook.py` + test | 0.5 | **DEFERRED** |
+| 4 | ConnectionLimit repository + service (daily cap enforcement) | `modules/connection_limits/` + test | 1 | **DEFERRED** |
+| 5 | Bank connection module (router/service/repository) | `modules/bank_connections/` + test | 1 | **DEFERRED** |
+| 6 | Transaction categorization (MCC + merchant rules from merchant_categories table) | `modules/transactions/categorization.py` + test | 1 | ✅ done |
+| 7 | Transaction analysis (compute actual/optimal/missed cashback using CashbackCalculator) | `modules/transactions/analysis.py` + test | 1 | ✅ done |
+| 8 | Transaction router + service (list, analyze, summary, batch-import from Flinks) | `modules/transactions/router.py`, `service.py` + tests | 1.5 | ✅ done |
+| 9 | Saved results module | `modules/saved_results/` + test | 1 | ✅ done |
+| 10 | Optimizer API endpoints (single-purchase recommendation) | `modules/optimizer_api/` + test | 1 | ✅ done |
+| 11 | Wire all routers into FastAPI app | `app/main.py` (modify) | 0.5 | ✅ done (transactions / saved_results / optimizer_api only) |
+| | **Subtotal — done** | | **6** | |
+| | **Subtotal — deferred** | | **5** | |
+
+> **Deferral rationale (2026-05-27):** Flinks/bank-connection integration is currently stable in Java and not on the AI rewrite's critical path. Keeping it on Java avoids the heaviest Flinks porting risk (webhook signature verification, sandbox parity, idempotent transaction import) while still letting Phase 5 cut chat + transactions + saved-results + optimizer over to Python. A separate future plan will revisit Flinks porting if/when business need arises.
 
 ---
 
@@ -118,12 +121,11 @@ savevia-ai/app/
 
 ---
 
-## Definition of Done
+## Definition of Done (revised)
 
-- Every endpoint currently served by `savevia-optimizer` has an equivalent in `savevia-ai`
-- Endpoint paths, request/response shapes match Java exactly (CI snapshot diff)
-- Flinks webhook responds correctly to sandbox callbacks
-- Connection limit enforcement matches Java behavior
-- Transaction analysis output matches Java for 50+ recorded transactions
-- All Phase 4 unit tests pass; Phase 1-3 tests still pass
-- Tag `savevia-ai-phase-4` on completion
+- ✅ Transactions / saved-results / optimizer endpoints implemented in `savevia-ai`
+- ✅ Endpoint paths, request/response shapes match Java (verified by integration tests in `tests/modules/{optimizer_api,saved_results,transactions}/`)
+- ✅ Transaction categorization matches Java MCC + merchant-rule lookup
+- ✅ All ported Phase 4 unit tests pass; Phase 1-3 tests still pass
+- ⏸️ Flinks webhook, bank-connection CRUD, connection-limit enforcement — **kept on Java**, not in scope
+- ⏭️ Phase 5 cutover scope adjusted: route chat / transactions / saved-results / optimize endpoints to Python; keep Flinks / bank-connections on Java optimizer

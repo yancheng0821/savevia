@@ -55,9 +55,12 @@ def _conv(id: int = 9001) -> dict:
     return {"id": id, "userId": 42, "title": "x"}
 
 
-def _build_service(*, user, card, agent):
+def _build_service(*, user, card, agent, extraction=None):
     from app.modules.chat.service import ChatService
-    return ChatService(user_client=user, card_client=card, agent=agent)
+    return ChatService(
+        user_client=user, card_client=card, agent=agent,
+        extraction_service=extraction,
+    )
 
 
 async def _collect(stream) -> list[str]:
@@ -319,3 +322,74 @@ async def test_uncaught_exception_emits_internal_error(fake_clients):
         user_id=42, message="hi", locale="en", conversation_id=None,
     ))
     assert "INTERNAL_ERROR" in "".join(frames)
+
+
+# ---- extraction wiring -------------------------------------------------
+
+async def test_extraction_service_invoked_after_done(fake_clients):
+    user, card = fake_clients
+    user.check_can_use_chat.return_value = True
+    user.create_conversation.return_value = _conv(9001)
+    user.get_user_card_ids.return_value = []
+    user.get_recent_messages.return_value = []
+    user.get_user_memory_context.return_value = {"hasMemory": False}
+
+    extraction = AsyncMock()
+    svc = _build_service(
+        user=user, card=card,
+        agent=_FakeAgent([_text_chunk("hello")]),
+        extraction=extraction,
+    )
+    await _collect(svc.stream(
+        user_id=42, message="hi", locale="en", conversation_id=None,
+    ))
+    import asyncio
+    await asyncio.sleep(0)
+
+    extraction.extract_and_save.assert_awaited_once()
+    kwargs = extraction.extract_and_save.await_args.kwargs
+    assert kwargs["user_id"] == 42
+    assert kwargs["conversation_id"] == 9001
+    roles = [m["role"] for m in kwargs["messages"]]
+    assert "user" in roles and "assistant" in roles
+
+
+async def test_extraction_failure_does_not_affect_stream(fake_clients):
+    user, card = fake_clients
+    user.check_can_use_chat.return_value = True
+    user.create_conversation.return_value = _conv()
+    user.get_user_card_ids.return_value = []
+    user.get_recent_messages.return_value = []
+    user.get_user_memory_context.return_value = {"hasMemory": False}
+
+    extraction = AsyncMock()
+    extraction.extract_and_save.side_effect = RuntimeError("blow up")
+    svc = _build_service(
+        user=user, card=card,
+        agent=_FakeAgent([_text_chunk("hello")]),
+        extraction=extraction,
+    )
+    frames = await _collect(svc.stream(
+        user_id=42, message="hi", locale="en", conversation_id=None,
+    ))
+    assert "event:done" in "".join(frames)
+
+
+async def test_extraction_omitted_when_service_is_none(fake_clients):
+    """Older callers (or test code) without an extraction_service must keep working."""
+    user, card = fake_clients
+    user.check_can_use_chat.return_value = True
+    user.create_conversation.return_value = _conv()
+    user.get_user_card_ids.return_value = []
+    user.get_recent_messages.return_value = []
+    user.get_user_memory_context.return_value = {"hasMemory": False}
+
+    svc = _build_service(
+        user=user, card=card,
+        agent=_FakeAgent([_text_chunk("hello")]),
+        extraction=None,
+    )
+    frames = await _collect(svc.stream(
+        user_id=42, message="hi", locale="en", conversation_id=None,
+    ))
+    assert "event:done" in "".join(frames)

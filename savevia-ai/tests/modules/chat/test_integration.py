@@ -13,7 +13,8 @@ def _result(data, code: int = 200, message: str = "success") -> dict:
 
 @pytest.fixture(autouse=True)
 def _stub_agent(monkeypatch):
-    """Replace build_agent() so the app starts without any OpenAI traffic."""
+    """Replace build_agent() + build_extraction_chain() so the app starts
+    without any OpenAI traffic."""
     class _Agent:
         async def astream_events(self, *args, version, config=None):
             from langchain_core.messages import AIMessageChunk
@@ -21,9 +22,15 @@ def _stub_agent(monkeypatch):
                 "event": "on_chat_model_stream",
                 "data": {"chunk": AIMessageChunk(content="Hi!")},
             }
-    # The agent is imported into main.py — patch the symbol that main uses.
+
+    class _StubChain:
+        async def ainvoke(self, _):
+            from app.modules.memory.schema import MemoryExtractionResult
+            return MemoryExtractionResult(summary="stub")
+
     import app.main
     monkeypatch.setattr(app.main, "build_agent", lambda *a, **kw: _Agent())
+    monkeypatch.setattr(app.main, "build_extraction_chain", lambda *a, **kw: _StubChain())
 
 
 @pytest.fixture
