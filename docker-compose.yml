@@ -50,36 +50,36 @@ services:
       timeout: 5s
       retries: 5
 
-  # savevia-ai:
-  #   build:
-  #     context: ./savevia-ai
-  #     dockerfile: Dockerfile
-  #   container_name: savevia-ai
-  #   ports:
-  #     - "8002:8002"
-  #   environment:
-  #     DB_HOST: mysql
-  #     DB_PORT: 3306
-  #     DB_NAME: ${MYSQL_DATABASE:-savevia}
-  #     DB_USER: ${MYSQL_USER:-savevia}
-  #     DB_PASSWORD: ${MYSQL_PASSWORD:-savevia123}
-  #     REDIS_HOST: redis
-  #     REDIS_PORT: 6379
-  #     JWT_SECRET: ${JWT_SECRET}
-  #     USER_SERVICE_URL: http://host.docker.internal:8081
-  #     CARD_SERVICE_URL: http://host.docker.internal:8082
-  #     OPENAI_API_KEY: ${OPENAI_API_KEY}
-  #     OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
-  #     SERVICE_PORT: 8002
-  #     ENVIRONMENT: development
-  #     LOG_LEVEL: INFO
-  #   depends_on:
-  #     mysql:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
-  #   extra_hosts:
-  #     - "host.docker.internal:host-gateway"
+  savevia-ai:
+    build:
+      context: ./savevia-ai
+      dockerfile: Dockerfile
+    container_name: savevia-ai
+    ports:
+      - "8002:8002"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-savevia}
+      DB_USER: ${MYSQL_USER:-savevia}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-savevia123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      USER_SERVICE_URL: http://host.docker.internal:8081
+      CARD_SERVICE_URL: http://host.docker.internal:8082
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      SERVICE_PORT: 8002
+      ENVIRONMENT: development
+      LOG_LEVEL: INFO
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   savevia-mysql-data:
