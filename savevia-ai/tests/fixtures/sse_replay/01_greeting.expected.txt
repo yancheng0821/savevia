@@ -1,0 +1,90 @@
+event:conversation
+data:19
+
+event:message
+data:{"t":"Hello"}
+
+event:message
+data:{"t":"!"}
+
+event:message
+data:{"t":" How"}
+
+event:message
+data:{"t":" can"}
+
+event:message
+data:{"t":" I"}
+
+event:message
+data:{"t":" assist"}
+
+event:message
+data:{"t":" you"}
+
+event:message
+data:{"t":" today"}
+
+event:message
+data:{"t":"?"}
+
+event:message
+data:{"t":" If"}
+
+event:message
+data:{"t":" you"}
+
+event:message
+data:{"t":" have"}
+
+event:message
+data:{"t":" any"}
+
+event:message
+data:{"t":" questions"}
+
+event:message
+data:{"t":" about"}
+
+event:message
+data:{"t":" credit"}
+
+event:message
+data:{"t":" cards"}
+
+event:message
+data:{"t":" or"}
+
+event:message
+data:{"t":" need"}
+
+event:message
+data:{"t":" help"}
+
+event:message
+data:{"t":" choosing"}
+
+event:message
+data:{"t":" one"}
+
+event:message
+data:{"t":","}
+
+event:message
+data:{"t":" feel"}
+
+event:message
+data:{"t":" free"}
+
+event:message
+data:{"t":" to"}
+
+event:message
+data:{"t":" ask"}
+
+event:message
+data:{"t":"!"}
+
+event:done
+data:
+

@@ -1,1 +1,242 @@
-[]
+[
+  {
+    "id": "01_greeting",
+    "user_id": 4,
+    "message": "Hi there!",
+    "locale": "en",
+    "stub_llm": [
+      {
+        "type": "text",
+        "text": "Hello"
+      },
+      {
+        "type": "text",
+        "text": "!"
+      },
+      {
+        "type": "text",
+        "text": " How"
+      },
+      {
+        "type": "text",
+        "text": " can"
+      },
+      {
+        "type": "text",
+        "text": " I"
+      },
+      {
+        "type": "text",
+        "text": " assist"
+      },
+      {
+        "type": "text",
+        "text": " you"
+      },
+      {
+        "type": "text",
+        "text": " today"
+      },
+      {
+        "type": "text",
+        "text": "?"
+      },
+      {
+        "type": "text",
+        "text": " If"
+      },
+      {
+        "type": "text",
+        "text": " you"
+      },
+      {
+        "type": "text",
+        "text": " have"
+      },
+      {
+        "type": "text",
+        "text": " any"
+      },
+      {
+        "type": "text",
+        "text": " questions"
+      },
+      {
+        "type": "text",
+        "text": " about"
+      },
+      {
+        "type": "text",
+        "text": " credit"
+      },
+      {
+        "type": "text",
+        "text": " cards"
+      },
+      {
+        "type": "text",
+        "text": " or"
+      },
+      {
+        "type": "text",
+        "text": " need"
+      },
+      {
+        "type": "text",
+        "text": " help"
+      },
+      {
+        "type": "text",
+        "text": " choosing"
+      },
+      {
+        "type": "text",
+        "text": " one"
+      },
+      {
+        "type": "text",
+        "text": ","
+      },
+      {
+        "type": "text",
+        "text": " feel"
+      },
+      {
+        "type": "text",
+        "text": " free"
+      },
+      {
+        "type": "text",
+        "text": " to"
+      },
+      {
+        "type": "text",
+        "text": " ask"
+      },
+      {
+        "type": "text",
+        "text": "!"
+      }
+    ],
+    "user_cards": [],
+    "conversation_id": 19
+  },
+  {
+    "id": "07_chinese",
+    "user_id": 4,
+    "message": "你好",
+    "locale": "zh",
+    "stub_llm": [
+      {
+        "type": "text",
+        "text": "你好"
+      },
+      {
+        "type": "text",
+        "text": "！"
+      },
+      {
+        "type": "text",
+        "text": "有什么"
+      },
+      {
+        "type": "text",
+        "text": "我"
+      },
+      {
+        "type": "text",
+        "text": "可以"
+      },
+      {
+        "type": "text",
+        "text": "帮助"
+      },
+      {
+        "type": "text",
+        "text": "你"
+      },
+      {
+        "type": "text",
+        "text": "的吗"
+      },
+      {
+        "type": "text",
+        "text": "？"
+      },
+      {
+        "type": "text",
+        "text": "如果"
+      },
+      {
+        "type": "text",
+        "text": "你"
+      },
+      {
+        "type": "text",
+        "text": "有"
+      },
+      {
+        "type": "text",
+        "text": "关于"
+      },
+      {
+        "type": "text",
+        "text": "信用"
+      },
+      {
+        "type": "text",
+        "text": "卡"
+      },
+      {
+        "type": "text",
+        "text": "的问题"
+      },
+      {
+        "type": "text",
+        "text": "或者"
+      },
+      {
+        "type": "text",
+        "text": "需要"
+      },
+      {
+        "type": "text",
+        "text": "建议"
+      },
+      {
+        "type": "text",
+        "text": "，"
+      },
+      {
+        "type": "text",
+        "text": "随"
+      },
+      {
+        "type": "text",
+        "text": "时"
+      },
+      {
+        "type": "text",
+        "text": "问"
+      },
+      {
+        "type": "text",
+        "text": "我"
+      },
+      {
+        "type": "text",
+        "text": "！"
+      }
+    ],
+    "user_cards": [],
+    "conversation_id": 18
+  },
+  {
+    "id": "09_invalid_input",
+    "user_id": 4,
+    "message": "",
+    "locale": "en",
+    "stub_llm": [],
+    "user_cards": []
+  }
+]

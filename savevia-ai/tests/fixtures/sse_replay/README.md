@@ -9,38 +9,52 @@ response parity. (Response-quality parity is its own QA pass after cutover.)
 
 ## How to record a fixture from Java
 
-1. Bring up the Java optimizer service (`./restart-backend.sh` → choose `o`).
-2. Pick or create a test user; mint an `X-User-Id` value (gateway-equivalent).
-3. For each scripted prompt in [`cases.json`](./cases.json), run:
+1. Bring up the Java stack (eureka + card + user + optimizer on `:8083`). The
+   optimizer jar needs Java 17 (`JAVA_HOME=$(/usr/libexec/java_home -v 17)`).
+2. Pick a test user that owns some cards (e.g. `4`); pass it as `X-User-Id`
+   (the gateway normally injects this from the JWT).
+3. Capture each case into `captures/<case-id>.txt`:
 
    ```bash
    curl -sN -X POST http://localhost:8083/api/v1/chat/stream \
        -H 'Content-Type: application/json' \
-       -H 'X-User-Id: <user-id>' \
+       -H 'X-User-Id: 4' \
        -d '{"message":"<prompt>","locale":"<locale>"}' \
-       > tests/fixtures/sse_replay/<case-id>.expected.txt
+       > captures/<case-id>.txt
    ```
 
-4. Inspect the captured file — every frame should start with `event:` (no
-   space after colon) and end with a blank line. Tool-call data should be
-   compact JSON with no whitespace.
+4. Build the fixtures (parses the raw Java bytes into `cases.json` +
+   `<id>.expected.txt`, deriving the stub LLM script):
+
+   ```bash
+   python scripts/capture_java_sse.py captures tests/fixtures/sse_replay
+   ```
 
 ## Cases
 
-The canonical 10 prompts cover the SSE format surface:
+**Recorded (byte-for-byte vs live Java, 2026-05-30):**
 
 | id | covers |
 |----|---|
 | `01_greeting` | bare text response, no tools |
-| `02_no_cards_recommend` | `search_cards` tool path |
-| `03_best_card_groceries` | `get_user_cards` + `get_best_card` |
-| `04_calc_reward_dining` | `calculate_reward` |
-| `05_compare_two_cards` | `compare_cards` |
-| `06_usage_guide` | `get_card_usage_guide` |
-| `07_chinese_locale` | non-English language directive |
-| `08_quota_exceeded` | single `error` frame, no tools |
-| `09_invalid_input` | `INVALID_INPUT` error |
-| `10_long_response_with_tool_chain` | multi-tool + long text |
+| `07_chinese` | non-English language directive (unicode emitted unescaped) |
+| `09_invalid_input` | `INVALID_INPUT` error frame, no conversation |
+
+These exercise the highest-risk format surface: the `conversation` plain-id
+frame, `message` `{"t":...}` compact wrapper (incl. unescaped CJK), the empty
+`done` frame, and the `error` frame.
+
+**Not recorded as byte-match fixtures (documented reasons):**
+
+| id | reason |
+|----|---|
+| `02`–`06`, `10` (tool paths) | `tool_result` DATA isn't byte-comparable: Java Jackson serialises `BigDecimal` as `15.0000000` / `0.05000`; Python `json.dumps` emits `15.0` / `0.05`. Tool-frame **structure** is asserted in `tests/modules/chat/test_sse.py`. |
+| `08_quota_exceeded` | the Java path requires a real over-quota user; the error-frame format is already covered byte-for-byte by `09_invalid_input` + `test_sse.py`. |
+
+The capture tool drops empty-content `message` frames (`{"t":""}`) — Java
+forwards OpenAI's leading empty chunk, Python suppresses empty deltas
+(`ChatService` `if text:`); the frame is a frontend no-op. See
+`scripts/capture_java_sse.py` for the full normalization note.
 
 ## Stub LLM script
 
@@ -54,6 +68,6 @@ The Python regression test feeds the stub script through the production
 
 ## Status
 
-- `cases.json` is currently empty pending recording from a live Java instance.
-- The harness (`tests/modules/chat/test_sse_regression.py`) is in place and
-  will pick up fixtures automatically once they're added.
+- `cases.json` holds 3 byte-for-byte fixtures recorded from live Java (2026-05-30).
+- `tests/modules/chat/test_sse_regression.py` asserts each case (no longer skipped).
+- To add more, capture into `captures/` and re-run `scripts/capture_java_sse.py`.
