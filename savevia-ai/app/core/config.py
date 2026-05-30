@@ -43,6 +43,21 @@ class Settings(BaseSettings):
     openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
     openai_base_url: str = Field(default="https://api.openai.com", alias="OPENAI_BASE_URL")
 
+    # Flinks bank-data integration (defaults match Java FlinksService @Value)
+    flinks_api_url: str = Field(
+        default="https://toolbox-api.private.fin.ag/v3", alias="FLINKS_API_URL"
+    )
+    flinks_customer_id: str = Field(
+        default="43387ca6-0391-4c82-857d-70d95f087ecb", alias="FLINKS_CUSTOMER_ID"
+    )
+    flinks_iframe_url: str = Field(
+        default="https://toolbox-iframe.private.fin.ag/", alias="FLINKS_IFRAME_URL"
+    )
+    flinks_sandbox: bool = Field(default=True, alias="FLINKS_SANDBOX")
+    connection_max_per_month: int = Field(
+        default=5, alias="SAVEVIA_CONNECTION_MAX_PER_MONTH"
+    )
+
     # Service identity
     service_name: str = Field(default="savevia-ai", alias="SERVICE_NAME")
     service_port: int = Field(default=8002, alias="SERVICE_PORT")

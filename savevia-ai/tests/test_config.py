@@ -82,6 +82,33 @@ def test_openai_api_key_optional():
         assert s.openai_api_key == ""
 
 
+def test_flinks_settings_have_java_matching_defaults():
+    from app.core.config import Settings
+
+    with patch.dict(
+        os.environ,
+        {
+            "DB_HOST": "x",
+            "DB_PORT": "3306",
+            "DB_NAME": "x",
+            "DB_USER": "x",
+            "DB_PASSWORD": "x",
+            "REDIS_HOST": "x",
+            "REDIS_PORT": "6379",
+            "JWT_SECRET": "secret-at-least-32-chars-long-xxxxxx",
+            "USER_SERVICE_URL": "http://x",
+            "CARD_SERVICE_URL": "http://x",
+        },
+        clear=True,
+    ):
+        s = Settings(_env_file=None)
+        assert s.flinks_api_url == "https://toolbox-api.private.fin.ag/v3"
+        assert s.flinks_customer_id == "43387ca6-0391-4c82-857d-70d95f087ecb"
+        assert s.flinks_iframe_url == "https://toolbox-iframe.private.fin.ag/"
+        assert s.flinks_sandbox is True
+        assert s.connection_max_per_month == 5
+
+
 def test_password_with_special_chars_is_url_encoded():
     from app.core.config import Settings
 
