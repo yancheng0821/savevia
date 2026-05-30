@@ -1,10 +1,10 @@
 # savevia-ai Cutover — Implementation Plan (Phase 5 + 6 + 7)
 
-> **Status:** SKELETON. Scope revised 2026-05-27 — **partial cutover**, Java optimizer is NOT decommissioned.
+> **Status:** SKELETON. Scope revised 2026-05-27 (partial cutover) — then **superseded 2026-05-30**: Flinks/bank-connection is now being ported to Python (see `docs/superpowers/plans/2026-05-30-p4-flinks-port-and-regression.md`). The "Flinks stays on Java" assumption below is the pre-port interim. **End-state: once the Python Flinks port is validated and cut over, the `optimizer-bank` route flips to `${SAVEVIA_AI_URL}` and `savevia-optimizer/` is deleted in full.** These remain cutover-time (Phase 6/7) steps — not executed in the 2026-05-30 round.
 
-**Goal (revised):** Cut over the Python-ported endpoint subset (chat / transactions / saved-results / optimize) from Java optimizer to `savevia-ai`. Java optimizer **stays in production** to keep serving Flinks / bank-connection / connection-limit endpoints (those tasks were deferred in Phase 4). No `savevia-optimizer/` deletion.
+**Goal:** Cut over **all** Java-optimizer endpoints (chat / transactions / saved-results / optimize **and** Flinks/bank-connection) to `savevia-ai`. The chat/optimize subset may flip first (interim), with Flinks flipping once its Python port is validated. After the final flip, `savevia-optimizer/` is decommissioned and deleted.
 
-**Architecture:** Spring Cloud Gateway routes for the ported endpoints flip from `lb://savevia-optimizer` to `http://savevia-ai:8002`. Flinks-related routes (`/api/v1/bank-connections/**`, Flinks webhook path, etc.) stay pointing at Java. Both services run side by side indefinitely. No data migration — Python and Java share MySQL/Redis.
+**Architecture:** Spring Cloud Gateway routes flip from `lb://savevia-optimizer` to `http://savevia-ai:8002`. During the interim window the higher-priority `optimizer-bank` rule may keep `/api/v1/optimize/bank/**` on Java; at the final cutover that rule is removed so bank traffic also reaches Python. No data migration — Python and Java share MySQL/Redis.
 
 **Reference spec:** `docs/superpowers/specs/2026-05-23-python-rewrite-design.md` §8, §9, §10 (Phases 5-7)
 
@@ -32,8 +32,8 @@ docs/runbooks/
 ├── cutover-runbook.md              # step-by-step cutover procedure
 └── rollback-runbook.md             # ≤5min rollback steps
 
-# NOT deleted (scope revised — Flinks/bank-connections deferred):
-savevia-optimizer/                  # remains in repo and in prod; serves Flinks routes only
+# Deleted at final cutover (Flinks now ported to Python — 2026-05-30 plan):
+savevia-optimizer/                  # kept only as interim rollback safety net, then removed
 ```
 
 ---
@@ -70,11 +70,11 @@ savevia-optimizer/                  # remains in repo and in prod; serves Flinks
 
 | # | Task | Files | Days |
 |---|---|---|---|
-| 17 | T+7d: trim Java optimizer config — remove dead chat/transactions/saved-results/optimize controllers & services from `savevia-optimizer` (Flinks-related code stays) | `savevia-optimizer/` | 1 |
-| 18 | Update root README + CLAUDE.md: dual-service architecture (Python AI + Java Flinks) | `README.md`, `CLAUDE.md` | 0.25 |
+| 17 | Final cutover: flip `optimizer-bank` route to `${SAVEVIA_AI_URL}`; after 7 clean days, remove `savevia-optimizer` from `savevia-parent/pom.xml` + delete the directory | `application.yml`, `savevia-parent/pom.xml`, `savevia-optimizer/` | 1 |
+| 18 | Update root README + CLAUDE.md: single Python AI service (optimizer removed) | `README.md`, `CLAUDE.md` | 0.25 |
 | | **Subtotal (cutover only)** | | **~5** |
 
-> Java optimizer is **not** deleted. Future plan needed to port Flinks before the directory can be fully removed.
+> The Flinks port (2026-05-30 plan) removes the last reason to keep `savevia-optimizer`. The directory is deleted at the final cutover once the Python Flinks endpoints are validated in production.
 
 ---
 
@@ -121,14 +121,13 @@ savevia-optimizer/                  # remains in repo and in prod; serves Flinks
 ## Definition of Done (revised — partial cutover)
 
 - [ ] Chat / transactions / saved-results / optimize endpoints serve from Python in production
-- [ ] Flinks / bank-connections / connection-limits endpoints still serve from Java (no change)
+- [ ] All Java-optimizer endpoints (incl. Flinks/bank) serve from Python after the final flip
 - [ ] 7 days post-cutover with no rollback needed
-- [ ] Java `savevia-optimizer/` trimmed to Flinks-only (chat / optimizer / transactions / saved-results controllers + services removed)
-- [ ] `docker-compose.yml` has both `savevia-ai` AND `savevia-optimizer`
-- [ ] README + CLAUDE.md updated; runbooks committed under `docs/runbooks/`
-- [ ] Tag `python-ai-cutover-partial` on final commit
+- [ ] Java `savevia-optimizer/` deleted; removed from `savevia-parent/pom.xml`
+- [ ] `docker-compose.yml` has `savevia-ai` only (optimizer removed)
+- [ ] README + CLAUDE.md updated to single-Python-AI architecture; runbooks committed under `docs/runbooks/`
+- [ ] Tag `python-ai-cutover-complete` on final commit
 - [ ] Retrospective written and shared
-- [ ] Follow-up issue filed: "Port Flinks integration to Python (future Phase 4.5)"
 
 ---
 

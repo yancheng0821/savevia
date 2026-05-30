@@ -2,7 +2,7 @@
 
 **Scope:** Move chat (`/api/v1/chat/stream`, `/api/v1/chat/suggestions`), single-purchase optimize (`/api/v1/optimize/calculate`), and other `/api/v1/optimize/**` routes (transactions / share / user-result) from Java `savevia-optimizer` to Python `savevia-ai`.
 
-**Out of scope:** Flinks (`/api/v1/optimize/bank/**`) **stays on Java**. The gateway has a higher-priority route rule that keeps that path on `lb://savevia-optimizer`.
+**Flinks (`/api/v1/optimize/bank/**`):** kept on Java for THIS interim cutover via the higher-priority `optimizer-bank` route rule. **Superseded 2026-05-30** — Flinks/bank-connection is now ported to Python (see `docs/superpowers/plans/2026-05-30-p4-flinks-port-and-regression.md`); once that port is validated, a follow-up cutover flips `optimizer-bank` to `${SAVEVIA_AI_URL}` and `savevia-optimizer/` is deleted in full.
 
 **Cutover window:** ~30 minutes, off-peak (3-5 AM ET recommended).
 
@@ -149,10 +149,10 @@ Red flags in logs:
 
 If 7 days clean (no rollback, no incidents):
 
-- Tag the final cutover commit: `git tag python-ai-cutover-partial && git push --tags`
-- Java `savevia-optimizer` keeps running (still serves `/api/v1/optimize/bank/**`).
-- Trim dead Java code (chat / optimize / transactions / saved-results controllers + services) in a follow-up PR. **Do not delete the directory** — Flinks code still lives there.
-- Update root `README.md` + `CLAUDE.md`: architecture is now dual-service.
+- Tag the cutover commit: `git tag python-ai-cutover-partial && git push --tags` (interim, chat/optimize only).
+- Java `savevia-optimizer` keeps running as the interim Flinks server + rollback net.
+- **Follow-up cutover (after the Python Flinks port is validated):** flip the `optimizer-bank` route to `${SAVEVIA_AI_URL}`, then delete `savevia-optimizer/` in full and remove it from `savevia-parent/pom.xml`. See `docs/superpowers/plans/2026-05-30-p4-flinks-port-and-regression.md`.
+- Update root `README.md` + `CLAUDE.md` to single-Python-AI architecture once the directory is removed.
 
 If any rollback within 7d: full retro, fix, re-attempt cutover.
 
