@@ -130,5 +130,133 @@
       "lifestyle": {"commute_method": "remote", "travel_frequency": "never"},
       "preference": {"annual_fee_tolerance": "0"}
     }
+  },
+  {
+    "id": "11_visitor_travel_miles",
+    "messages": [
+      {"role": "user", "content": "I'm visiting Canada on a tourist visa for three months."},
+      {"role": "assistant", "content": "Welcome! Short-term visitors have a few options."},
+      {"role": "user", "content": "I'd love a card that earns travel miles I can redeem for flights."},
+      {"role": "assistant", "content": "An airline co-branded travel miles card could work well."}
+    ],
+    "expected": {
+      "identity": {"user_type": "visitor"},
+      "preference": {"reward_type": "travel_miles"}
+    }
+  },
+  {
+    "id": "12_car_commuter_cashback",
+    "messages": [
+      {"role": "user", "content": "I drive my car to work every single day."},
+      {"role": "assistant", "content": "A gas-focused card would save you money at the pump."},
+      {"role": "user", "content": "I just want simple cashback, no points please."},
+      {"role": "assistant", "content": "A flat-rate cashback card fits perfectly."}
+    ],
+    "expected": {
+      "lifestyle": {"commute_method": "car"},
+      "preference": {"reward_type": "cashback"}
+    }
+  },
+  {
+    "id": "13_low_income_no_fee",
+    "messages": [
+      {"role": "user", "content": "My income is under $30,000 a year right now."},
+      {"role": "assistant", "content": "A no-fee starter card is the safe choice."},
+      {"role": "user", "content": "Right, I really can't afford any annual fee."},
+      {"role": "assistant", "content": "Tangerine Money-Back is a $0 annual fee option."}
+    ],
+    "expected": {
+      "identity": {"income_range": "under_30k"},
+      "preference": {"annual_fee_tolerance": "0"}
+    }
+  },
+  {
+    "id": "14_frequent_traveler",
+    "messages": [
+      {"role": "user", "content": "I travel for work almost every month."},
+      {"role": "assistant", "content": "Frequent travelers benefit from premium travel cards."},
+      {"role": "user", "content": "I spend roughly $1000 a month on flights and hotels."},
+      {"role": "assistant", "content": "A premium travel card would earn a lot on that spend."}
+    ],
+    "expected": {
+      "lifestyle": {"travel_frequency": "monthly"},
+      "spending": {"monthly_travel": 1000}
+    }
+  },
+  {
+    "id": "15_visa_only_exclude_bank",
+    "messages": [
+      {"role": "user", "content": "I only want Visa cards, nothing else."},
+      {"role": "assistant", "content": "Sure, I'll stick to Visa options."},
+      {"role": "user", "content": "And please don't show me anything from Scotiabank."},
+      {"role": "assistant", "content": "Understood — no Scotiabank cards."}
+    ],
+    "expected": {
+      "preference": {"preferred_networks": ["VISA"]},
+      "exclusion": {"excluded_banks": ["Scotiabank"]}
+    }
+  },
+  {
+    "id": "16_family_with_kids_and_pets",
+    "messages": [
+      {"role": "user", "content": "We have three kids and two dogs at home."},
+      {"role": "assistant", "content": "A family card focused on groceries helps a lot."},
+      {"role": "user", "content": "Groceries are easily $900 a month for us."},
+      {"role": "assistant", "content": "TD Cash Visa Infinite is a strong pick for that."}
+    ],
+    "expected": {
+      "lifestyle": {"has_children": true, "has_pets": true},
+      "spending": {"monthly_grocery": 900}
+    }
+  },
+  {
+    "id": "17_bike_commuter_no_fee",
+    "messages": [
+      {"role": "user", "content": "I bike to work, I don't own a car at all."},
+      {"role": "assistant", "content": "Then gas rewards won't matter much for you."},
+      {"role": "user", "content": "I want a card with no annual fee."},
+      {"role": "assistant", "content": "There are plenty of $0-fee cashback options."}
+    ],
+    "expected": {
+      "lifestyle": {"commute_method": "bike"},
+      "preference": {"annual_fee_tolerance": "0"}
+    }
+  },
+  {
+    "id": "18_points_mid_fee",
+    "messages": [
+      {"role": "user", "content": "I'm fine paying up to $100 a year for a card."},
+      {"role": "assistant", "content": "That opens up some solid mid-tier cards."},
+      {"role": "user", "content": "I prefer points I can redeem flexibly."},
+      {"role": "assistant", "content": "CIBC Aventura or RBC Avion would suit you."}
+    ],
+    "expected": {
+      "preference": {"annual_fee_tolerance": "100", "reward_type": "points"}
+    }
+  },
+  {
+    "id": "19_new_immigrant_residency_grocery",
+    "messages": [
+      {"role": "user", "content": "I immigrated to Canada two years ago."},
+      {"role": "assistant", "content": "Welcome! Building credit history is key early on."},
+      {"role": "user", "content": "I spend about $600 a month on groceries."},
+      {"role": "assistant", "content": "TD Cash Visa earns 4% on groceries — a good fit."}
+    ],
+    "expected": {
+      "identity": {"user_type": "new_immigrant", "residency_years": 2},
+      "spending": {"monthly_grocery": 600}
+    }
+  },
+  {
+    "id": "20_preferred_bank_rbc_cashback",
+    "messages": [
+      {"role": "user", "content": "I do all my banking with RBC and prefer their cards."},
+      {"role": "assistant", "content": "RBC has a strong card lineup."},
+      {"role": "user", "content": "I want cashback with no annual fee."},
+      {"role": "assistant", "content": "RBC Cash Back Mastercard is a $0-fee option."}
+    ],
+    "expected": {
+      "preference": {"preferred_banks": ["RBC"], "reward_type": "cashback", "annual_fee_tolerance": "0"}
+    }
   }
 ]
