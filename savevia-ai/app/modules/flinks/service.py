@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import uuid
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
@@ -50,7 +50,7 @@ class FlinksService:
     # ---- public lifecycle ------------------------------------------------
 
     async def connect_bank(
-        self, user_id: int, request: "FlinksConnectRequest"
+        self, user_id: int, request: FlinksConnectRequest
     ) -> BankConnection:
         existing = await self._conn_repo.find_by_user_and_login_id(
             user_id, request.login_id
@@ -95,7 +95,7 @@ class FlinksService:
         try:
             await self._fetch_flinks_data(connection, request.user_card_ids)
             connection.status = "CONNECTED"
-            connection.last_sync_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            connection.last_sync_at = datetime.now(UTC).replace(tzinfo=None)
             await self._limits.record_connection(
                 user_id, request.institution_name, request.login_id
             )
@@ -118,7 +118,7 @@ class FlinksService:
         try:
             await self._fetch_flinks_data(connection, user_card_ids)
             connection.status = "CONNECTED"
-            connection.last_sync_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            connection.last_sync_at = datetime.now(UTC).replace(tzinfo=None)
             connection.error_message = None
         except Exception as e:  # noqa: BLE001
             _log.error("flinks_force_refresh_failed", error=str(e))

@@ -110,7 +110,7 @@ class BankConnectionService:
 
     async def resync(
         self, user_id: int, connection_id: int, *, user_card_ids: list[int] | None
-    ) -> "ResyncResult | BankConnectionDTO":
+    ) -> ResyncResult | BankConnectionDTO:
         conn = await self._conn_repo.find_by_id(connection_id)
         if conn is None or conn.user_id != user_id:
             return "NOT_FOUND"

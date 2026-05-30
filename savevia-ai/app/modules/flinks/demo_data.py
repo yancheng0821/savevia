@@ -12,7 +12,7 @@ from __future__ import annotations
 import random
 import uuid
 from collections.abc import Callable
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 # Verbatim from FlinksService.java:483-489 — (id-prefix, title, masked-number)
 _CREDIT_CARD_MOCKS = [
@@ -58,7 +58,7 @@ class DemoDataGenerator:
     ):
         self._rng = rng or random.Random()
         self._uuid = uuid_factory or (lambda: str(uuid.uuid4()))
-        self._now = now or (lambda: datetime.now(timezone.utc))
+        self._now = now or (lambda: datetime.now(UTC))
 
     def _date(self) -> str:
         # Java: now.minusDays(rand.nextInt(90)).toString()
