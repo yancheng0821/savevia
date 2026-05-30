@@ -32,7 +32,38 @@
     "me": "マイ",
     "login": "ログイン",
     "register": "登録",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "swipe": "決済"
+  },
+  "merchantSearch": {
+    "title": "カード決済",
+    "placeholder": "店舗を検索...",
+    "hot": "人気店舗",
+    "recommend": "おすすめカード",
+    "change": "変更",
+    "noCards": "まずクレジットカードを追加してください",
+    "loginRequired": "ログインしてカードを追加してください",
+    "noResults": "店舗が見つかりません",
+    "noMatch": "該当するカードが見つかりません",
+    "calculator": "獲得計算機",
+    "otherOptions": "他のオプション",
+    "spend": "支出",
+    "tabs": {
+      "hot": "人気",
+      "grocery": "スーパー",
+      "wholesale": "倉庫型",
+      "dining": "飲食",
+      "gas": "ガソリン",
+      "retail": "小売",
+      "online": "オンライン",
+      "travel": "旅行",
+      "transit": "交通",
+      "telecom": "通信",
+      "streaming": "動画",
+      "pharmacy": "薬局",
+      "home": "ホーム",
+      "entertainment": "娯楽"
+    }
   },
   "home": {
     "title": "SaveViaへようこそ",
@@ -54,9 +85,10 @@
     "cashbackLabel": "キャッシュバック",
     "quickSelect": {
       "title": "クイック検索",
-      "description": "カテゴリをタップ、使うべきカードをお伝えします",
+      "description": "カテゴリをタップして、使うべきカードを確認",
       "bestCard": "おすすめカード",
       "cashback": "キャッシュバック",
+      "points": "ポイント",
       "loginFirst": "ログインしてカードを追加してください",
       "addCards": "クレジットカードを追加して推奨を受け取る"
     },
@@ -70,6 +102,7 @@
     },
     "cardModal": {
       "hint": "このカテゴリで買い物する際にこのカードを使用",
+      "hintMerchant": "{{merchant}}で買い物する際にこのカードを使用",
       "openAppleWallet": "Apple Walletを開く",
       "openGooglePay": "Google Payを開く",
       "viewDetails": "カード詳細を見る"
@@ -150,6 +183,29 @@
     "bills": "請求書",
     "lifestyle": "レジャー",
     "other": "その他"
+  },
+  "merchantGroups": {
+    "grocery": "スーパー",
+    "wholesale": "倉庫型",
+    "dining": "カフェ・外食",
+    "fastfood": "ファストフード",
+    "gas": "ガソリンスタンド",
+    "retail": "小売店",
+    "pharmacy": "薬局",
+    "home_improvement": "ホームセンター",
+    "telecom": "通信",
+    "streaming": "動画配信",
+    "travel": "旅行",
+    "cinema": "映画館",
+    "pet": "ペットショップ",
+    "online": "ネット通販",
+    "delivery": "デリバリー",
+    "rideshare": "配車"
+  },
+  "merchants": {
+    "restrictions": {
+      "mastercardOnly": "この店舗ではMastercardのみ使用可能です"
+    }
   },
   "categories": {
     "DINING": "外食",
@@ -533,6 +589,14 @@
     "voiceError": "音声認識に失敗しました",
     "voiceNotSupported": "音声入力はサポートされていません",
     "voicePermissionDenied": "マイクのアクセスが拒否されました",
-    "voiceTimeout": "録音が停止しました（30秒制限）"
+    "voiceTimeout": "録音が停止しました（30秒制限）",
+    "thinking": "じっくり考えています",
+    "thinkingSteps": [
+      "ご質問を理解しています",
+      "お持ちのカードを確認しています",
+      "キャッシュバック還元率を比較しています",
+      "最適な組み合わせを計算しています",
+      "おすすめをまとめています"
+    ]
   }
 }

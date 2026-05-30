@@ -32,7 +32,38 @@
     "me": "Me",
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "swipe": "Swipe"
+  },
+  "merchantSearch": {
+    "title": "Swipe Card",
+    "placeholder": "Search merchant name...",
+    "hot": "Popular Merchants",
+    "recommend": "Recommended Card",
+    "change": "Change",
+    "noCards": "Please add your credit cards first",
+    "loginRequired": "Please login and add credit cards",
+    "noResults": "No merchants found",
+    "noMatch": "No matching cards found",
+    "calculator": "Earnings Calculator",
+    "otherOptions": "Other Options",
+    "spend": "Spend",
+    "tabs": {
+      "hot": "Hot",
+      "grocery": "Grocery",
+      "wholesale": "Wholesale",
+      "dining": "Dining",
+      "gas": "Gas",
+      "retail": "Retail",
+      "online": "Online",
+      "travel": "Travel",
+      "transit": "Transit",
+      "telecom": "Telecom",
+      "streaming": "Stream",
+      "pharmacy": "Pharmacy",
+      "home": "Home",
+      "entertainment": "Fun"
+    }
   },
   "home": {
     "title": "Welcome to SaveVia",
@@ -71,6 +102,7 @@
     },
     "cardModal": {
       "hint": "Use this card when shopping in this category",
+      "hintMerchant": "Use this card when shopping at {{merchant}}",
       "openAppleWallet": "Open Apple Wallet",
       "openGooglePay": "Open Google Pay",
       "viewDetails": "View Card Details"
@@ -171,6 +203,29 @@
     "bills": "Bills & Services",
     "lifestyle": "Lifestyle",
     "other": "Other"
+  },
+  "merchantGroups": {
+    "grocery": "Grocery",
+    "wholesale": "Wholesale",
+    "dining": "Coffee & Dining",
+    "fastfood": "Fast Food",
+    "gas": "Gas Stations",
+    "retail": "Retail",
+    "pharmacy": "Pharmacy",
+    "home_improvement": "Home Improvement",
+    "telecom": "Telecom",
+    "streaming": "Streaming",
+    "travel": "Travel",
+    "cinema": "Cinema",
+    "pet": "Pet Stores",
+    "online": "Online Shopping",
+    "delivery": "Food Delivery",
+    "rideshare": "Rideshare"
+  },
+  "merchants": {
+    "restrictions": {
+      "mastercardOnly": "Mastercard only accepted at this merchant"
+    }
   },
   "categories": {
     "DINING": "Dining",
@@ -561,6 +616,14 @@
     "voiceError": "Voice recognition failed",
     "voiceNotSupported": "Voice input not supported",
     "voicePermissionDenied": "Microphone access denied",
-    "voiceTimeout": "Recording stopped (30s limit)"
+    "voiceTimeout": "Recording stopped (30s limit)",
+    "thinking": "Thinking it through",
+    "thinkingSteps": [
+      "Understanding your question",
+      "Reviewing your cards",
+      "Comparing cashback rates",
+      "Crunching the numbers",
+      "Preparing your recommendation"
+    ]
   }
 }

@@ -32,7 +32,38 @@
     "me": "마이",
     "login": "로그인",
     "register": "회원가입",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "swipe": "결제"
+  },
+  "merchantSearch": {
+    "title": "카드 결제",
+    "placeholder": "가맹점 검색...",
+    "hot": "인기 가맹점",
+    "recommend": "추천 카드",
+    "change": "변경",
+    "noCards": "먼저 신용카드를 추가해 주세요",
+    "loginRequired": "로그인 후 카드를 추가해 주세요",
+    "noResults": "가맹점을 찾을 수 없습니다",
+    "noMatch": "일치하는 카드가 없습니다",
+    "calculator": "적립 계산기",
+    "otherOptions": "다른 옵션",
+    "spend": "지출",
+    "tabs": {
+      "hot": "인기",
+      "grocery": "마트",
+      "wholesale": "창고형",
+      "dining": "음식",
+      "gas": "주유",
+      "retail": "쇼핑",
+      "online": "온라인",
+      "travel": "여행",
+      "transit": "교통",
+      "telecom": "통신",
+      "streaming": "스트리밍",
+      "pharmacy": "약국",
+      "home": "홈",
+      "entertainment": "오락"
+    }
   },
   "home": {
     "title": "SaveVia에 오신 것을 환영합니다",
@@ -57,6 +88,7 @@
       "description": "카테고리를 탭하면 어떤 카드를 쓸지 알려드려요",
       "bestCard": "추천 카드",
       "cashback": "캐시백",
+      "points": "포인트",
       "loginFirst": "로그인하고 카드를 추가하세요",
       "addCards": "신용카드를 추가하여 추천을 받으세요"
     },
@@ -70,6 +102,7 @@
     },
     "cardModal": {
       "hint": "이 카테고리 구매 시 이 카드를 사용하세요",
+      "hintMerchant": "{{merchant}}에서 구매 시 이 카드를 사용하세요",
       "openAppleWallet": "Apple Wallet 열기",
       "openGooglePay": "Google Pay 열기",
       "viewDetails": "카드 상세 보기"
@@ -150,6 +183,24 @@
     "bills": "청구서",
     "lifestyle": "라이프",
     "other": "기타"
+  },
+  "merchantGroups": {
+    "grocery": "마트",
+    "wholesale": "창고형",
+    "dining": "카페 & 외식",
+    "fastfood": "패스트푸드",
+    "gas": "주유소",
+    "retail": "소매점",
+    "pharmacy": "약국",
+    "home_improvement": "인테리어",
+    "telecom": "통신",
+    "streaming": "스트리밍",
+    "travel": "여행",
+    "cinema": "영화관",
+    "pet": "펫샵",
+    "online": "온라인 쇼핑",
+    "delivery": "배달",
+    "rideshare": "택시"
   },
   "categories": {
     "DINING": "외식",
@@ -533,6 +584,14 @@
     "voiceError": "음성 인식 실패",
     "voiceNotSupported": "음성 입력이 지원되지 않습니다",
     "voicePermissionDenied": "마이크 접근이 거부되었습니다",
-    "voiceTimeout": "녹음이 중지되었습니다 (30초 제한)"
+    "voiceTimeout": "녹음이 중지되었습니다 (30초 제한)",
+    "thinking": "깊이 생각하는 중",
+    "thinkingSteps": [
+      "질문을 이해하고 있어요",
+      "보유하신 카드를 확인하고 있어요",
+      "캐시백 적립률을 비교하고 있어요",
+      "최적의 선택을 계산하고 있어요",
+      "추천을 정리하고 있어요"
+    ]
   }
 }

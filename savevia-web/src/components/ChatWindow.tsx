@@ -9,6 +9,7 @@ import { Capacitor } from '@capacitor/core'
 import { SpeechRecognition } from '@capacitor-community/speech-recognition'
 import { useChatStore, ChatMessage } from '../stores/useChatStore'
 import { useOptimizerStore } from '../stores/useOptimizerStore'
+import { useAuthStore } from '../stores/useAuthStore'
 import { chatApi, userApi, cardApi } from '../services/api'
 import { CreditCard } from '../types'
 import i18next from 'i18next'
@@ -24,6 +25,49 @@ function findCardByName(name: string, cards: CreditCard[]): CreditCard | undefin
       normalizedName.replace(/\s*[\(（].*$/, '').includes(cardName) ||
       cardName.includes(normalizedName.replace(/\s*[\(（].*$/, ''))
   })
+}
+
+// Desktop chat-window width bounds (the resize "临界点" / hard stops)
+const MIN_CHAT_WIDTH = 360
+const MAX_CHAT_WIDTH = 720
+const DEFAULT_CHAT_WIDTH = 400
+
+// "Deep thinking" indicator — reveals friendly, non-technical activity steps
+// while the assistant works (before the first answer token streams in).
+function ChatThinking() {
+  const { t } = useTranslation()
+  const raw = t('chat.thinkingSteps', { returnObjects: true })
+  const steps = Array.isArray(raw) ? (raw as string[]) : []
+  const [idx, setIdx] = useState(0)
+
+  useEffect(() => {
+    if (steps.length <= 1) return
+    const timer = setInterval(() => {
+      setIdx((i) => (i < steps.length - 1 ? i + 1 : i))
+    }, 1600)
+    return () => clearInterval(timer)
+  }, [steps.length])
+
+  return (
+    <div className="chat-thinking">
+      <div className="chat-thinking-title">
+        {t('chat.thinking')}
+        <span className="chat-thinking-dots"><span /><span /><span /></span>
+      </div>
+      {steps.length > 0 && (
+        <div className="chat-thinking-steps">
+          {steps.slice(0, idx + 1).map((step, i) => (
+            <div key={i} className={`chat-thinking-step ${i === idx ? 'active' : 'done'}`}>
+              <span className="chat-thinking-step-icon">
+                {i === idx ? <LoadingOutlined /> : '✓'}
+              </span>
+              <span className="chat-thinking-step-text">{step}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function ChatWindow() {
@@ -49,6 +93,8 @@ export default function ChatWindow() {
   } = useChatStore()
 
   const { selectedCards } = useOptimizerStore()
+  const { user } = useAuthStore()
+  const userInitial = (user?.name?.trim()?.[0] || user?.email?.trim()?.[0] || 'U').toUpperCase()
   const navigate = useNavigate()
 
   // Get all cards for card link matching
@@ -73,6 +119,55 @@ export default function ChatWindow() {
   const abortRef = useRef<(() => void) | null>(null)
   const chatWindowRef = useRef<HTMLDivElement>(null)
   const webRecognitionRef = useRef<any>(null)
+  // Typewriter buffer for smooth SSE streaming (decouples render cadence from network bursts)
+  const typeBufferRef = useRef('')
+  const streamEndedRef = useRef(false)
+  const typeRafRef = useRef<number | null>(null)
+
+  // --- Desktop resize: drag the left edge to widen/narrow, clamped to bounds ---
+  const [chatWidth, setChatWidth] = useState<number>(() => {
+    const saved = Number(localStorage.getItem('sv-chat-width'))
+    return saved >= MIN_CHAT_WIDTH && saved <= MAX_CHAT_WIDTH ? saved : DEFAULT_CHAT_WIDTH
+  })
+  const widthRef = useRef(chatWidth)
+  const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null)
+
+  const onResizeMove = useCallback((e: PointerEvent) => {
+    const s = resizeRef.current
+    if (!s) return
+    // Window is anchored bottom-right, so dragging the left edge LEFT widens it.
+    const maxW = Math.min(MAX_CHAT_WIDTH, window.innerWidth - 40)
+    const next = Math.min(Math.max(s.startWidth + (s.startX - e.clientX), MIN_CHAT_WIDTH), maxW)
+    widthRef.current = next
+    setChatWidth(next)
+  }, [])
+
+  const onResizeEnd = useCallback(() => {
+    resizeRef.current = null
+    window.removeEventListener('pointermove', onResizeMove)
+    window.removeEventListener('pointerup', onResizeEnd)
+    document.body.style.userSelect = ''
+    document.body.style.cursor = ''
+    try { localStorage.setItem('sv-chat-width', String(Math.round(widthRef.current))) } catch { /* ignore */ }
+  }, [onResizeMove])
+
+  const onResizeStart = useCallback((e: React.PointerEvent) => {
+    // Mobile is a full-screen bottom sheet — no resizing there.
+    if (window.innerWidth <= 640) return
+    e.preventDefault()
+    resizeRef.current = { startX: e.clientX, startWidth: widthRef.current }
+    window.addEventListener('pointermove', onResizeMove)
+    window.addEventListener('pointerup', onResizeEnd)
+    document.body.style.userSelect = 'none'
+    document.body.style.cursor = 'ew-resize'
+  }, [onResizeMove, onResizeEnd])
+
+  // Cancel the typewriter loop on unmount
+  useEffect(() => {
+    return () => {
+      if (typeRafRef.current != null) cancelAnimationFrame(typeRafRef.current)
+    }
+  }, [])
 
   // Track animation state to prevent re-animation on iOS swipe back
   useEffect(() => {
@@ -672,6 +767,38 @@ export default function ChatWindow() {
     }
     addMessage(assistantMessage)
 
+    // Smooth "typewriter": SSE chunks fill a buffer; a rAF loop reveals them at
+    // a steady cadence so bursty network delivery still renders fluidly.
+    typeBufferRef.current = ''
+    streamEndedRef.current = false
+    if (typeRafRef.current != null) {
+      cancelAnimationFrame(typeRafRef.current)
+      typeRafRef.current = null
+    }
+
+    const finalize = () => {
+      setMessageStreaming(false)
+      setLoading(false)
+      loadChatUsage()
+    }
+
+    const pump = () => {
+      const buf = typeBufferRef.current
+      if (buf.length > 0) {
+        // Drain faster when a backlog builds up, so we never visibly lag behind.
+        const take = Math.max(1, Math.ceil(buf.length / 8))
+        typeBufferRef.current = buf.slice(take)
+        appendToLastMessage(buf.slice(0, take))
+      }
+      if (typeBufferRef.current.length > 0 || !streamEndedRef.current) {
+        typeRafRef.current = requestAnimationFrame(pump)
+      } else {
+        typeRafRef.current = null
+        finalize()
+      }
+    }
+    typeRafRef.current = requestAnimationFrame(pump)
+
     // Start streaming
     abortRef.current = chatApi.streamMessage(
       text.trim(),
@@ -682,15 +809,19 @@ export default function ChatWindow() {
           setCurrentConversationId(id)
         },
         onChunk: (chunk) => {
-          appendToLastMessage(chunk)
+          // Feed the typewriter buffer instead of rendering immediately.
+          typeBufferRef.current += chunk
         },
         onDone: () => {
-          setMessageStreaming(false)
-          setLoading(false)
-          // Refresh usage count
-          loadChatUsage()
+          // Let the typewriter drain the remaining buffer, then finalize().
+          streamEndedRef.current = true
         },
         onError: (err) => {
+          streamEndedRef.current = true
+          if (typeRafRef.current != null) {
+            cancelAnimationFrame(typeRafRef.current)
+            typeRafRef.current = null
+          }
           setError(err)
           setLoading(false)
           setMessageStreaming(false)
@@ -716,6 +847,11 @@ export default function ChatWindow() {
       abortRef.current()
       abortRef.current = null
     }
+    // Stop the typewriter loop
+    if (typeRafRef.current != null) {
+      cancelAnimationFrame(typeRafRef.current)
+      typeRafRef.current = null
+    }
     // Reset skipLoadHistory so next open will load recent conversation
     setSkipLoadHistory(false)
     setOpen(false)
@@ -725,6 +861,10 @@ export default function ChatWindow() {
     if (abortRef.current) {
       abortRef.current()
       abortRef.current = null
+    }
+    if (typeRafRef.current != null) {
+      cancelAnimationFrame(typeRafRef.current)
+      typeRafRef.current = null
     }
     // Just clear local state - don't delete from database
     // Next message will create a new conversation
@@ -746,7 +886,17 @@ export default function ChatWindow() {
       <div
         ref={chatWindowRef}
         className={`chat-window ${hasAnimated ? 'chat-no-animate' : ''}`}
+        style={{ '--chat-width': `${chatWidth}px` } as React.CSSProperties}
       >
+        {/* Resize handle (desktop only) — drag the left edge to widen/narrow */}
+        <div
+          className="chat-resize-handle"
+          onPointerDown={onResizeStart}
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize chat width"
+        />
+
         {/* Header */}
         <div className="chat-header">
           <div className="chat-header-info">
@@ -820,16 +970,30 @@ export default function ChatWindow() {
             </div>
           ) : (
             <>
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`chat-message ${msg.role === 'user' ? 'chat-message-user' : 'chat-message-assistant'}`}
-                >
-                  <div className="chat-message-content">
-                    {msg.content ? renderMarkdown(msg.content) : (msg.isStreaming && <LoadingOutlined />)}
+              {messages.map((msg, index) => {
+                const isUser = msg.role === 'user'
+                return (
+                  <div
+                    key={index}
+                    className={`chat-message ${isUser ? 'chat-message-user' : 'chat-message-assistant'}`}
+                  >
+                    <div className="chat-avatar" aria-hidden="true">
+                      {isUser ? (
+                        user?.avatarUrl ? (
+                          <img src={user.avatarUrl} alt="" className="chat-avatar-img" />
+                        ) : (
+                          <span className="chat-avatar-initial">{userInitial}</span>
+                        )
+                      ) : (
+                        <img src="/logo.svg" alt="SaveVia" className="chat-avatar-logo" />
+                      )}
+                    </div>
+                    <div className="chat-message-content">
+                      {msg.content ? renderMarkdown(msg.content) : (msg.isStreaming ? <ChatThinking /> : null)}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               <div ref={messagesEndRef} />
             </>
           )}
@@ -903,9 +1067,10 @@ export default function ChatWindow() {
         }
 
         .chat-window {
-          width: 400px;
+          width: var(--chat-width, 400px);
           max-width: 100%;
           height: 600px;
+          position: relative;
           max-height: calc(100vh - 100px);
           background: #fffcf5;
           border-radius: 20px;
@@ -921,6 +1086,41 @@ export default function ChatWindow() {
           backface-visibility: hidden;
           /* Allow touch scrolling on iOS */
           touch-action: pan-y;
+        }
+
+        /* Resize handle — left edge, desktop only */
+        .chat-resize-handle {
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 10px;
+          cursor: ew-resize;
+          z-index: 20;
+          touch-action: none;
+        }
+
+        .chat-resize-handle::after {
+          content: '';
+          position: absolute;
+          left: 3px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 4px;
+          height: 44px;
+          border-radius: 4px;
+          background: rgba(0, 0, 0, 0.12);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+
+        .chat-resize-handle:hover::after,
+        .chat-resize-handle:active::after {
+          opacity: 1;
+        }
+
+        html.dark-mode .chat-resize-handle::after {
+          background: rgba(255, 255, 255, 0.2);
         }
 
         @keyframes windowSlideUp {
@@ -942,6 +1142,11 @@ export default function ChatWindow() {
             height: 100%;
             /* Prevent iOS scroll bounce */
             overscroll-behavior: none;
+          }
+
+          /* No edge-resize on the mobile full-screen sheet */
+          .chat-resize-handle {
+            display: none;
           }
 
           .chat-window {
@@ -1186,7 +1391,10 @@ export default function ChatWindow() {
         }
 
         .chat-message {
-          max-width: 85%;
+          max-width: 88%;
+          display: flex;
+          align-items: flex-end;
+          gap: 8px;
           animation: fadeIn 0.3s ease;
         }
 
@@ -1197,10 +1405,49 @@ export default function ChatWindow() {
 
         .chat-message-user {
           align-self: flex-end;
+          flex-direction: row-reverse;
         }
 
         .chat-message-assistant {
           align-self: flex-start;
+        }
+
+        /* Per-message avatars (chat-log feel) */
+        .chat-avatar {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          margin-bottom: 2px;
+        }
+
+        .chat-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .chat-avatar-logo {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+        }
+
+        .chat-message-user .chat-avatar {
+          background: linear-gradient(135deg, #3b82f6 0%, #14b8a6 100%);
+          color: #fff;
+          font-size: 13px;
+          font-weight: 600;
+          line-height: 1;
+        }
+
+        .chat-message-assistant .chat-avatar {
+          background: #ffffff;
+          border: 1px solid rgba(0, 0, 0, 0.06);
         }
 
         .chat-message-content {
@@ -1210,6 +1457,7 @@ export default function ChatWindow() {
           line-height: 1.5;
           white-space: pre-wrap;
           word-break: break-word;
+          min-width: 0;
         }
 
         .chat-message-user .chat-message-content {
@@ -1223,6 +1471,82 @@ export default function ChatWindow() {
           color: #1f2937;
           border-bottom-left-radius: 4px;
         }
+
+        /* Deep-thinking indicator (shown while waiting for the first token) */
+        .chat-thinking {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-width: 180px;
+        }
+
+        .chat-thinking-title {
+          display: inline-flex;
+          align-items: center;
+          font-size: 13px;
+          font-weight: 600;
+          color: #6b7280;
+        }
+
+        .chat-thinking-dots {
+          display: inline-flex;
+          gap: 3px;
+          margin-left: 6px;
+        }
+
+        .chat-thinking-dots span {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: #9ca3af;
+          animation: thinkingDot 1.2s infinite ease-in-out;
+        }
+
+        .chat-thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+        .chat-thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes thinkingDot {
+          0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+          40% { opacity: 1; transform: translateY(-2px); }
+        }
+
+        .chat-thinking-steps {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .chat-thinking-step {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          color: #9ca3af;
+          animation: fadeIn 0.3s ease;
+          transition: color 0.2s ease;
+        }
+
+        .chat-thinking-step.active {
+          color: #374151;
+        }
+
+        .chat-thinking-step-icon {
+          width: 14px;
+          font-size: 11px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #14b8a6;
+          flex-shrink: 0;
+        }
+
+        .chat-thinking-step.active .chat-thinking-step-icon {
+          color: #2563eb;
+        }
+
+        html.dark-mode .chat-thinking-title { color: #9ca3af; }
+        html.dark-mode .chat-thinking-step { color: #6b7280; }
+        html.dark-mode .chat-thinking-step.active { color: #e5e7eb; }
 
         /* Clickable card link in chat */
         .chat-card-link {
@@ -1494,6 +1818,12 @@ export default function ChatWindow() {
         html.dark-mode .chat-message-assistant .chat-message-content {
           background: rgba(255, 255, 255, 0.06);
           color: #e5e7eb;
+        }
+
+        /* Keep the SaveVia logo legible on dark background */
+        html.dark-mode .chat-message-assistant .chat-avatar {
+          background: #f3f4f6;
+          border-color: rgba(255, 255, 255, 0.1);
         }
 
         html.dark-mode .chat-card-link {

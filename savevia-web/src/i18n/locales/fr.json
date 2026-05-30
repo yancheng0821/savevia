@@ -32,7 +32,38 @@
     "me": "Moi",
     "login": "Connexion",
     "register": "Inscription",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "swipe": "Payer"
+  },
+  "merchantSearch": {
+    "title": "Payer avec carte",
+    "placeholder": "Rechercher un marchand...",
+    "hot": "Marchands populaires",
+    "recommend": "Carte recommandée",
+    "change": "Changer",
+    "noCards": "Veuillez d'abord ajouter vos cartes de crédit",
+    "loginRequired": "Veuillez vous connecter et ajouter des cartes",
+    "noResults": "Aucun marchand trouvé",
+    "noMatch": "Aucune carte correspondante trouvée",
+    "calculator": "Calculateur de gains",
+    "otherOptions": "Autres options",
+    "spend": "Dépenser",
+    "tabs": {
+      "hot": "Populaire",
+      "grocery": "Épicerie",
+      "wholesale": "Entrepôt",
+      "dining": "Resto",
+      "gas": "Essence",
+      "retail": "Magasin",
+      "online": "En ligne",
+      "travel": "Voyage",
+      "transit": "Transport",
+      "telecom": "Télécom",
+      "streaming": "Streaming",
+      "pharmacy": "Pharmacie",
+      "home": "Maison",
+      "entertainment": "Loisirs"
+    }
   },
   "home": {
     "title": "Bienvenue sur SaveVia",
@@ -54,9 +85,10 @@
     "cashbackLabel": "REMISE",
     "quickSelect": {
       "title": "Recherche rapide",
-      "description": "Touchez une catégorie, on vous dit quelle carte utiliser",
+      "description": "Touchez une catégorie pour savoir quelle carte utiliser",
       "bestCard": "Meilleure carte",
       "cashback": "remise",
+      "points": "points",
       "loginFirst": "Connectez-vous et ajoutez vos cartes",
       "addCards": "Ajoutez vos cartes pour obtenir des recommandations"
     },
@@ -70,6 +102,7 @@
     },
     "cardModal": {
       "hint": "Utilisez cette carte pour vos achats dans cette catégorie",
+      "hintMerchant": "Utilisez cette carte pour vos achats chez {{merchant}}",
       "openAppleWallet": "Ouvrir Apple Wallet",
       "openGooglePay": "Ouvrir Google Pay",
       "viewDetails": "Voir les détails"
@@ -150,6 +183,29 @@
     "bills": "Factures",
     "lifestyle": "Loisirs",
     "other": "Autre"
+  },
+  "merchantGroups": {
+    "grocery": "Épicerie",
+    "wholesale": "Grossiste",
+    "dining": "Café & Resto",
+    "fastfood": "Restauration rapide",
+    "gas": "Stations-service",
+    "retail": "Commerce",
+    "pharmacy": "Pharmacie",
+    "home_improvement": "Bricolage",
+    "telecom": "Télécom",
+    "streaming": "Streaming",
+    "travel": "Voyage",
+    "cinema": "Cinéma",
+    "pet": "Animalerie",
+    "online": "Achats en ligne",
+    "delivery": "Livraison",
+    "rideshare": "Covoiturage"
+  },
+  "merchants": {
+    "restrictions": {
+      "mastercardOnly": "Seules les Mastercard sont acceptées chez ce marchand"
+    }
   },
   "categories": {
     "DINING": "Restaurants",
@@ -533,6 +589,14 @@
     "voiceError": "Échec de la reconnaissance vocale",
     "voiceNotSupported": "Saisie vocale non supportée",
     "voicePermissionDenied": "Accès au microphone refusé",
-    "voiceTimeout": "Enregistrement arrêté (limite 30s)"
+    "voiceTimeout": "Enregistrement arrêté (limite 30s)",
+    "thinking": "Réflexion approfondie",
+    "thinkingSteps": [
+      "Compréhension de votre question",
+      "Examen de vos cartes",
+      "Comparaison des taux de remise",
+      "Calcul de la meilleure option",
+      "Préparation de votre recommandation"
+    ]
   }
 }

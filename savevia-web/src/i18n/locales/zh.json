@@ -32,7 +32,38 @@
     "me": "我的",
     "login": "登录",
     "register": "注册",
-    "logout": "退出"
+    "logout": "退出",
+    "swipe": "刷卡"
+  },
+  "merchantSearch": {
+    "title": "我要刷卡",
+    "placeholder": "搜索商家名称...",
+    "hot": "热门商家",
+    "recommend": "推荐使用",
+    "change": "换一家",
+    "noCards": "请先添加您的信用卡",
+    "loginRequired": "请先登录并添加信用卡",
+    "noResults": "未找到相关商家",
+    "noMatch": "没有找到匹配的卡片",
+    "calculator": "收益计算器",
+    "otherOptions": "其他可选",
+    "spend": "消费",
+    "tabs": {
+      "hot": "热门",
+      "grocery": "超市",
+      "wholesale": "仓储",
+      "dining": "餐饮",
+      "gas": "加油",
+      "retail": "零售",
+      "online": "网购",
+      "travel": "出行",
+      "transit": "交通",
+      "telecom": "通讯",
+      "streaming": "流媒体",
+      "pharmacy": "药店",
+      "home": "家装",
+      "entertainment": "娱乐"
+    }
   },
   "home": {
     "title": "欢迎使用 SaveVia",
@@ -71,6 +102,7 @@
     },
     "cardModal": {
       "hint": "在此类别消费时使用这张卡",
+      "hintMerchant": "在 {{merchant}} 消费时使用这张卡",
       "openAppleWallet": "打开 Apple 钱包",
       "openGooglePay": "打开 Google Pay",
       "viewDetails": "查看卡片详情"
@@ -171,6 +203,29 @@
     "bills": "账单服务",
     "lifestyle": "生活娱乐",
     "other": "其他"
+  },
+  "merchantGroups": {
+    "grocery": "超市",
+    "wholesale": "仓储",
+    "dining": "咖啡餐饮",
+    "fastfood": "快餐",
+    "gas": "加油站",
+    "retail": "零售",
+    "pharmacy": "药房",
+    "home_improvement": "家装",
+    "telecom": "电信",
+    "streaming": "流媒体",
+    "travel": "旅行",
+    "cinema": "电影院",
+    "pet": "宠物店",
+    "online": "网购",
+    "delivery": "外卖",
+    "rideshare": "打车"
+  },
+  "merchants": {
+    "restrictions": {
+      "mastercardOnly": "此商家仅接受 Mastercard"
+    }
   },
   "categories": {
     "DINING": "餐饮",
@@ -561,6 +616,14 @@
     "voiceError": "语音识别失败",
     "voiceNotSupported": "不支持语音输入",
     "voicePermissionDenied": "麦克风权限被拒绝",
-    "voiceTimeout": "录音已停止（最长30秒）"
+    "voiceTimeout": "录音已停止（最长30秒）",
+    "thinking": "深度思考中",
+    "thinkingSteps": [
+      "正在理解你的问题",
+      "正在查看你的信用卡",
+      "正在比较各卡返现",
+      "正在计算最划算的方案",
+      "正在整理推荐建议"
+    ]
   }
 }

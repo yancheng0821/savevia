@@ -32,7 +32,38 @@
     "me": "Yo",
     "login": "Iniciar sesión",
     "register": "Registrarse",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "swipe": "Pagar"
+  },
+  "merchantSearch": {
+    "title": "Pagar con tarjeta",
+    "placeholder": "Buscar comercio...",
+    "hot": "Comercios populares",
+    "recommend": "Tarjeta recomendada",
+    "change": "Cambiar",
+    "noCards": "Por favor, primero añade tus tarjetas de crédito",
+    "loginRequired": "Por favor, inicia sesión y añade tarjetas",
+    "noResults": "No se encontraron comercios",
+    "noMatch": "No se encontraron tarjetas coincidentes",
+    "calculator": "Calculadora de ganancias",
+    "otherOptions": "Otras opciones",
+    "spend": "Gastar",
+    "tabs": {
+      "hot": "Popular",
+      "grocery": "Súper",
+      "wholesale": "Mayoreo",
+      "dining": "Comida",
+      "gas": "Gasolina",
+      "retail": "Tiendas",
+      "online": "Online",
+      "travel": "Viajes",
+      "transit": "Transporte",
+      "telecom": "Telecom",
+      "streaming": "Stream",
+      "pharmacy": "Farmacia",
+      "home": "Hogar",
+      "entertainment": "Ocio"
+    }
   },
   "home": {
     "title": "Bienvenido a SaveVia",
@@ -54,9 +85,10 @@
     "cashbackLabel": "REEMBOLSO",
     "quickSelect": {
       "title": "Buscador rápido",
-      "description": "Toca una categoría, te decimos qué tarjeta usar",
+      "description": "Toca una categoría para saber qué tarjeta usar",
       "bestCard": "Mejor tarjeta",
       "cashback": "reembolso",
+      "points": "puntos",
       "loginFirst": "Inicia sesión y agrega tus tarjetas",
       "addCards": "Agrega tus tarjetas para obtener recomendaciones"
     },
@@ -70,6 +102,7 @@
     },
     "cardModal": {
       "hint": "Usa esta tarjeta para compras en esta categoría",
+      "hintMerchant": "Usa esta tarjeta para compras en {{merchant}}",
       "openAppleWallet": "Abrir Apple Wallet",
       "openGooglePay": "Abrir Google Pay",
       "viewDetails": "Ver detalles"
@@ -150,6 +183,29 @@
     "bills": "Facturas",
     "lifestyle": "Ocio",
     "other": "Otro"
+  },
+  "merchantGroups": {
+    "grocery": "Supermercado",
+    "wholesale": "Mayorista",
+    "dining": "Café y Comida",
+    "fastfood": "Comida rápida",
+    "gas": "Gasolineras",
+    "retail": "Tiendas",
+    "pharmacy": "Farmacia",
+    "home_improvement": "Mejoras del hogar",
+    "telecom": "Telecom",
+    "streaming": "Streaming",
+    "travel": "Viajes",
+    "cinema": "Cine",
+    "pet": "Mascotas",
+    "online": "Compras Online",
+    "delivery": "Delivery",
+    "rideshare": "Transporte"
+  },
+  "merchants": {
+    "restrictions": {
+      "mastercardOnly": "Solo se aceptan Mastercard en este comercio"
+    }
   },
   "categories": {
     "DINING": "Restaurantes",
@@ -533,6 +589,14 @@
     "voiceError": "Reconocimiento de voz fallido",
     "voiceNotSupported": "Entrada de voz no soportada",
     "voicePermissionDenied": "Acceso al micrófono denegado",
-    "voiceTimeout": "Grabación detenida (límite 30s)"
+    "voiceTimeout": "Grabación detenida (límite 30s)",
+    "thinking": "Pensando a fondo",
+    "thinkingSteps": [
+      "Entendiendo tu pregunta",
+      "Revisando tus tarjetas",
+      "Comparando tasas de reembolso",
+      "Calculando la mejor opción",
+      "Preparando tu recomendación"
+    ]
   }
 }
