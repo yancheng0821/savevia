@@ -103,7 +103,7 @@ async def test_get_shared_result_returns_payload(client, app_and_service):
     assert resp.status_code == 200
     body = resp.json()
     assert body["code"] == 200
-    assert body["data"]["annualReward"] == "150.00"
+    assert body["data"]["annualReward"] == 150.0
 
 
 async def test_get_shared_result_returns_404_envelope_when_missing(client, app_and_service):
@@ -195,4 +195,4 @@ async def test_get_user_result_returns_payload(client, app_and_service):
     )
     body = resp.json()
     assert body["code"] == 200
-    assert body["data"]["annualReward"] == "200.00"
+    assert body["data"]["annualReward"] == 200.0

@@ -14,6 +14,8 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.core.types import Money
+
 
 def _camel(name: str) -> str:
     parts = name.split("_")
@@ -38,18 +40,18 @@ class OptimizationRequest(_OptimizerModel):
 
 class CategoryRecommendation(_OptimizerModel):
     category: str
-    monthly_spend: Decimal
+    monthly_spend: Money
     recommended_card: dict | None = None
-    reward_rate: Decimal
-    monthly_reward: Decimal
+    reward_rate: Money
+    monthly_reward: Money
     explanation: str | None = None
     ai_explanation: str | None = None
 
 
 class OptimizationResult(_OptimizerModel):
     recommendations: list[CategoryRecommendation] = Field(default_factory=list)
-    monthly_reward: Decimal = Decimal("0.00")
-    annual_reward: Decimal = Decimal("0.00")
-    total_annual_fees: Decimal = Decimal("0.00")
-    net_annual_savings: Decimal = Decimal("0.00")
+    monthly_reward: Money = Decimal("0.00")
+    annual_reward: Money = Decimal("0.00")
+    total_annual_fees: Money = Decimal("0.00")
+    net_annual_savings: Money = Decimal("0.00")
     summary: str = ""

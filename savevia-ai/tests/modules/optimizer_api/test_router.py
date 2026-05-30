@@ -66,10 +66,10 @@ async def test_calculate_returns_envelope_with_result(client, app_and_service):
     body = resp.json()
     assert body["code"] == 200
     data = body["data"]
-    assert data["monthlyReward"] == "4.00"
+    assert data["monthlyReward"] == 4.0
     assert data["recommendations"][0]["category"] == "DINING"
-    # camelCase aliases for nested fields
-    assert data["recommendations"][0]["monthlySpend"] == "100"
+    # camelCase aliases for nested fields; Money serializes as a JSON number
+    assert data["recommendations"][0]["monthlySpend"] == 100.0
 
 
 async def test_calculate_400_on_no_cards_selected(client, app_and_service):

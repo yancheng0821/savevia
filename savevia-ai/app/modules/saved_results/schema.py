@@ -8,10 +8,11 @@ dict-shaped payload and only require the three numeric fields the
 
 from __future__ import annotations
 
-from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+from app.core.types import Money
 
 
 def _camel(name: str) -> str:
@@ -33,10 +34,10 @@ class OptimizationResult(BaseModel):
     }
 
     recommendations: list[dict[str, Any]] | None = None
-    monthly_reward: Decimal | None = None
-    annual_reward: Decimal | None = None
-    total_annual_fees: Decimal | None = None
-    net_annual_savings: Decimal | None = None
+    monthly_reward: Money | None = None
+    annual_reward: Money | None = None
+    total_annual_fees: Money | None = None
+    net_annual_savings: Money | None = None
     summary: str | None = None
 
 

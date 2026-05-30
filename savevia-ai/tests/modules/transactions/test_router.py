@@ -94,7 +94,7 @@ async def test_get_summary_returns_envelope(client, app_and_service):
     body = resp.json()
     assert body["code"] == 200
     assert body["data"]["totalTransactions"] == 3
-    assert body["data"]["totalSpending"] == "300"
+    assert body["data"]["totalSpending"] == 300.0
 
 
 async def test_get_summary_requires_user_id(client):
