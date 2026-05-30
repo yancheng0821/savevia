@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from app.api import health
 from app.clients.card_client import CardServiceClient
 from app.clients.user_client import UserServiceClient
+from app.modules.bank.router import build_bank_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.modules.agent.graph import build_agent
@@ -103,6 +104,10 @@ def create_app() -> FastAPI:
             card_client=app.state.card_client,
             categorization=app.state.categorization_service,
         ),
+    ))
+    app.include_router(build_bank_router(
+        get_card_client=lambda: app.state.card_client,
+        get_categorization=lambda: app.state.categorization_service,
     ))
 
     @app.get("/", include_in_schema=False)
