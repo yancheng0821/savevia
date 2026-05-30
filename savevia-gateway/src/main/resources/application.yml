@@ -106,9 +106,9 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
-        # Chat Service - SSE stream (goes to optimizer, AI-intensive)
+        # Chat Service - SSE stream (Python: savevia-ai)
         - id: chat-stream
-          uri: lb://savevia-optimizer
+          uri: ${SAVEVIA_AI_URL:http://savevia-ai:8002}
           predicates:
             - Path=/api/v1/chat/stream
           filters:
@@ -120,9 +120,9 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
-        # Chat Service - Suggestions (goes to optimizer)
+        # Chat Service - Suggestions (Python: savevia-ai)
         - id: chat-suggestions
-          uri: lb://savevia-optimizer
+          uri: ${SAVEVIA_AI_URL:http://savevia-ai:8002}
           predicates:
             - Path=/api/v1/chat/suggestions
           filters:
@@ -148,9 +148,25 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
-        # Optimizer Service - Calculate endpoint (expensive, strict limit)
-        - id: optimizer-calculate
+        # Optimizer Service - Bank/Flinks endpoints (stays on Java optimizer)
+        # IMPORTANT: this route must appear BEFORE the Python-bound optimizer
+        # routes so Spring Cloud Gateway's first-match wins on /optimize/bank/**.
+        - id: optimizer-bank
           uri: lb://savevia-optimizer
+          predicates:
+            - Path=/api/v1/optimize/bank/**
+          filters:
+            - StripPrefix=0
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # Optimizer Service - Calculate endpoint (Python: savevia-ai, strict limit)
+        - id: optimizer-calculate
+          uri: ${SAVEVIA_AI_URL:http://savevia-ai:8002}
           predicates:
             - Path=/api/v1/optimize/calculate
           filters:
@@ -162,9 +178,11 @@ spring:
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
 
-        # Optimizer Service - Other endpoints
+        # Optimizer Service - Other endpoints (Python: savevia-ai)
+        # Covers /optimize/transactions/**, /optimize/share/**, /optimize/user-result/**.
+        # /optimize/bank/** is caught by the optimizer-bank route above.
         - id: optimizer-service
-          uri: lb://savevia-optimizer
+          uri: ${SAVEVIA_AI_URL:http://savevia-ai:8002}
           predicates:
             - Path=/api/v1/optimize/**
           filters:

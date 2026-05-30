@@ -74,8 +74,8 @@ spring.mail:
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:5173}
   version:
-    latest: ${APP_VERSION_LATEST:1.0.4}
-    min: ${APP_VERSION_MIN:1.0.4}
+    latest: ${APP_VERSION_LATEST:1.0.5}
+    min: ${APP_VERSION_MIN:1.0.5}
     ios-store-url: https://apps.apple.com/app/id6756332569
     android-store-url: https://play.google.com/store/apps/details?id=app.savevia
 
@@ -83,6 +83,22 @@ app:
 ai:
   usage:
     monthly-limit: ${AI_MONTHLY_LIMIT:100}
+
+# OpenAI API (for memory extraction)
+openai:
+  api:
+    key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+
+# Memory Extraction Configuration
+memory:
+  extraction:
+    enabled: ${MEMORY_EXTRACTION_ENABLED:true}
+    cron: "0 0 * * * *"
+    batch-size: 50
+    min-messages: 4
+    idle-minutes: 30
 
 # Admin Dashboard
 admin:

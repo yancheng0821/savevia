@@ -61,4 +61,12 @@
         WHERE id = #{id} AND user_id = #{userId}
     </select>
 
+    <!-- Get idle conversations for memory extraction -->
+    <select id="selectIdleConversations" resultMap="conversationResultMap">
+        SELECT * FROM chat_conversations
+        WHERE updated_at &lt; #{cutoffTime}
+        ORDER BY updated_at ASC
+        LIMIT #{limit}
+    </select>
+
 </mapper>
