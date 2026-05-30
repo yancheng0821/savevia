@@ -185,6 +185,35 @@ async def test_ai_path_skipped_for_guest_user(clients):
     user.check_can_use_ai.assert_not_called()
 
 
+async def test_ai_explanations_fill_recommendation_when_allowed(clients):
+    from unittest.mock import AsyncMock
+
+    from app.modules.optimizer_api.schema import OptimizationRequest
+
+    card, user = clients
+    card.get_cards_batch.return_value = [_card(id=1, name="A", base="0.02")]
+    user.check_can_use_ai.return_value = True
+
+    gen = AsyncMock()
+
+    async def _fill(recs, **kw):
+        for r in recs:
+            r.ai_explanation = "explained"
+
+    gen.generate_explanations.side_effect = _fill
+
+    from app.modules.optimizer_api.service import CashbackOptimizerService
+    svc = CashbackOptimizerService(
+        card_client=card, user_client=user, explanation_generator=gen,
+    )
+    result = await svc.optimize(OptimizationRequest(
+        user_id=42, card_ids=[1], monthly_spending={"DINING": Decimal("100")},
+        enable_ai_explanation=True,
+    ))
+    assert result.recommendations[0].ai_explanation == "explained"
+    user.record_ai_usage.assert_awaited_once_with(user_id=42)
+
+
 async def test_record_ai_usage_429_does_not_propagate(clients):
     from app.clients._base import JavaServiceError
     from app.modules.optimizer_api.schema import OptimizationRequest

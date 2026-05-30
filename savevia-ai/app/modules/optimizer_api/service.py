@@ -4,10 +4,9 @@ com.savevia.optimizer.service.CashbackOptimizerService.
 Picks the best card per spending category, sums up the monthly/annual
 rewards, subtracts annual fees, and emits a Java-equivalent summary.
 
-NOTE: AI-generated per-recommendation explanations (Java's
-OpenAiService.generateExplanations) are intentionally deferred to a
-follow-up sub-task. The endpoint's contract still includes `aiExplanation`
-in CategoryRecommendation — it just stays empty in the base path.
+When `enable_ai_explanation` is set for a logged-in user within quota, an
+injected `ExplanationGenerator` fills each `CategoryRecommendation.aiExplanation`
+(port of Java's OpenAiService.generateExplanations).
 """
 
 from __future__ import annotations
@@ -57,9 +56,11 @@ class CashbackOptimizerService:
         *,
         card_client: "CardServiceClient",
         user_client: "UserServiceClient",
+        explanation_generator=None,
     ):
         self._card = card_client
         self._user = user_client
+        self._explanations = explanation_generator
 
     async def optimize(self, request: OptimizationRequest) -> OptimizationResult:
         if not request.card_ids:
@@ -130,17 +131,19 @@ class CashbackOptimizerService:
             f"would be {_format_currency(net_annual_savings)}."
         )
 
-        # AI explanations — port of Java's OpenAiService.generateExplanations
-        # is deferred. For now we still check + record AI usage so quota
-        # accounting stays consistent (matches Java behaviour for the
-        # logged-in + flag-on path even when we don't actually call OpenAI).
+        # AI explanations — port of Java's OpenAiService.generateExplanations.
+        # Gated by the flag + a logged-in user; quota is checked + recorded so
+        # accounting stays consistent with Java.
         if request.enable_ai_explanation and request.user_id is not None:
             try:
                 allowed = await self._user.check_can_use_ai(user_id=request.user_id)
                 if allowed:
-                    # TODO(plan-04 follow-up): port OpenAiService.generateExplanations.
-                    # When implemented, fill recommendation.ai_explanation here
-                    # before recording usage.
+                    if self._explanations is not None:
+                        await self._explanations.generate_explanations(
+                            recommendations,
+                            user_cards=user_cards,
+                            locale=request.locale,
+                        )
                     try:
                         await self._user.record_ai_usage(user_id=request.user_id)
                     except JavaServiceError as e:

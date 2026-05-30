@@ -15,6 +15,7 @@ from app.modules.chat.router import build_chat_router
 from app.modules.chat.service import ChatService
 from app.modules.memory.extraction_chain import build_extraction_chain
 from app.modules.memory.extraction_service import ExtractionService
+from app.modules.optimizer_api.explanations import ExplanationGenerator
 from app.modules.optimizer_api.router import build_optimizer_router
 from app.modules.optimizer_api.service import CashbackOptimizerService
 from app.modules.saved_results.router import router as saved_results_router
@@ -54,6 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.optimizer_service = CashbackOptimizerService(
         card_client=app.state.card_client,
         user_client=app.state.user_client,
+        explanation_generator=ExplanationGenerator(),
     )
 
     # Categorization patterns are loaded once at startup; refresh via the
